@@ -214,6 +214,21 @@ class Autocompleter(object):
         results = [self._deserialize_data(i) for i in results]
         return results
     
+    def exact_suggest(self, term):
+        """
+        Suggext matching objects exacting matching term given, given a term
+        """
+        norm_term = utils.get_normalized_term(term)
+        exact_auto_term = '%s.%s' % (self.exact_auto_name, norm_term,)
+        exact_ids = self.redis.zrevrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
+        if len(exact_ids) == 0:
+            return []
+        
+        # Get match data based on our ID list
+        results = self.redis.hmget(self.auto_name, exact_ids)
+        results = [self._deserialize_data(i) for i in results]
+        return results
+    
     def _get_provider(self, obj):
         try:
             provider_class = registry.get(self.name, type(obj))
