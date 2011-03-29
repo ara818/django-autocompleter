@@ -2,7 +2,9 @@ from django.conf import settings
 
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
-MAIN_AUTOCOMPLETER_NAME = getattr(settings, 'MAIN_AUTOCOMPLETER_NAME', '__django_autocompleter_main__')
+DEFAULT_NAME = getattr(settings, 'AUTOCOMPLETER_DEFAULT_NAME', '__django_autocompleter_default__')
+
+SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
 
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 

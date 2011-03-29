@@ -4,7 +4,7 @@ from autocompleter.base import AutocompleterProvider, Autocompleter
 LOADING_AUTOCOMPELTER = False
 def autodiscover():
     """
-    Auto-discover INSTALLED_APPS ajax.py modules and fail silently when
+    Auto-discover INSTALLED_APPS autocompleters.py modules and fail silently when
     not present.
     NOTE: autodiscover was copied from django.contrib.admin autodiscover
     """

@@ -13,13 +13,13 @@ autocompleter.autodiscover()
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option("--name", dest="name", 
-            help="Name of autocompleter to initialize. Defaults to main autocompleter.", 
-            action="store", type="string", default=settings.MAIN_AUTOCOMPLETER_NAME),
+            help="Name of autocompleter to initialize. Defaults to default autocompleter name.", 
+            action="store", type="string", default=settings.DEFAULT_NAME),
         make_option("--remove", dest="remove",
-            help="Remove autocompleter data. Default to false.", 
+            help="Remove all autocompleter data. Default to false.", 
             action="store_true", default=False),
         make_option("--store", dest="store",
-            help="Store autocompleter data. Default to false.", 
+            help="Store all autocompleter data. Default to false.", 
             action="store_true", default=False),
     )
 
