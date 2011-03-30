@@ -84,10 +84,10 @@ class Autocompleter(object):
             return
 
         # Get data from provider
-        model_id = self.get_model_id()
-        terms = self.get_terms()
-        score = self.get_score()
-        data = self.get_data()
+        model_id = provider.get_model_id()
+        terms = provider.get_terms()
+        score = provider.get_score()
+        data = provider.get_data()
         
         # Turn each term into possible prefixes
         prefixes = []
@@ -132,8 +132,8 @@ class Autocompleter(object):
             return
         
         # Get data from provider
-        model_id = self.get_model_id()
-        terms = self.get_terms()
+        model_id = provider.get_model_id()
+        terms = provider.get_terms()
         
         # Turn each term into possible prefixes
         prefixes = []
