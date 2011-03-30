@@ -50,7 +50,7 @@ class AutocompleterProvider(object):
 
     def get_data(self):
         """
-        Any data you want to send along with object.
+        The data you want to send along on a successful match.
         """
         return {}
 
@@ -61,14 +61,6 @@ class AutocompleterProvider(object):
         """
         return cls.model._default_manager.all()
     
-    def get_object_as_dict(self):
-        d = {}
-        d['id'] = self.get_model_id()
-        d['terms'] = self.get_terms()
-        d['score'] = self.get_score()
-        d['data'] = self.get_data()
-        return d
-
 class Autocompleter(object):
     """
     Autocompleter class
@@ -92,14 +84,14 @@ class Autocompleter(object):
             return
 
         # Get data from provider
-        obj_dict = provider.get_object_as_dict()
-        model_id = obj_dict['id']
-        score = obj_dict['score']
-        terms = obj_dict['terms']
+        model_id = self.get_model_id()
+        terms = self.get_terms()
+        score = self.get_score()
+        data = self.get_data()
         
         # Turn each term into possible prefixes
-        norm_terms = provider.get_norm_terms()
         prefixes = []
+        norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
             prefixes = prefixes + utils.get_prefixes_for_term(norm_term)
 
@@ -117,7 +109,7 @@ class Autocompleter(object):
             self.redis.zadd(key, model_id, score)
 
         # Store ID to data mapping
-        self.redis.hset(self.auto_name, model_id, self._serialize_data(obj_dict))
+        self.redis.hset(self.auto_name, model_id, self._serialize_data(data))
 
     def store_all(self):
         """
@@ -139,10 +131,9 @@ class Autocompleter(object):
         if provider == None:
             return
         
-        obj_dict = provider.get_object_as_dict()
-        model_id = obj_dict['id']
-        score = obj_dict['score']
-        terms = obj_dict['terms']
+        # Get data from provider
+        model_id = self.get_model_id()
+        terms = self.get_terms()
         
         # Turn each term into possible prefixes
         prefixes = []
