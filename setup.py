@@ -7,7 +7,7 @@ setup(
     author='Ara Anjargolian',
     author_email='ara818@gmail.com',
     url='http://github.com/ara818/django-autocompleter',
-    packages=find_packages('autocompleter'),
+    packages=find_packages('autocompleter', 'autocompleter.management', 'autocompleter.management.commands'),
     install_requires = ['setuptools', 'redis'],
     classifiers=[
         'Development Status :: 4 - Beta',
