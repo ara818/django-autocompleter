@@ -187,7 +187,7 @@ class Autocompleter(object):
         """
         norm_term = utils.get_normalized_term(term)
         auto_term = '%s.%s' % (self.auto_name, norm_term)
-        ids = self.redis.zrevrange(auto_term, 0, settings.MAX_RESULTS - 1)
+        ids = self.redis.zrange(auto_term, 0, settings.MAX_RESULTS - 1)
         if len(ids) == 0:
             return []
 
@@ -196,9 +196,9 @@ class Autocompleter(object):
         if settings.MOVE_EXACT_MATCHES_TO_TOP:
             # Grab exact term match IDs
             exact_auto_term = '%s.%s' % (self.exact_auto_name, norm_term,)
-            exact_ids = self.redis.zrevrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
+            exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
 
-            # Need to reverse exact IDs to lowest score are behind higher scores, since we 
+            # Need to reverse exact IDs so high scores are behind low scores, since we 
             # are inserted in front of list.
             exact_ids.reverse()
 
@@ -223,7 +223,7 @@ class Autocompleter(object):
         """
         norm_term = utils.get_normalized_term(term)
         exact_auto_term = '%s.%s' % (self.exact_auto_name, norm_term,)
-        exact_ids = self.redis.zrevrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
+        exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
         if len(exact_ids) == 0:
             return []
         

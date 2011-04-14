@@ -31,6 +31,6 @@ def autodiscover():
         except ImportError:
             continue
 
-        import_module("%s.autocompleters" % app)
+        import_module("%s.models" % app)
 
     LOADING_AUTOCOMPELTER = False
