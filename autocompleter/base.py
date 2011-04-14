@@ -101,8 +101,13 @@ class Autocompleter(object):
             for char in prefix:
                 partial_prefix += char
                 key = '%s.%s' % (self.auto_name, partial_prefix,)
+                # Store prefix to model_id mapping, with score
                 self.redis.zadd(key, model_id, score)
-        
+                # Store autocompleter to prefix mapping so we know all prefixes
+                # of an autocompleter
+                key = 'prefixes.%s' % (self.auto_name,)
+                self.redis.sadd(key, partial_prefix)
+
         # For each normalized term, store in a sorted set representing exact matches
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_auto_name, norm_term,)
@@ -154,20 +159,27 @@ class Autocompleter(object):
             key = '%s.%s' % (self.exact_auto_name, norm_term,)
             self.redis.zrem(key, model_id,)
 
-        # Remove ID to data mapping
+        # Remove model ID to data mapping
         self.redis.hdel(self.auto_name, model_id)
 
     def remove_all(self):
         """
-        Remove all objects of all providers register with this autocompleter.
+        Remove all objects for a given autocompleter.
+        This will clear the autocompleter even when the underlying objects don't exist.
         """
-        provider_classes = registry.get_all(self.name)
-        if provider_classes == None:
-            return
+        # Key list of all prefixes for autocompleter
+        key = 'prefixes.%s' % (self.auto_name,)
+        prefixes = self.redis.smembers(key)
+
+        # Get prefix tree for prefix and delete all members
+        for prefix in prefixes:
+            key = '%s.%s' % (self.auto_name, prefix,)
+            self.redis.zremrangebyrank(key, 0, -1)
         
-        for provider_class in provider_classes:
-            for obj in provider_class.get_queryset().iterator():
-                self.remove(obj)
+        # Remove all model ID to data mappings
+        model_ids = self.redis.hkeys(self.auto_name)
+        for model_id in model_ids:
+            self.redis.hdel(self.auto_name, model_id)
 
     def suggest(self, term):
         """
