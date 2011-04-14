@@ -1,4 +1,4 @@
-VERSION = (0, 1, 1)
+VERSION = (0, 1, 2)
 
 from autocompleter.registry import registry
 from autocompleter.base import AutocompleterProvider, Autocompleter
