@@ -173,13 +173,17 @@ class Autocompleter(object):
 
         # Get prefix tree for prefix and delete all members
         for prefix in prefixes:
-            key = '%s.%s' % (self.auto_name, prefix,)
-            self.redis.zremrangebyrank(key, 0, -1)
-        
+            # Clear out each prefix tree
+            prefix_key = '%s.%s' % (self.auto_name, prefix,)
+            self.redis.zremrangebyrank(prefix_key, 0, -1)
+            # Don't delete the original prefix entry
+            self.redis.srem(key, prefix)
+
         # Remove all model ID to data mappings
         model_ids = self.redis.hkeys(self.auto_name)
         for model_id in model_ids:
             self.redis.hdel(self.auto_name, model_id)
+        
 
     def suggest(self, term):
         """
