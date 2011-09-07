@@ -1,6 +1,8 @@
 import re
 import unicodedata
 
+from autocompleter import settings
+
 def get_normalized_term(term):
     """
     Convert the term into a basic form that's easier to search.
@@ -19,7 +21,7 @@ def get_normalized_term(term):
     term = term.strip()
     term = term.replace('&', 'and')
     term = re.sub(r'[\s]+', ' ', term)
-    term = re.sub(r'[^a-z0-9_ ]', '', term)
+    term = re.sub(settings.CHARACTER_FILTER, '', term)
     return term
 
 def get_prefixes_for_term(term):
