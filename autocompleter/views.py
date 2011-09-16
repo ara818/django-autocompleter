@@ -1,5 +1,4 @@
-from django.http import Http404, HttpResponse
-
+from django.http import Http404, HttpResponse, HttpResponseServerError
 from django.utils import simplejson
 
 from autocompleter import settings
@@ -13,5 +12,14 @@ def suggest(request, name=settings.DEFAULT_NAME):
 
         json = simplejson.dumps(results)
         return HttpResponse(json)
-    return HttpResponse("fuck")
-        
+    return HttpResponseServerError("Search paramater not found.")
+
+def exact_suggest(request, name=settings.DEFAULT_NAME):
+    if settings.SUGGEST_PARAMETER_NAME in request.GET:
+        term = request.GET[settings.SUGGEST_PARAMETER_NAME]
+        ac = Autocompleter(name)
+        results = ac.exact_suggest(term)
+
+        json = simplejson.dumps(results)
+        return HttpResponse(json)
+    return HttpResponseServerError("Search paramater not found.")
