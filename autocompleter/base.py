@@ -32,7 +32,8 @@ class AutocompleterProvider(object):
     
     def get_terms(self):
         """
-        Optional. Define this is an object can be searched for using more than one term.
+        Terms of the objects, which will suport autocompletion.
+        Define this if an object can be searched for using more than one term.
         """
         return [self.get_term()]
     
@@ -57,7 +58,8 @@ class AutocompleterProvider(object):
     @classmethod
     def get_queryset(cls):
         """
-        Get queryset representing all objects represented by this provider
+        Get queryset representing all objects represented by this provider.
+        Will normally not have to override this.
         """
         return cls.model._default_manager.all()
     
@@ -165,7 +167,7 @@ class Autocompleter(object):
                 key = '%s.%s' % (self.auto_name, partial_prefix,)
                 self.redis.zrem(key, model_id)
         
-        # Process normalized term of object, placing object ID in a sorted set 
+        # Process normalized term of object, removing object ID from a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_auto_name, norm_term,)
@@ -182,7 +184,7 @@ class Autocompleter(object):
         # Get list of all prefixes for autocompleter
         prefix_set_key = 'prefixes.%s' % (self.auto_name,)
         prefixes = self.redis.smembers(prefix_set_key)
-    
+
         # Get list of all exact match term for autocompleter
         exact_term_set_key = 'norm_terms.%s' % (self.exact_auto_name,)
         norm_terms = self.redis.smembers(exact_term_set_key)
@@ -190,22 +192,19 @@ class Autocompleter(object):
         # For each prefix, delete sorted set
         for prefix in prefixes:
             key = '%s.%s' % (self.auto_name, prefix,)
-            self.redis.zremrangebyrank(key, 0, -1)
-            # Delete the original prefix entry
-            self.redis.srem(prefix_set_key, prefix)
+            self.redis.delete(key)
+        # Delete the set of prefixes
+        self.redis.delete(prefix_set_key)
 
         # For each exact match term, deleting sorted set
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_auto_name, norm_term,)
-            self.redis.zremrangebyrank(key, 0, -1)
-            # Delete the original exact match term entry
-            self.redis.srem(exact_term_set_key, norm_term)
+            self.redis.delete(key)
+        # Delete the set of exact matches
+        self.redis.delete(exact_term_set_key)
 
-        # Remove all model ID to data mappings
-        model_ids = self.redis.hkeys(self.auto_name)
-        for model_id in model_ids:
-            self.redis.hdel(self.auto_name, model_id)
-        
+        # Remove the entire model ID to data mapping hash
+        self.redis.delete(self.auto_name)
 
     def suggest(self, term):
         """
