@@ -1,0 +1,801 @@
+[{
+    "pk": 1,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AAPL",
+        "market_cap": 506686.4497,
+        "name": "Apple Inc."
+    }
+}, {
+    "pk": 2,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "XOM",
+        "market_cap": 404067.6030,
+        "name": "Exxon Mobil Corporation"
+    }
+}, {
+    "pk": 3,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PTR",
+        "market_cap": 270199.5000,
+        "name": "PetroChina Company Limited"
+    }
+}, {
+    "pk": 4,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MSFT",
+        "market_cap": 269105.6382,
+        "name": "Microsoft Corporation"
+    }
+}, {
+    "pk": 5,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "IBM",
+        "market_cap": 236454.7444,
+        "name": "International Business Machines Corporation"
+    }
+}, {
+    "pk": 6,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "RDS.B",
+        "market_cap": 226415.5192,
+        "name": "Royal Dutch Shell plc"
+    }
+}, {
+    "pk": 7,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CHL",
+        "market_cap": 222140.5830,
+        "name": "China Mobile Limited"
+    }
+}, {
+    "pk": 8,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CVX",
+        "market_cap": 218206.4636,
+        "name": "Chevron Corporation"
+    }
+}, {
+    "pk": 9,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "WMT",
+        "market_cap": 205755.9760,
+        "name": "Wal-Mart Stores Inc."
+    }
+}, {
+    "pk": 10,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "GE",
+        "market_cap": 201011.9440,
+        "name": "General Electric Company"
+    }
+}, {
+    "pk": 11,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BRK.B",
+        "market_cap": 196630.2774,
+        "name": "Berkshire Hathaway inc."
+    }
+}, {
+    "pk": 12,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BRK.A",
+        "market_cap": 196457.2500,
+        "name": "Berkshire Hathaway Inc"
+    }
+}, {
+    "pk": 13,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "GOOG",
+        "market_cap": 194414.9725,
+        "name": "Google Inc."
+    }
+}, {
+    "pk": 14,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "T",
+        "market_cap": 184772.6800,
+        "name": "AT&T Inc."
+    }
+}, {
+    "pk": 15,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PG",
+        "market_cap": 184145.8476,
+        "name": "Procter & Gamble Co."
+    }
+}, {
+    "pk": 16,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "JNJ",
+        "market_cap": 176795.2290,
+        "name": "Johnson & Johnson"
+    }
+}, {
+    "pk": 17,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "WFC",
+        "market_cap": 166959.9598,
+        "name": "Wells Fargo & Co."
+    }
+}, {
+    "pk": 18,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PFE",
+        "market_cap": 165116.1156,
+        "name": "Pfizer Inc."
+    }
+}, {
+    "pk": 19,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "KO",
+        "market_cap": 157873.1973,
+        "name": "The Coca-Cola Company"
+    }
+}, {
+    "pk": 20,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "JPM",
+        "market_cap": 155904.5631,
+        "name": "JPMorgan Chase & Co."
+    }
+}, {
+    "pk": 21,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "HBC",
+        "market_cap": 154820.8268,
+        "name": "HSBC Holdings PLC"
+    }
+}, {
+    "pk": 22,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "ORCL",
+        "market_cap": 151993.7980,
+        "name": "Oracle Corporation"
+    }
+}, {
+    "pk": 23,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BP",
+        "market_cap": 147566.0795,
+        "name": "BP p.l.c."
+    }
+}, {
+    "pk": 24,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PM",
+        "market_cap": 146965.8778,
+        "name": "Philip Morris International Inc."
+    }
+}, {
+    "pk": 25,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "INTC",
+        "market_cap": 137840.4400,
+        "name": "Intel Corporation"
+    }
+}, {
+    "pk": 26,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "VOD",
+        "market_cap": 135170.4636,
+        "name": "Vodafone Group plc"
+    }
+}, {
+    "pk": 27,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "NVS",
+        "market_cap": 131649.8410,
+        "name": "Novartis AG"
+    }
+}, {
+    "pk": 28,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "TM",
+        "market_cap": 131400.6704,
+        "name": "Toyota Motor Corporation"
+    }
+}, {
+    "pk": 29,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "TOT",
+        "market_cap": 130904.4750,
+        "name": "TOTAL S.A."
+    }
+}, {
+    "pk": 30,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "ABV",
+        "market_cap": 127819.9680,
+        "name": "Ambev - Companhia de Bebidas das Americas"
+    }
+}, {
+    "pk": 31,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BHP",
+        "market_cap": 119056.2362,
+        "name": "BHP Billiton Limited"
+    }
+}, {
+    "pk": 32,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "EC",
+        "market_cap": 118099.0468,
+        "name": "Ecopetrol S.A."
+    }
+}, {
+    "pk": 33,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MRK",
+        "market_cap": 114601.7920,
+        "name": "Merck & Co Inc."
+    }
+}, {
+    "pk": 34,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "GSK",
+        "market_cap": 113657.2346,
+        "name": "GlaxoSmithKline"
+    }
+}, {
+    "pk": 35,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BUD",
+        "market_cap": 111689.7096,
+        "name": "Anheuser-Busch Inbev SA/NV"
+    }
+}, {
+    "pk": 36,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "VZ",
+        "market_cap": 110695.6190,
+        "name": "Verizon Communications"
+    }
+}, {
+    "pk": 37,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "QCOM",
+        "market_cap": 107822.4201,
+        "name": "QUALCOMM Incorporated"
+    }
+}, {
+    "pk": 38,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CSCO",
+        "market_cap": 106442.0280,
+        "name": "Cisco Systems Inc."
+    }
+}, {
+    "pk": 39,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SNP",
+        "market_cap": 104987.0390,
+        "name": "China Petroleum & Chemical Corporation"
+    }
+}, {
+    "pk": 40,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PBR",
+        "market_cap": 103933.9539,
+        "name": "Petrobras - Petroleo Brasileiro S.A."
+    }
+}, {
+    "pk": 41,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "COP",
+        "market_cap": 102448.4184,
+        "name": "ConocoPhillips"
+    }
+}, {
+    "pk": 42,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SLB",
+        "market_cap": 101787.1392,
+        "name": "Schlumberger Limited"
+    }
+}, {
+    "pk": 43,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "C",
+        "market_cap": 99990.8820,
+        "name": "Citigroup Inc."
+    }
+}, {
+    "pk": 44,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SNY",
+        "market_cap": 99845.7600,
+        "name": "Sanofi"
+    }
+}, {
+    "pk": 45,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "UN",
+        "market_cap": 99651.2000,
+        "name": "Unilever N.V."
+    }
+}, {
+    "pk": 46,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MCD",
+        "market_cap": 99088.6248,
+        "name": "McDonald's Corporation"
+    }
+}, {
+    "pk": 47,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "PEP",
+        "market_cap": 98729.3415,
+        "name": "PepsiCo Inc."
+    }
+}, {
+    "pk": 48,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "ITUB",
+        "market_cap": 98072.2000,
+        "name": "Itau Unibanco Holding S.A."
+    }
+}, {
+    "pk": 49,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CEO",
+        "market_cap": 97293.5489,
+        "name": "CNOOC Limited"
+    }
+}, {
+    "pk": 50,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "UL",
+        "market_cap": 97148.0000,
+        "name": "Unilever Plc"
+    }
+}, {
+    "pk": 51,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "V",
+        "market_cap": 95253.3515,
+        "name": "Visa Inc."
+    }
+}, {
+    "pk": 52,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AMX",
+        "market_cap": 94946.8000,
+        "name": "Amrica Mvil S.A.B de C.V."
+    }
+}, {
+    "pk": 53,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "ABT",
+        "market_cap": 90274.5100,
+        "name": "Abbott Laboratories"
+    }
+}, {
+    "pk": 54,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "STO",
+        "market_cap": 89345.9730,
+        "name": "Statoil ASA"
+    }
+}, {
+    "pk": 55,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SI",
+        "market_cap": 85641.5300,
+        "name": "Siemens AG"
+    }
+}, {
+    "pk": 56,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "NVO",
+        "market_cap": 84882.0000,
+        "name": "Novo Nordisk A/S"
+    }
+}, {
+    "pk": 57,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BAC",
+        "market_cap": 84809.9700,
+        "name": "Bank of America Corporation"
+    }
+}, {
+    "pk": 58,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "E",
+        "market_cap": 84352.2410,
+        "name": "ENI S.p.A."
+    }
+}, {
+    "pk": 59,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AMZN",
+        "market_cap": 83819.5200,
+        "name": "Amazon.com Inc."
+    }
+}, {
+    "pk": 60,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "RY",
+        "market_cap": 82481.9170,
+        "name": "Royal Bank of Canada"
+    }
+}, {
+    "pk": 61,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SAP",
+        "market_cap": 82073.9535,
+        "name": "SAP AG"
+    }
+}, {
+    "pk": 62,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "OXY",
+        "market_cap": 81747.2530,
+        "name": "Occidental Petroleum Corporation"
+    }
+}, {
+    "pk": 63,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "RIO",
+        "market_cap": 81540.3050,
+        "name": "Rio Tinto plc"
+    }
+}, {
+    "pk": 64,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CMCSA",
+        "market_cap": 81309.2256,
+        "name": "Comcast Corporation"
+    }
+}, {
+    "pk": 65,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CMCSK",
+        "market_cap": 80631.3963,
+        "name": "Comcast Corporation"
+    }
+}, {
+    "pk": 66,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "DIS",
+        "market_cap": 75884.5824,
+        "name": "The Walt Disney Company"
+    }
+}, {
+    "pk": 67,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "UTX",
+        "market_cap": 75703.8195,
+        "name": "United Technologies Corporation"
+    }
+}, {
+    "pk": 68,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "TSM",
+        "market_cap": 75668.8800,
+        "name": "Taiwan Semiconductor Manufacturing Company Ltd."
+    }
+}, {
+    "pk": 69,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "TEF",
+        "market_cap": 75351.6400,
+        "name": "Telefonica S.A."
+    }
+}, {
+    "pk": 70,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "UPS",
+        "market_cap": 74458.6284,
+        "name": "United Parcel Service Inc."
+    }
+}, {
+    "pk": 71,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "HD",
+        "market_cap": 74149.5170,
+        "name": "Home Depot Inc."
+    }
+}, {
+    "pk": 72,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "VALE",
+        "market_cap": 74039.7045,
+        "name": "Vale S.A."
+    }
+}, {
+    "pk": 73,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "TD",
+        "market_cap": 73610.4160,
+        "name": "Toronto-Dominion Bank"
+    }
+}, {
+    "pk": 74,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MTU",
+        "market_cap": 72846.5955,
+        "name": "Mitsubishi UFJ Financial Group Inc."
+    }
+}, {
+    "pk": 75,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CAT",
+        "market_cap": 71270.4564,
+        "name": "Caterpillar Inc."
+    }
+}, {
+    "pk": 76,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "DCM",
+        "market_cap": 71200.5560,
+        "name": "NTT DOCOMO INC."
+    }
+}, {
+    "pk": 77,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "HMC",
+        "market_cap": 69028.0900,
+        "name": "Honda Motor Co. Ltd."
+    }
+}, {
+    "pk": 78,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "STD",
+        "market_cap": 67944.2540,
+        "name": "Banco Santander S.A."
+    }
+}, {
+    "pk": 79,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BBL",
+        "market_cap": 67497.3334,
+        "name": "BHP Billiton plc"
+    }
+}, {
+    "pk": 80,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "KFT",
+        "market_cap": 67048.1625,
+        "name": "Kraft Foods Inc."
+    }
+}, {
+    "pk": 81,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "WBK",
+        "market_cap": 66464.4068,
+        "name": "Westpac Banking Corporation"
+    }
+}, {
+    "pk": 82,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MO",
+        "market_cap": 62638.5532,
+        "name": "Altria Group Inc."
+    }
+}, {
+    "pk": 83,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AXP",
+        "market_cap": 61790.7360,
+        "name": "American Express Company"
+    }
+}, {
+    "pk": 84,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CAJ",
+        "market_cap": 61513.0112,
+        "name": "Canon Inc."
+    }
+}, {
+    "pk": 85,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MMM",
+        "market_cap": 60832.9120,
+        "name": "3M Company"
+    }
+}, {
+    "pk": 86,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "DEO",
+        "market_cap": 60616.4025,
+        "name": "Diageo plc"
+    }
+}, {
+    "pk": 87,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AZN",
+        "market_cap": 60468.0885,
+        "name": "AstraZeneca Group plc"
+    }
+}, {
+    "pk": 88,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AMGN",
+        "market_cap": 59613.4854,
+        "name": "Amgen Inc."
+    }
+}, {
+    "pk": 89,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "UNH",
+        "market_cap": 59463.1534,
+        "name": "UnitedHealth Group Inc."
+    }
+}, {
+    "pk": 90,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "CVS",
+        "market_cap": 59406.3932,
+        "name": "CVS Caremark Corporation"
+    }
+}, {
+    "pk": 91,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "NTT",
+        "market_cap": 59356.8745,
+        "name": "Nippon Telegraph and Telephone Corporation"
+    }
+}, {
+    "pk": 92,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "EMC",
+        "market_cap": 59179.2396,
+        "name": "EMC Corporation"
+    }
+}, {
+    "pk": 93,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BNS",
+        "market_cap": 58744.9854,
+        "name": "The Bank of Nova Scotia"
+    }
+}, {
+    "pk": 94,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "GS",
+        "market_cap": 57743.0399,
+        "name": "Goldman Sachs Group Inc."
+    }
+}, {
+    "pk": 95,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "USB",
+        "market_cap": 56717.6480,
+        "name": "US Bancorp"
+    }
+}, {
+    "pk": 96,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BMY",
+        "market_cap": 55766.9823,
+        "name": "Bristol-Myers Squibb Company"
+    }
+}, {
+    "pk": 97,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "BA",
+        "market_cap": 54471.3267,
+        "name": "The Boeing Company"
+    }
+}, {
+    "pk": 98,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "SU",
+        "market_cap": 54360.5790,
+        "name": "Suncor Energy Inc."
+    }
+}, {
+    "pk": 99,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "AIG",
+        "market_cap": 53652.9650,
+        "name": "American International Group Inc"
+    }
+}, {
+    "pk": 100,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "MA",
+        "market_cap": 53245.4784,
+        "name": "MasterCard Incorporated"
+    }
+}]
