@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import redis
 import timeit
 
@@ -55,6 +58,15 @@ class BasicQueryingTestCase(AutocompleterTestCase):
         matches_name = self.autocomp.suggest('Apple')
         self.assertEqual(len(matches_name), 1)
 
+    def test_accented_matches(self):
+        matches = self.autocomp.suggest('estee lauder')
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0]['search_name'], 'EL')
+
+        matches = self.autocomp.suggest(u'estée lauder')
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0]['search_name'], 'EL')
+
     def test_exact_matches_setting(self):
         matches = self.autocomp.suggest('Ma')
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
@@ -62,4 +74,4 @@ class BasicQueryingTestCase(AutocompleterTestCase):
         self.assertNotEqual(matches[0]['search_name'], matches2[0]['search_name'])
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
-        
+

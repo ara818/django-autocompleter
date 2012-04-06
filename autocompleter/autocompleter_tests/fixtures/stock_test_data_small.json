@@ -798,4 +798,12 @@
         "market_cap": 53245.4784,
         "name": "MasterCard Incorporated"
     }
+}, {
+    "pk": 225,
+    "model": "autocompleter_tests.stock",
+    "fields": {
+        "symbol": "EL",
+        "market_cap": 22751.4012,
+        "name": "Estée Lauder Companies Inc."
+    }
 }]
