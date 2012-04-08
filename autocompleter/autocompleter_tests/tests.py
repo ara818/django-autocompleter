@@ -30,10 +30,10 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         """
         autocomp = Autocompleter("stock")
         autocomp.store_all()
-        keys = self.redis.hkeys(autocomp.auto_name)
+        keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 1000)
         autocomp.remove_all()
-        keys = self.redis.hkeys(autocomp.auto_name)
+        keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 0)
 
 class BasicQueryingTestCase(AutocompleterTestCase):

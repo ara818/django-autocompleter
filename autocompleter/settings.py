@@ -2,7 +2,7 @@ from django.conf import settings
 
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
-DEFAULT_NAME = getattr(settings, 'AUTOCOMPLETER_DEFAULT_NAME', '__django_autocompleter_default__')
+DEFAULT_NAME = getattr(settings, 'AUTOCOMPLETER_DEFAULT_NAME', '__default__')
 
 SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
 

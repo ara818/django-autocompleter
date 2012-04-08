@@ -69,8 +69,11 @@ class Autocompleter(object):
     """
     def __init__(self, name=settings.DEFAULT_NAME):
         self.name = name
-        self.auto_name = 'autocompleter.%s' % (name,)
-        self.exact_auto_name = 'autocompleter.%s.exact' % (name,)
+        self.auto_base_name = 'djac.%s' % (name,)
+        self.prefix_base_name = '%s.p' % (self.auto_base_name,)
+        self.prefix_set_name = '%s.ps' % (self.auto_base_name,)
+        self.exact_base_name = '%s.e' % (self.auto_base_name,)
+        self.exact_set_name = '%s.es' % (self.auto_base_name,)
         
         # Make connection with Redis
         self.redis = redis.Redis(host=settings.REDIS_CONNECTION['host'], 
@@ -85,10 +88,6 @@ class Autocompleter(object):
         if provider == None:
             return
         
-        # Get some keys we need
-        prefix_set_key = 'prefixes.%s' % (self.auto_name,)
-        exact_term_set_key = 'norm_terms.%s' % (self.exact_auto_name,)
-
         # Get data from provider
         model_id = provider.get_model_id()
         terms = provider.get_terms()
@@ -106,24 +105,24 @@ class Autocompleter(object):
             partial_prefix = ''
             for char in prefix:
                 partial_prefix += char
-                key = '%s.%s' % (self.auto_name, partial_prefix,)
+                key = '%s.%s' % (self.prefix_base_name, partial_prefix,)
                 # Store prefix to model_id mapping, with score
                 self.redis.zadd(key, model_id, score)
                 # Store autocompleter to prefix mapping so we know all prefixes
                 # of an autocompleter
-                self.redis.sadd(prefix_set_key, partial_prefix)
+                self.redis.sadd(self.prefix_set_name, partial_prefix)
 
         # Process normalized term of object, placing object ID in a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_auto_name, norm_term,)
+            key = '%s.%s' % (self.exact_base_name, norm_term,)
             self.redis.zadd(key, model_id, score)
             # Store autocompleter to exact term mapping so we know all exact terms
             # of an autocompleter
-            self.redis.sadd(exact_term_set_key, norm_term)
+            self.redis.sadd(self.exact_set_name, norm_term)
 
         # Store ID to data mapping
-        self.redis.hset(self.auto_name, model_id, self._serialize_data(data))
+        self.redis.hset(self.auto_base_name, model_id, self._serialize_data(data))
 
     def store_all(self):
         """
@@ -145,10 +144,6 @@ class Autocompleter(object):
         if provider == None:
             return
         
-        # Get some keys we need
-        prefix_set_key = 'prefixes.%s' % (self.auto_name,)
-        exact_term_set_key = 'norm_terms.%s' % (self.exact_auto_name,)
-
         # Get data from provider
         model_id = provider.get_model_id()
         terms = provider.get_terms()
@@ -164,17 +159,17 @@ class Autocompleter(object):
             partial_prefix = ''
             for char in prefix:
                 partial_prefix += char
-                key = '%s.%s' % (self.auto_name, partial_prefix,)
+                key = '%s.%s' % (self.prefix_base_name, partial_prefix,)
                 self.redis.zrem(key, model_id)
         
-        # Process normalized term of object, removing object ID from a sorted set 
+        # Process normalized terms of object, removing object ID from a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_auto_name, norm_term,)
+            key = '%s.%s' % (self.exact_base_name, norm_term,)
             self.redis.zrem(key, model_id,)
 
         # Remove model ID to data mapping
-        self.redis.hdel(self.auto_name, model_id)
+        self.redis.hdel(self.auto_base_name, model_id)
 
     def remove_all(self):
         """
@@ -182,36 +177,33 @@ class Autocompleter(object):
         This will clear the autocompleter even when the underlying objects don't exist.
         """
         # Get list of all prefixes for autocompleter
-        prefix_set_key = 'prefixes.%s' % (self.auto_name,)
-        prefixes = self.redis.smembers(prefix_set_key)
-
+        prefixes = self.redis.smembers(self.prefix_set_name)
         # Get list of all exact match term for autocompleter
-        exact_term_set_key = 'norm_terms.%s' % (self.exact_auto_name,)
-        norm_terms = self.redis.smembers(exact_term_set_key)
+        norm_terms = self.redis.smembers(self.exact_set_name)
     
         # For each prefix, delete sorted set
         for prefix in prefixes:
-            key = '%s.%s' % (self.auto_name, prefix,)
+            key = '%s.%s' % (self.prefix_base_name, prefix,)
             self.redis.delete(key)
         # Delete the set of prefixes
-        self.redis.delete(prefix_set_key)
+        self.redis.delete(self.prefix_set_name)
 
         # For each exact match term, deleting sorted set
         for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_auto_name, norm_term,)
+            key = '%s.%s' % (self.exact_base_name, norm_term,)
             self.redis.delete(key)
         # Delete the set of exact matches
-        self.redis.delete(exact_term_set_key)
+        self.redis.delete(self.exact_set_name)
 
         # Remove the entire model ID to data mapping hash
-        self.redis.delete(self.auto_name)
+        self.redis.delete(self.auto_base_name)
 
     def suggest(self, term):
         """
         Suggest matching objects, given a term
         """
         norm_term = utils.get_normalized_term(term)
-        auto_term = '%s.%s' % (self.auto_name, norm_term)
+        auto_term = '%s.%s' % (self.prefix_base_name, norm_term)
         ids = self.redis.zrange(auto_term, 0, settings.MAX_RESULTS - 1)
         if len(ids) == 0:
             return []
@@ -220,7 +212,7 @@ class Autocompleter(object):
         # other matches
         if settings.MOVE_EXACT_MATCHES_TO_TOP:
             # Grab exact term match IDs
-            exact_auto_term = '%s.%s' % (self.exact_auto_name, norm_term,)
+            exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
             exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
 
             # Need to reverse exact IDs so high scores are behind low scores, since we 
@@ -238,7 +230,7 @@ class Autocompleter(object):
                 ids = ids[:settings.MAX_RESULTS]
 
         # Get match data based on our ID list
-        results = self.redis.hmget(self.auto_name, ids)
+        results = self.redis.hmget(self.auto_base_name, ids)
         # We shouldn't have any bogus matches, but if we do clear out before we deserialize
         results = [i for i in results if i != None]
         results = [self._deserialize_data(i) for i in results]
@@ -249,13 +241,13 @@ class Autocompleter(object):
         Suggext matching objects exacting matching term given, given a term
         """
         norm_term = utils.get_normalized_term(term)
-        exact_auto_term = '%s.%s' % (self.exact_auto_name, norm_term,)
+        exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
         exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
         if len(exact_ids) == 0:
             return []
         
         # Get match data based on our ID list
-        results = self.redis.hmget(self.auto_name, exact_ids)
+        results = self.redis.hmget(self.auto_base_name, exact_ids)
         # We shouldn't have any bogus matches, but if we do clear out before we deserialize
         results = [i for i in results if i != None]
         results = [self._deserialize_data(i) for i in results]
