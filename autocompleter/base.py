@@ -101,16 +101,18 @@ class Autocompleter(object):
             prefixes = prefixes + utils.get_prefixes_for_term(norm_term)
 
         # Processes prefixes of object, placing object ID in sorted sets
+        pipe = self.redis.pipeline()
         for prefix in prefixes:
             partial_prefix = ''
             for char in prefix:
                 partial_prefix += char
                 key = '%s.%s' % (self.prefix_base_name, partial_prefix,)
                 # Store prefix to model_id mapping, with score
-                self.redis.zadd(key, model_id, score)
+                pipe.zadd(key, model_id, score)
                 # Store autocompleter to prefix mapping so we know all prefixes
                 # of an autocompleter
-                self.redis.sadd(self.prefix_set_name, partial_prefix)
+                pipe.sadd(self.prefix_set_name, partial_prefix)
+        pipe.execute()
 
         # Process normalized term of object, placing object ID in a sorted set 
         # representing exact matches

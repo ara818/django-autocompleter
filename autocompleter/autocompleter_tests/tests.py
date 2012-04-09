@@ -72,6 +72,16 @@ class BasicQueryingTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
         matches2 = self.autocomp.suggest('Ma')
         self.assertNotEqual(matches[0]['search_name'], matches2[0]['search_name'])
+
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
 
+    def test_max_results_setting(self):
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 10)
+        setattr(auto_settings, 'MAX_RESULTS', 2)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 2)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MAX_RESULTS', 10)
