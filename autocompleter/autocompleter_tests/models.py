@@ -33,3 +33,30 @@ class StockAutocompleteProvider(AutocompleterProvider):
         }
 
 registry.register_named("stock", StockAutocompleteProvider)
+registry.register_named("mixed", StockAutocompleteProvider)
+
+class Indicator(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    internal_name = models.CharField(max_length=200, unique=True)
+    score = models.FloatField(null=True, blank=True)
+
+class IndicatorAutocompleteProvider(AutocompleterProvider):
+    model = Indicator
+
+    def get_term(self):
+        return self.obj.name
+
+    def get_score(self):
+        return self.obj.score
+
+    def get_data(self):
+        return {
+            'type' : 'indicator',
+            'id' : self.obj.id,
+            'score' : self.get_score(),
+            'display_name' : u'%s' % (self.obj.name,),
+            'search_name' : u'%s' % (self.obj.internal_name,),
+        }
+
+registry.register_named("indicator", IndicatorAutocompleteProvider)
+registry.register_named("mixed", IndicatorAutocompleteProvider)

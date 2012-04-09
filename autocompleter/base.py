@@ -95,36 +95,40 @@ class Autocompleter(object):
         data = provider.get_data()
         
         # Turn each normalized term into possible prefixes
-        prefixes = []
+        phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            prefixes = prefixes + utils.get_prefixes_for_term(norm_term)
+            phrases = phrases + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+
+        # Start pipeline
+        pipe = self.redis.pipeline()
 
         # Processes prefixes of object, placing object ID in sorted sets
-        pipe = self.redis.pipeline()
-        for prefix in prefixes:
-            partial_prefix = ''
-            for char in prefix:
-                partial_prefix += char
-                key = '%s.%s' % (self.prefix_base_name, partial_prefix,)
+        for phrase in phrase:
+            phrase_prefix = ''
+            for char in phrase:
+                phrase_prefix += char
+                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
                 # Store prefix to model_id mapping, with score
                 pipe.zadd(key, model_id, score)
                 # Store autocompleter to prefix mapping so we know all prefixes
                 # of an autocompleter
-                pipe.sadd(self.prefix_set_name, partial_prefix)
-        pipe.execute()
+                pipe.sadd(self.prefix_set_name, phrase_prefix)
 
         # Process normalized term of object, placing object ID in a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_base_name, norm_term,)
-            self.redis.zadd(key, model_id, score)
+            pipe.zadd(key, model_id, score)
             # Store autocompleter to exact term mapping so we know all exact terms
             # of an autocompleter
-            self.redis.sadd(self.exact_set_name, norm_term)
+            pipe.sadd(self.exact_set_name, norm_term)
 
         # Store ID to data mapping
-        self.redis.hset(self.auto_base_name, model_id, self._serialize_data(data))
+        pipe.hset(self.auto_base_name, model_id, self._serialize_data(data))
+
+        # End pipeline
+        pipe.execute()
 
     def store_all(self):
         """
@@ -133,8 +137,9 @@ class Autocompleter(object):
         provider_classes = registry.get_all(self.name)
         if provider_classes == None:
             return
-        
+
         for provider_class in provider_classes:
+            print provider_class
             for obj in provider_class.get_queryset().iterator():
                 self.store(obj)
 
@@ -151,27 +156,33 @@ class Autocompleter(object):
         terms = provider.get_terms()
         
         # Turn each term into possible prefixes
-        prefixes = []
+        phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            prefixes = prefixes + utils.get_prefixes_for_term(norm_term)
+            prefixes = prefixes + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+
+        # Start pipeline
+        pipe = self.redis.pipeline()
 
         # Processes prefixes of object, removing object ID from sorted sets
-        for prefix in prefixes:
-            partial_prefix = ''
-            for char in prefix:
-                partial_prefix += char
-                key = '%s.%s' % (self.prefix_base_name, partial_prefix,)
-                self.redis.zrem(key, model_id)
+        for phrase in phrases:
+            phrase_prefix = ''
+            for char in phrase:
+                phrase_prefix += char
+                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
+                pipe.zrem(key, model_id)
         
         # Process normalized terms of object, removing object ID from a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_base_name, norm_term,)
-            self.redis.zrem(key, model_id,)
+            pipe.zrem(key, model_id,)
 
         # Remove model ID to data mapping
-        self.redis.hdel(self.auto_base_name, model_id)
+        pipe.hdel(self.auto_base_name, model_id)
+
+        # End pipeline
+        pipe.execute()
 
     def remove_all(self):
         """
@@ -183,22 +194,28 @@ class Autocompleter(object):
         # Get list of all exact match term for autocompleter
         norm_terms = self.redis.smembers(self.exact_set_name)
     
+        # Start pipeline
+        pipe = self.redis.pipeline()
+    
         # For each prefix, delete sorted set
         for prefix in prefixes:
             key = '%s.%s' % (self.prefix_base_name, prefix,)
-            self.redis.delete(key)
+            pipe.delete(key)
         # Delete the set of prefixes
-        self.redis.delete(self.prefix_set_name)
+        pipe.delete(self.prefix_set_name)
 
         # For each exact match term, deleting sorted set
         for norm_term in norm_terms:
             key = '%s.%s' % (self.exact_base_name, norm_term,)
-            self.redis.delete(key)
+            pipe.delete(key)
         # Delete the set of exact matches
-        self.redis.delete(self.exact_set_name)
+        pipe.delete(self.exact_set_name)
 
         # Remove the entire model ID to data mapping hash
-        self.redis.delete(self.auto_base_name)
+        pipe.delete(self.auto_base_name)
+
+        # End pipeline
+        pipe.execute()
 
     def suggest(self, term):
         """

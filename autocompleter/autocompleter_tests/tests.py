@@ -18,20 +18,26 @@ class AutocompleterTestCase(TestCase):
             db=settings.AUTOCOMPLETER_REDIS_CONNECTION['db']
         )
 
-class StoringAndRemovingTestCase(AutocompleterTestCase):
+class BasicStoringAndRemovingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data.json']
 
-    def setUp(self):
-        super(StoringAndRemovingTestCase, self).setUp()
-
     def test_store_and_remove_all(self):
-        """
-        Store and remove all objects and see if they 
-        """
         autocomp = Autocompleter("stock")
         autocomp.store_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 1000)
+        autocomp.remove_all()
+        keys = self.redis.hkeys(autocomp.auto_base_name)
+        self.assertEqual(len(keys), 0)
+
+class MultiStoringAndRemovingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data.json', 'indicator_test_data.json']
+
+    def test_store_and_remove_all(self):
+        autocomp = Autocompleter("mixed")
+        autocomp.store_all()
+        keys = self.redis.hkeys(autocomp.auto_base_name)
+        self.assertEqual(len(keys), 2000)
         autocomp.remove_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 0)
@@ -85,3 +91,23 @@ class BasicQueryingTestCase(AutocompleterTestCase):
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_RESULTS', 10)
+
+class MultiQueryingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        self.autocomp = Autocompleter("mixed")
+        self.autocomp.store_all()
+        super(MultiQueryingTestCase, self).setUp()
+    
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_basic_match(self):
+        match = self.autocomp.suggest('Aapl')
+        self.assertEqual(len(match), 1)
+
+        match = self.autocomp.suggest('US Initial Claims')
+        self.assertEqual(len(match), 1)
+"""
+
