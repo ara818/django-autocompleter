@@ -39,6 +39,5 @@ def get_phrases_for_term(term, max_words):
         for i in range(0, num_words):
             prefixes.append(' '.join(words[i:num_words]))
 
-    print prefixes
     return prefixes
         

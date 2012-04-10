@@ -19,25 +19,25 @@ class AutocompleterTestCase(TestCase):
         )
 
 class BasicStoringAndRemovingTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data.json']
+    fixtures = ['stock_test_data_small.json']
 
     def test_store_and_remove_all(self):
         autocomp = Autocompleter("stock")
         autocomp.store_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
-        self.assertEqual(len(keys), 1000)
+        self.assertEqual(len(keys), 101)
         autocomp.remove_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 0)
 
 class MultiStoringAndRemovingTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data.json', 'indicator_test_data.json']
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
     def test_store_and_remove_all(self):
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
-        self.assertEqual(len(keys), 2000)
+        self.assertEqual(len(keys), 201)
         autocomp.remove_all()
         keys = self.redis.hkeys(autocomp.auto_base_name)
         self.assertEqual(len(keys), 0)
@@ -109,5 +109,48 @@ class MultiQueryingTestCase(AutocompleterTestCase):
 
         match = self.autocomp.suggest('US Initial Claims')
         self.assertEqual(len(match), 1)
-"""
 
+class MaxNumWordsTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
+    def test_max_num_words_setting(self):
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        num_keys1 = len(prefix_keys)
+        autocomp.remove_all()
+        
+        setattr(auto_settings, 'MAX_NUM_WORDS', 6)
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        num_keys2 = len(prefix_keys)
+        autocomp.remove_all()
+        self.assertTrue(num_keys2 < num_keys1)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MAX_NUM_WORDS', None)
+
+class OutOfOrderMatchTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
+    def setUp(self):
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
+
+        self.autocomp = Autocompleter("indicator")
+        self.autocomp.store_all()
+
+        super(OutOfOrderMatchTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
+        
+    def test_out_of_order(self):
+        matches = self.autocomp.suggest('price index consumer')
+        self.assertTrue(len(matches) > 0)
+
+        matches = self.autocomp.suggest('us mortgage rate')
+        self.assertTrue(len(matches) > 0)
+        

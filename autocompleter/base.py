@@ -1,3 +1,4 @@
+import hashlib
 import redis
 
 from django.utils import simplejson as json
@@ -104,7 +105,7 @@ class Autocompleter(object):
         pipe = self.redis.pipeline()
 
         # Processes prefixes of object, placing object ID in sorted sets
-        for phrase in phrase:
+        for phrase in phrases:
             phrase_prefix = ''
             for char in phrase:
                 phrase_prefix += char
@@ -139,7 +140,6 @@ class Autocompleter(object):
             return
 
         for provider_class in provider_classes:
-            print provider_class
             for obj in provider_class.get_queryset().iterator():
                 self.store(obj)
 
@@ -155,11 +155,11 @@ class Autocompleter(object):
         model_id = provider.get_model_id()
         terms = provider.get_terms()
         
-        # Turn each term into possible prefixes
+        # Turn each normalized term into possible prefixes
         phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            prefixes = prefixes + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+            phrases = phrases + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
 
         # Start pipeline
         pipe = self.redis.pipeline()
@@ -224,12 +224,11 @@ class Autocompleter(object):
         norm_term = utils.get_normalized_term(term)
         auto_term = '%s.%s' % (self.prefix_base_name, norm_term)
         ids = self.redis.zrange(auto_term, 0, settings.MAX_RESULTS - 1)
-        if len(ids) == 0:
-            return []
+        num_ids = len(ids)
 
         # If we prioritize exact matches, we need to grab them and merge them with our
         # other matches
-        if settings.MOVE_EXACT_MATCHES_TO_TOP:
+        if num_ids > 0 and settings.MOVE_EXACT_MATCHES_TO_TOP:
             # Grab exact term match IDs
             exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
             exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
@@ -247,6 +246,30 @@ class Autocompleter(object):
         
             if len(ids) > settings.MAX_RESULTS:
                 ids = ids[:settings.MAX_RESULTS]
+        
+        # If we have less results than we need AND we are told we match words from the term
+        # out of order, we split the term up into words, look for matches of each word in term, 
+        # intersect the matched result sets and add the results to the match set
+        if num_ids < settings.MAX_RESULTS and settings.MATCH_OUT_OF_ORDER:
+            norm_term_id = hashlib.md5(norm_term).hexdigest()
+            norm_words = norm_term.split()
+            word_auto_terms = []
+            for norm_word in norm_words:
+                word_auto_term =  '%s.%s' % (self.prefix_base_name, norm_word)
+                word_auto_terms.append(word_auto_term)
+
+            pipe = self.redis.pipeline()
+            pipe.multi()
+            pipe.zinterstore(norm_term_id, word_auto_terms, aggregate='MIN')
+            pipe.zrange(norm_term_id, 0, settings.MAX_RESULTS - 1 - num_ids)
+            pipe.delete(norm_term_id)
+            results = pipe.execute()
+            ids = ids + results[1]
+        
+        # If at this point we still have no IDs, then we have return an empty result set
+        num_ids = len(ids)
+        if len(ids) == 0:
+            return []
 
         # Get match data based on our ID list
         results = self.redis.hmget(self.auto_base_name, ids)
