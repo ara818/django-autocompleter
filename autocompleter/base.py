@@ -1,13 +1,12 @@
 import hashlib
 import redis
 
-from django.utils import simplejson as json
+from django.utils import simplejson
 
-from autocompleter import registry
-from autocompleter import settings
-from autocompleter import utils
+from autocompleter import registry, settings, utils
 
 class AutocompleterProvider(object):
+    aliases_cache = None
 
     def __init__(self, obj):
         self.obj = obj
@@ -40,9 +39,30 @@ class AutocompleterProvider(object):
     
     def get_norm_terms(self):
         """
-        Normalize each term in list of terms. Will normally not have to override this.
+        Normalize each term in list of terms. Also, look to see if there are any aliases
+        for any words in the term and use them to create alternate normalized terms
+        DO NOT override this unless you know what you're doing.
         """
-        return [utils.get_normalized_term(term) for term in self.get_terms()]
+        norm_terms = [utils.get_normalized_term(term) for term in self.get_terms()]
+        aliases = self.__class__.get_norm_aliases()
+        if aliases == None:
+            return norm_terms
+
+        all_norm_terms = []
+        for norm_term in norm_terms:
+            all_norm_terms.append(norm_term)
+            
+            phrase_map = utils.get_phrase_map_for_term(norm_term)
+            for phrase in phrase_map.keys():
+                if phrase in aliases:
+                    phrase_start = phrase_map[phrase][0]
+                    phrase_end = phrase_map[phrase][1]
+                    norm_term_words = norm_term.split()
+                    norm_term_words[phrase_start:phrase_end] = [phrase]
+                    all_norm_terms.append(' '.join(norm_term_words))
+
+        print all_norm_terms
+        return all_norm_terms
 
     def get_score(self):
         """
@@ -57,12 +77,43 @@ class AutocompleterProvider(object):
         return {}
 
     @classmethod
+    def get_aliases(cls):
+        """
+        If you have aliases (i.e. 'US' = 'United States'), override this function
+        to return a dict of key value pairs. Autocompleter will also reverse these
+        aliases. So if 'US' maps to 'United States' then 'United States' will map
+        to 'US'
+        """
+        return {}
+
+    @classmethod
+    def get_norm_aliases(cls):
+        """
+        Take the dict from get_aliases() and normalize / reverse to get ready for
+        actual usage.
+        DO NOT override this unless you know what you're doing.
+        """
+        if cls.aliases_cache == None:
+            aliases = cls.get_aliases()
+            norm_aliases = {}
+
+            for key, value in cls.get_aliases().items():
+                norm_key = utils.get_normalized_term(key)
+                norm_value = utils.get_normalized_term(value)
+                norm_aliases[norm_key] = norm_value
+                norm_aliases[norm_value] = norm_key
+            cls.aliases_cache = norm_aliases
+    
+        return cls.aliases_cache
+
+    @classmethod
     def get_queryset(cls):
         """
         Get queryset representing all objects represented by this provider.
         Will normally not have to override this.
         """
         return cls.model._default_manager.all()
+    
     
 class Autocompleter(object):
     """
@@ -99,7 +150,7 @@ class Autocompleter(object):
         phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            phrases = phrases + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+            phrases = phrases + utils.get_prefix_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
 
         # Start pipeline
         pipe = self.redis.pipeline()
@@ -159,7 +210,7 @@ class Autocompleter(object):
         phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            phrases = phrases + utils.get_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+            phrases = phrases + utils.get_prefix_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
 
         # Start pipeline
         pipe = self.redis.pipeline()
@@ -280,7 +331,7 @@ class Autocompleter(object):
     
     def exact_suggest(self, term):
         """
-        Suggext matching objects exacting matching term given, given a term
+        Suggest matching objects exacting matching term given, given a term
         """
         norm_term = utils.get_normalized_term(term)
         exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
@@ -305,7 +356,7 @@ class Autocompleter(object):
             raise TypeError("Don't know what do with %s" % obj.__class__.__name__)
     
     def _serialize_data(self, data_dict):
-        return json.dumps(data_dict)
+        return simplejson.dumps(data_dict)
 
     def _deserialize_data(self, raw):
-        return json.loads(raw)
+        return simplejson.loads(raw)

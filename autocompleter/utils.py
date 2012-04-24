@@ -24,20 +24,30 @@ def get_normalized_term(term):
     term = re.sub(settings.CHARACTER_FILTER, '', term)
     return term
 
-def get_phrases_for_term(term, max_words):
+def get_prefix_phrases_for_term(term, max_words=None):
     """
     For any term, give the autocomplete prefixes
     """
     words = term.split()
     num_words = len(words)
-    prefixes = []
+    phrases = []
 
     if max_words != None:
         for i in range(0, num_words):
-            prefixes.append(' '.join(words[i:i+max_words]))
+            phrases.append(' '.join(words[i:i+max_words]))
     else:
         for i in range(0, num_words):
-            prefixes.append(' '.join(words[i:num_words]))
+            phrases.append(' '.join(words[i:num_words]))
 
-    return prefixes
+    return phrases
         
+def get_phrase_map_for_term(term):
+    words = term.split()
+    num_words = len(words)
+    phrase_map = {}
+        
+    for i in range(0, num_words-1):
+        for j in range(1, num_words):
+            phrase_map[' '.join(words[i:j])] = (i,j,)
+    
+    return phrase_map
