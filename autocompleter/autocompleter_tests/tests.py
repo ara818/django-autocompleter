@@ -60,13 +60,34 @@ class MultiQueryingTestCase(AutocompleterTestCase):
         match = self.autocomp.suggest('US Initial Claims')
         self.assertEqual(len(match), 1)
 
+class MaxNumWordsTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
+    def test_max_num_words_setting(self):
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        num_keys1 = len(prefix_keys)
+        autocomp.remove_all()
+        
+        setattr(auto_settings, 'MAX_NUM_WORDS', 6)
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        num_keys2 = len(prefix_keys)
+        autocomp.remove_all()
+        self.assertTrue(num_keys2 < num_keys1)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MAX_NUM_WORDS', None)
+
 class StockMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
         self.autocomp = Autocompleter("stock")
         self.autocomp.store_all()
-        super(StockMatchTestCases, self).setUp()
+        super(StockMatchTestCase, self).setUp()
     
     def tearDown(self):
         self.autocomp.remove_all()
@@ -110,27 +131,6 @@ class StockMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_RESULTS', 10)
 
-class MaxNumWordsTestCase(AutocompleterTestCase):
-    fixtures = ['indicator_test_data_small.json']
-
-    def test_max_num_words_setting(self):
-        autocomp = Autocompleter("indicator")
-        autocomp.store_all()
-        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
-        num_keys1 = len(prefix_keys)
-        autocomp.remove_all()
-        
-        setattr(auto_settings, 'MAX_NUM_WORDS', 6)
-        autocomp = Autocompleter("indicator")
-        autocomp.store_all()
-        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
-        num_keys2 = len(prefix_keys)
-        autocomp.remove_all()
-        self.assertTrue(num_keys2 < num_keys1)
-
-        # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MAX_NUM_WORDS', None)
-
 class IndicatorMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
@@ -156,5 +156,5 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
 
-        
-        
+    
+    

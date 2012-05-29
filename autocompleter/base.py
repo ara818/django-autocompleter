@@ -6,7 +6,7 @@ from django.utils import simplejson
 from autocompleter import registry, settings, utils
 
 class AutocompleterProvider(object):
-    aliases_cache = None
+    _alias_index = None
 
     def __init__(self, obj):
         self.obj = obj
@@ -19,7 +19,9 @@ class AutocompleterProvider(object):
     
     def get_model_id(self):
         """
-        Create a cross-model unique ID. Will normally not have to override this.
+        Create a cross-model unique ID.  Will normally not have to override this. 
+        However, for very large autocompleter datasets, it might be worthwhile to 
+        customize these for more space efficient unique keys
         """
         base_id = self.get_id()
         return "%s.%s" % (self.obj.__class__.__name__.lower(), base_id,)
@@ -51,17 +53,34 @@ class AutocompleterProvider(object):
         all_norm_terms = []
         for norm_term in norm_terms:
             all_norm_terms.append(norm_term)
-            
+            aliases = utils.get_aliasex(norm_term, alixes)
+
             phrase_map = utils.get_phrase_map_for_term(norm_term)
+
+            """
+
+
+            # XXX
+            if norm_term == 'us consumer price index':
+                print phrase_map
+                print aliases
+            # XXX
+
             for phrase in phrase_map.keys():
                 if phrase in aliases:
                     phrase_start = phrase_map[phrase][0]
                     phrase_end = phrase_map[phrase][1]
                     norm_term_words = norm_term.split()
-                    norm_term_words[phrase_start:phrase_end] = [phrase]
-                    all_norm_terms.append(' '.join(norm_term_words))
+                    norm_term_words[phrase_start:phrase_end] = [aliases[phrase]]
+                    
+                    # XXX
+                    if norm_term == 'us consumer price index':
+                        print "adding " + str(norm_term_words) + " for " + norm_term 
+                    # XXX
 
-        print all_norm_terms
+                    all_norm_terms.append(' '.join(norm_term_words))
+            """
+
         return all_norm_terms
 
     def get_score(self):
@@ -77,7 +96,7 @@ class AutocompleterProvider(object):
         return {}
 
     @classmethod
-    def get_aliases(cls):
+    def get_alias_index(cls):
         """
         If you have aliases (i.e. 'US' = 'United States'), override this function
         to return a dict of key value pairs. Autocompleter will also reverse these
@@ -87,24 +106,24 @@ class AutocompleterProvider(object):
         return {}
 
     @classmethod
-    def get_norm_aliases(cls):
+    def get_norm_alias_index(cls):
         """
         Take the dict from get_aliases() and normalize / reverse to get ready for
         actual usage.
         DO NOT override this unless you know what you're doing.
         """
-        if cls.aliases_cache == None:
+        if cls._alias_index == None:
             aliases = cls.get_aliases()
             norm_aliases = {}
 
-            for key, value in cls.get_aliases().items():
+            for key, value in cls.get_alias_index().items():
                 norm_key = utils.get_normalized_term(key)
                 norm_value = utils.get_normalized_term(value)
                 norm_aliases[norm_key] = norm_value
                 norm_aliases[norm_value] = norm_key
-            cls.aliases_cache = norm_aliases
+            cls._alias_index = norm_aliases
     
-        return cls.aliases_cache
+        return cls._alias_index
 
     @classmethod
     def get_queryset(cls):
@@ -150,7 +169,8 @@ class Autocompleter(object):
         phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            phrases = phrases + utils.get_prefix_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+            phrases = phrases + \
+                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
 
         # Start pipeline
         pipe = self.redis.pipeline()
@@ -210,7 +230,8 @@ class Autocompleter(object):
         phrases = []
         norm_terms = provider.get_norm_terms()
         for norm_term in norm_terms:
-            phrases = phrases + utils.get_prefix_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
+            phrases = phrases + \
+                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
 
         # Start pipeline
         pipe = self.redis.pipeline()

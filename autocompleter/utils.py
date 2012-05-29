@@ -24,9 +24,9 @@ def get_normalized_term(term):
     term = re.sub(settings.CHARACTER_FILTER, '', term)
     return term
 
-def get_prefix_phrases_for_term(term, max_words=None):
+def get_autocompleter_phrases_for_term(term, max_words=None):
     """
-    For any term, give the autocomplete prefixes
+    For any term, given the whole phrases the autocompleter can match on
     """
     words = term.split()
     num_words = len(words)
@@ -40,14 +40,31 @@ def get_prefix_phrases_for_term(term, max_words=None):
             phrases.append(' '.join(words[i:num_words]))
 
     return phrases
-        
+
+def get_aliases(term, aliases):
+    aliases = []
+    for phrase in phrase_map.keys():
+        if phrase in aliases:
+            pass # XXX NOT DONE
+    return aliases
+
 def get_phrase_map_for_term(term):
+    """
+    For an term, return of mapping of every phrase in the term to it's 
+    word position (start word number, end word number,) within the term
+    """
     words = term.split()
     num_words = len(words)
     phrase_map = {}
         
-    for i in range(0, num_words-1):
-        for j in range(1, num_words):
-            phrase_map[' '.join(words[i:j])] = (i,j,)
-    
+    for i in range(0, num_words):
+        for j in range(1, num_words+1):
+            if i >= j:
+                continue
+            phrase = ' '.join(words[i:j])
+            if phrase in phrase_map:
+                phrase_map[phrase].push((i,j,))
+            else:
+                phrase_map[phrase] = [(i,j,)]
     return phrase_map
+

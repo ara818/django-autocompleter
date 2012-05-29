@@ -2,7 +2,7 @@
     "pk": 1,
     "model": "autocompleter_tests.indicator",
     "fields": {
-        "score": 0,
+        "score": 10,
         "name": "US Unemployment Rate",
         "internal_name": "unemployment_rate"
     }
