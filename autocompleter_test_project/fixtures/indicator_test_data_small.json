@@ -1,6 +1,6 @@
 [{
     "pk": 1,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 10,
         "name": "US Unemployment Rate",
@@ -8,7 +8,7 @@
     }
 }, {
     "pk": 2,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Initial Claims for Unemployment Insurance",
@@ -16,7 +16,7 @@
     }
 }, {
     "pk": 3,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Average Claims for Unemployment Insurance",
@@ -24,7 +24,7 @@
     }
 }, {
     "pk": 4,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Consumer Price Index",
@@ -32,7 +32,7 @@
     }
 }, {
     "pk": 5,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Consumer Price Index: Medical Care",
@@ -40,7 +40,7 @@
     }
 }, {
     "pk": 6,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Producer Price Index",
@@ -48,7 +48,7 @@
     }
 }, {
     "pk": 7,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Core Producer Price Index",
@@ -56,7 +56,7 @@
     }
 }, {
     "pk": 8,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Consumer Sentiment",
@@ -64,7 +64,7 @@
     }
 }, {
     "pk": 9,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Personal Saving",
@@ -72,7 +72,7 @@
     }
 }, {
     "pk": 10,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Personal Consumption Expenditures",
@@ -80,7 +80,7 @@
     }
 }, {
     "pk": 11,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Disposable Personal Income",
@@ -88,7 +88,7 @@
     }
 }, {
     "pk": 12,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Durable Goods Orders",
@@ -96,7 +96,7 @@
     }
 }, {
     "pk": 13,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US 30 Year Mortgage Rate",
@@ -104,7 +104,7 @@
     }
 }, {
     "pk": 14,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US 5/1 Adjustable Rate Mortgage Rate",
@@ -112,7 +112,7 @@
     }
 }, {
     "pk": 15,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Balance on Current Account",
@@ -120,7 +120,7 @@
     }
 }, {
     "pk": 16,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "30 Year Treasury Rate",
@@ -128,7 +128,7 @@
     }
 }, {
     "pk": 17,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "10 Year Treasury Rate",
@@ -136,7 +136,7 @@
     }
 }, {
     "pk": 18,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "1 Month Treasury Rate",
@@ -144,7 +144,7 @@
     }
 }, {
     "pk": 19,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "1 Year Treasury Rate",
@@ -152,7 +152,7 @@
     }
 }, {
     "pk": 20,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "3 Year Treasury Rate",
@@ -160,7 +160,7 @@
     }
 }, {
     "pk": 21,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "5 Year Treasury Rate",
@@ -168,7 +168,7 @@
     }
 }, {
     "pk": 22,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "7 Year Treasury Rate",
@@ -176,7 +176,7 @@
     }
 }, {
     "pk": 23,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Total US Population",
@@ -184,7 +184,7 @@
     }
 }, {
     "pk": 24,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Aggregate Weekly Hours Index",
@@ -192,7 +192,7 @@
     }
 }, {
     "pk": 25,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Total Nonfarm Payrolls",
@@ -200,7 +200,7 @@
     }
 }, {
     "pk": 26,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Monetary Base",
@@ -208,7 +208,7 @@
     }
 }, {
     "pk": 27,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Discount Window Borrowings",
@@ -216,7 +216,7 @@
     }
 }, {
     "pk": 28,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Currency in Circulation",
@@ -224,7 +224,7 @@
     }
 }, {
     "pk": 29,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Effective Federal Funds Rate",
@@ -232,7 +232,7 @@
     }
 }, {
     "pk": 30,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Moody's Seasoned Aaa Corporate Bond Yield",
@@ -240,7 +240,7 @@
     }
 }, {
     "pk": 31,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "1 Month Certificate of Deposit Rate",
@@ -248,7 +248,7 @@
     }
 }, {
     "pk": 32,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "3 Month Certificate of Deposit Rate",
@@ -256,7 +256,7 @@
     }
 }, {
     "pk": 33,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "6 Month Certificate of Deposit Rate",
@@ -264,7 +264,7 @@
     }
 }, {
     "pk": 34,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "1 Month AA Financial Commercial Paper Rate",
@@ -272,7 +272,7 @@
     }
 }, {
     "pk": 35,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "3 Month AA Financial Commercial Paper Rate",
@@ -280,7 +280,7 @@
     }
 }, {
     "pk": 36,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Mortgage-Backed Securities: All Maturities",
@@ -288,7 +288,7 @@
     }
 }, {
     "pk": 37,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US M2 Money Stock (Weekly)",
@@ -296,7 +296,7 @@
     }
 }, {
     "pk": 38,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Currency Component of M1 in the US",
@@ -304,7 +304,7 @@
     }
 }, {
     "pk": 39,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Treasury Deposits",
@@ -312,7 +312,7 @@
     }
 }, {
     "pk": 40,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Government Securities at All Commercial Banks",
@@ -320,7 +320,7 @@
     }
 }, {
     "pk": 41,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Total Revolving Credit Outstanding",
@@ -328,7 +328,7 @@
     }
 }, {
     "pk": 42,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Total Non-Revolving Credit Outstanding",
@@ -336,7 +336,7 @@
     }
 }, {
     "pk": 43,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Total Investments at All US Commercial Banks",
@@ -344,7 +344,7 @@
     }
 }, {
     "pk": 44,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Total Consumer Credit Outstanding",
@@ -352,7 +352,7 @@
     }
 }, {
     "pk": 45,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Real Estate Loans at All US Commercial Banks",
@@ -360,7 +360,7 @@
     }
 }, {
     "pk": 46,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Bank Credit of All US Commercial Banks",
@@ -368,7 +368,7 @@
     }
 }, {
     "pk": 47,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Total US Public Debt",
@@ -376,7 +376,7 @@
     }
 }, {
     "pk": 48,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Foreign US Public Debt",
@@ -384,7 +384,7 @@
     }
 }, {
     "pk": 49,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Household Debt Service (Percent of Disposable Income)",
@@ -392,7 +392,7 @@
     }
 }, {
     "pk": 50,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Bank Prime Loan Rate",
@@ -400,7 +400,7 @@
     }
 }, {
     "pk": 51,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Brazilian Real Exchange Rate",
@@ -408,7 +408,7 @@
     }
 }, {
     "pk": 52,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Canadian Dollar Exchange Rate",
@@ -416,7 +416,7 @@
     }
 }, {
     "pk": 53,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Chinese Yuan Exchange Rate",
@@ -424,7 +424,7 @@
     }
 }, {
     "pk": 54,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Danish Kroner Exchange Rate",
@@ -432,7 +432,7 @@
     }
 }, {
     "pk": 55,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Hong Kong Dollar Exchange Rate",
@@ -440,7 +440,7 @@
     }
 }, {
     "pk": 56,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Indian Rupee Exchange Rate",
@@ -448,7 +448,7 @@
     }
 }, {
     "pk": 57,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Japanese Yen Exchange Rate",
@@ -456,7 +456,7 @@
     }
 }, {
     "pk": 58,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Malaysian Ringitt Exchange Rate",
@@ -464,7 +464,7 @@
     }
 }, {
     "pk": 59,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Mexican Peso Exchange Rate",
@@ -472,7 +472,7 @@
     }
 }, {
     "pk": 60,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Norwegian Krone Exchange Rate",
@@ -480,7 +480,7 @@
     }
 }, {
     "pk": 61,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Singapore Dollar Exchange Rate",
@@ -488,7 +488,7 @@
     }
 }, {
     "pk": 62,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to South African Rand Exchange Rate",
@@ -496,7 +496,7 @@
     }
 }, {
     "pk": 63,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to South Korean Won Exchange Rate",
@@ -504,7 +504,7 @@
     }
 }, {
     "pk": 64,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Sri Lankan Rupee Exchange Rate",
@@ -512,7 +512,7 @@
     }
 }, {
     "pk": 65,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Swedish Krona Exchange Rate",
@@ -520,7 +520,7 @@
     }
 }, {
     "pk": 66,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Swiss Franc Exchange Rate",
@@ -528,7 +528,7 @@
     }
 }, {
     "pk": 67,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to New Taiwan Dollar Exchange Rate",
@@ -536,7 +536,7 @@
     }
 }, {
     "pk": 68,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Thai Baht Exchange Rate",
@@ -544,7 +544,7 @@
     }
 }, {
     "pk": 69,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Australian Dollar Exchange Rate",
@@ -552,7 +552,7 @@
     }
 }, {
     "pk": 70,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Euro Exchange Rate",
@@ -560,7 +560,7 @@
     }
 }, {
     "pk": 71,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to New Zealand Dollar Exchange Rate",
@@ -568,7 +568,7 @@
     }
 }, {
     "pk": 72,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to British Pound Exchange Rate",
@@ -576,7 +576,7 @@
     }
 }, {
     "pk": 73,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Dollar to Venezuelan Bolivar Exchange Rate",
@@ -584,7 +584,7 @@
     }
 }, {
     "pk": 74,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Trade Weighted US Dollar Index: Broad",
@@ -592,7 +592,7 @@
     }
 }, {
     "pk": 75,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Trade Weighted US Dollar Index: Major Currencies",
@@ -600,7 +600,7 @@
     }
 }, {
     "pk": 76,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "Trade Weighted US Dollar Index: Other Important Trading Partners",
@@ -608,7 +608,7 @@
     }
 }, {
     "pk": 77,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "S&P 500 Operating Earnings Per Share",
@@ -616,7 +616,7 @@
     }
 }, {
     "pk": 78,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "S&P 500 Earnings Per Share",
@@ -624,7 +624,7 @@
     }
 }, {
     "pk": 79,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "S&P 500 Operating P/E Ratio",
@@ -632,7 +632,7 @@
     }
 }, {
     "pk": 80,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "S&P 500 P/E Ratio",
@@ -640,7 +640,7 @@
     }
 }, {
     "pk": 81,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ADP Total Nonfarm Payrolls",
@@ -648,7 +648,7 @@
     }
 }, {
     "pk": 82,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "VIX",
@@ -656,7 +656,7 @@
     }
 }, {
     "pk": 83,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "VXO",
@@ -664,7 +664,7 @@
     }
 }, {
     "pk": 84,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US GDP",
@@ -672,7 +672,7 @@
     }
 }, {
     "pk": 85,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Real GDP",
@@ -680,7 +680,7 @@
     }
 }, {
     "pk": 86,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Purchasing Managers Index",
@@ -688,7 +688,7 @@
     }
 }, {
     "pk": 87,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ISM Manufacturing Inventories Index",
@@ -696,7 +696,7 @@
     }
 }, {
     "pk": 88,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ISM Manufacturing Deliveries Index",
@@ -704,7 +704,7 @@
     }
 }, {
     "pk": 89,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ISM Manufacturing Employment Index",
@@ -712,7 +712,7 @@
     }
 }, {
     "pk": 90,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ISM Manufacturing Production Index",
@@ -720,7 +720,7 @@
     }
 }, {
     "pk": 91,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "ISM Manufacturing New Orders Index",
@@ -728,7 +728,7 @@
     }
 }, {
     "pk": 92,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US GDP Growth",
@@ -736,7 +736,7 @@
     }
 }, {
     "pk": 93,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Real GDP Growth",
@@ -744,7 +744,7 @@
     }
 }, {
     "pk": 94,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "S&P 500 Dividends Per Share",
@@ -752,7 +752,7 @@
     }
 }, {
     "pk": 95,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Personal Saving Rate",
@@ -760,7 +760,7 @@
     }
 }, {
     "pk": 96,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Household Financial Obligations",
@@ -768,7 +768,7 @@
     }
 }, {
     "pk": 97,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Real Personal Consumption Expenditures",
@@ -776,7 +776,7 @@
     }
 }, {
     "pk": 98,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Average Hourly Earnings",
@@ -784,7 +784,7 @@
     }
 }, {
     "pk": 99,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Industrial Production Index",
@@ -792,7 +792,7 @@
     }
 }, {
     "pk": 100,
-    "model": "autocompleter_tests.indicator",
+    "model": "autocompleter_test_project.indicator",
     "fields": {
         "score": 0,
         "name": "US Existing Home Sales",

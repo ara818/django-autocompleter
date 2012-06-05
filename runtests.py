@@ -23,7 +23,8 @@ if not settings.configured:
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.sites',
-            'autocompleter.autocompleter_tests',
+            'django_nose',
+            'autocompleter_test_project',
             'autocompleter',
         ],
         AUTOCOMPLETER_REDIS_CONNECTION = {
@@ -31,17 +32,18 @@ if not settings.configured:
             'port': 6379,
             'db': 0,
         },
+        TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     )
 
+from django_nose import NoseTestSuiteRunner
 from django.test.simple import DjangoTestSuiteRunner
-from django.test.simple import run_tests
 
 def runtests(*test_labels):
     if not test_labels:
-        test_labels = ['autocompleter_tests']
+        test_labels = ['autocompleter_test_project']
     ac_dir = os.path.join(os.path.dirname(__file__), 'autocompleter')
     sys.path.insert(0, ac_dir)
-    tr = DjangoTestSuiteRunner(verbosity=1, interactive=True)
+    tr = NoseTestSuiteRunner(verbosity=2, interactive=True)
     failures = tr.run_tests(test_labels)
     sys.exit(failures)
 

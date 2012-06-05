@@ -4,14 +4,14 @@
 import redis
 import timeit
 
-from django.test import TestCase
+from django_nose import FastFixtureTestCase
 from django.conf import settings
 
-from autocompleter_tests.models import Stock
+from autocompleter_test_project.models import Stock
 from autocompleter import registry, Autocompleter
 from autocompleter import settings as auto_settings
 
-class AutocompleterTestCase(TestCase):
+class AutocompleterTestCase(FastFixtureTestCase):
     def setUp(self):
         self.redis = redis.Redis(host=settings.AUTOCOMPLETER_REDIS_CONNECTION['host'], 
             port=settings.AUTOCOMPLETER_REDIS_CONNECTION['port'], 
