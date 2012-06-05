@@ -7,7 +7,7 @@ import timeit
 from django_nose import FastFixtureTestCase
 from django.conf import settings
 
-from autocompleter_test_project.models import Stock
+from test_app.models import Stock
 from autocompleter import registry, Autocompleter
 from autocompleter import settings as auto_settings
 
@@ -154,13 +154,13 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
 
-class IndicatorAliasedTestCase(AutocompleterTestCase):
+class IndicatorMatchAliasedTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
     def setUp(self):
         self.autocomp = Autocompleter("indicator_aliased")
         self.autocomp.store_all()
-        super(IndicatorAliasedTestCase, self).setUp()
+        super(IndicatorMatchAliasedTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()

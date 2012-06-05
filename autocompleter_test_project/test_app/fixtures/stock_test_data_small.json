@@ -1,6 +1,6 @@
 [{
     "pk": 1,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AAPL",
         "market_cap": 506686.4497,
@@ -8,7 +8,7 @@
     }
 }, {
     "pk": 2,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "XOM",
         "market_cap": 404067.6030,
@@ -16,7 +16,7 @@
     }
 }, {
     "pk": 3,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PTR",
         "market_cap": 270199.5000,
@@ -24,7 +24,7 @@
     }
 }, {
     "pk": 4,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MSFT",
         "market_cap": 269105.6382,
@@ -32,7 +32,7 @@
     }
 }, {
     "pk": 5,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "IBM",
         "market_cap": 236454.7444,
@@ -40,7 +40,7 @@
     }
 }, {
     "pk": 6,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "RDS.B",
         "market_cap": 226415.5192,
@@ -48,7 +48,7 @@
     }
 }, {
     "pk": 7,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CHL",
         "market_cap": 222140.5830,
@@ -56,7 +56,7 @@
     }
 }, {
     "pk": 8,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CVX",
         "market_cap": 218206.4636,
@@ -64,7 +64,7 @@
     }
 }, {
     "pk": 9,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "WMT",
         "market_cap": 205755.9760,
@@ -72,7 +72,7 @@
     }
 }, {
     "pk": 10,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "GE",
         "market_cap": 201011.9440,
@@ -80,7 +80,7 @@
     }
 }, {
     "pk": 11,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BRK.B",
         "market_cap": 196630.2774,
@@ -88,7 +88,7 @@
     }
 }, {
     "pk": 12,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BRK.A",
         "market_cap": 196457.2500,
@@ -96,7 +96,7 @@
     }
 }, {
     "pk": 13,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "GOOG",
         "market_cap": 194414.9725,
@@ -104,7 +104,7 @@
     }
 }, {
     "pk": 14,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "T",
         "market_cap": 184772.6800,
@@ -112,7 +112,7 @@
     }
 }, {
     "pk": 15,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PG",
         "market_cap": 184145.8476,
@@ -120,7 +120,7 @@
     }
 }, {
     "pk": 16,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "JNJ",
         "market_cap": 176795.2290,
@@ -128,7 +128,7 @@
     }
 }, {
     "pk": 17,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "WFC",
         "market_cap": 166959.9598,
@@ -136,7 +136,7 @@
     }
 }, {
     "pk": 18,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PFE",
         "market_cap": 165116.1156,
@@ -144,7 +144,7 @@
     }
 }, {
     "pk": 19,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "KO",
         "market_cap": 157873.1973,
@@ -152,7 +152,7 @@
     }
 }, {
     "pk": 20,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "JPM",
         "market_cap": 155904.5631,
@@ -160,7 +160,7 @@
     }
 }, {
     "pk": 21,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "HBC",
         "market_cap": 154820.8268,
@@ -168,7 +168,7 @@
     }
 }, {
     "pk": 22,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "ORCL",
         "market_cap": 151993.7980,
@@ -176,7 +176,7 @@
     }
 }, {
     "pk": 23,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BP",
         "market_cap": 147566.0795,
@@ -184,7 +184,7 @@
     }
 }, {
     "pk": 24,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PM",
         "market_cap": 146965.8778,
@@ -192,7 +192,7 @@
     }
 }, {
     "pk": 25,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "INTC",
         "market_cap": 137840.4400,
@@ -200,7 +200,7 @@
     }
 }, {
     "pk": 26,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "VOD",
         "market_cap": 135170.4636,
@@ -208,7 +208,7 @@
     }
 }, {
     "pk": 27,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "NVS",
         "market_cap": 131649.8410,
@@ -216,7 +216,7 @@
     }
 }, {
     "pk": 28,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "TM",
         "market_cap": 131400.6704,
@@ -224,7 +224,7 @@
     }
 }, {
     "pk": 29,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "TOT",
         "market_cap": 130904.4750,
@@ -232,7 +232,7 @@
     }
 }, {
     "pk": 30,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "ABV",
         "market_cap": 127819.9680,
@@ -240,7 +240,7 @@
     }
 }, {
     "pk": 31,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BHP",
         "market_cap": 119056.2362,
@@ -248,7 +248,7 @@
     }
 }, {
     "pk": 32,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "EC",
         "market_cap": 118099.0468,
@@ -256,7 +256,7 @@
     }
 }, {
     "pk": 33,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MRK",
         "market_cap": 114601.7920,
@@ -264,7 +264,7 @@
     }
 }, {
     "pk": 34,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "GSK",
         "market_cap": 113657.2346,
@@ -272,7 +272,7 @@
     }
 }, {
     "pk": 35,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BUD",
         "market_cap": 111689.7096,
@@ -280,7 +280,7 @@
     }
 }, {
     "pk": 36,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "VZ",
         "market_cap": 110695.6190,
@@ -288,7 +288,7 @@
     }
 }, {
     "pk": 37,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "QCOM",
         "market_cap": 107822.4201,
@@ -296,7 +296,7 @@
     }
 }, {
     "pk": 38,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CSCO",
         "market_cap": 106442.0280,
@@ -304,7 +304,7 @@
     }
 }, {
     "pk": 39,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SNP",
         "market_cap": 104987.0390,
@@ -312,7 +312,7 @@
     }
 }, {
     "pk": 40,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PBR",
         "market_cap": 103933.9539,
@@ -320,7 +320,7 @@
     }
 }, {
     "pk": 41,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "COP",
         "market_cap": 102448.4184,
@@ -328,7 +328,7 @@
     }
 }, {
     "pk": 42,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SLB",
         "market_cap": 101787.1392,
@@ -336,7 +336,7 @@
     }
 }, {
     "pk": 43,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "C",
         "market_cap": 99990.8820,
@@ -344,7 +344,7 @@
     }
 }, {
     "pk": 44,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SNY",
         "market_cap": 99845.7600,
@@ -352,7 +352,7 @@
     }
 }, {
     "pk": 45,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "UN",
         "market_cap": 99651.2000,
@@ -360,7 +360,7 @@
     }
 }, {
     "pk": 46,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MCD",
         "market_cap": 99088.6248,
@@ -368,7 +368,7 @@
     }
 }, {
     "pk": 47,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "PEP",
         "market_cap": 98729.3415,
@@ -376,7 +376,7 @@
     }
 }, {
     "pk": 48,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "ITUB",
         "market_cap": 98072.2000,
@@ -384,7 +384,7 @@
     }
 }, {
     "pk": 49,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CEO",
         "market_cap": 97293.5489,
@@ -392,7 +392,7 @@
     }
 }, {
     "pk": 50,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "UL",
         "market_cap": 97148.0000,
@@ -400,7 +400,7 @@
     }
 }, {
     "pk": 51,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "V",
         "market_cap": 95253.3515,
@@ -408,7 +408,7 @@
     }
 }, {
     "pk": 52,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AMX",
         "market_cap": 94946.8000,
@@ -416,7 +416,7 @@
     }
 }, {
     "pk": 53,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "ABT",
         "market_cap": 90274.5100,
@@ -424,7 +424,7 @@
     }
 }, {
     "pk": 54,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "STO",
         "market_cap": 89345.9730,
@@ -432,7 +432,7 @@
     }
 }, {
     "pk": 55,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SI",
         "market_cap": 85641.5300,
@@ -440,7 +440,7 @@
     }
 }, {
     "pk": 56,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "NVO",
         "market_cap": 84882.0000,
@@ -448,7 +448,7 @@
     }
 }, {
     "pk": 57,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BAC",
         "market_cap": 84809.9700,
@@ -456,7 +456,7 @@
     }
 }, {
     "pk": 58,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "E",
         "market_cap": 84352.2410,
@@ -464,7 +464,7 @@
     }
 }, {
     "pk": 59,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AMZN",
         "market_cap": 83819.5200,
@@ -472,7 +472,7 @@
     }
 }, {
     "pk": 60,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "RY",
         "market_cap": 82481.9170,
@@ -480,7 +480,7 @@
     }
 }, {
     "pk": 61,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SAP",
         "market_cap": 82073.9535,
@@ -488,7 +488,7 @@
     }
 }, {
     "pk": 62,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "OXY",
         "market_cap": 81747.2530,
@@ -496,7 +496,7 @@
     }
 }, {
     "pk": 63,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "RIO",
         "market_cap": 81540.3050,
@@ -504,7 +504,7 @@
     }
 }, {
     "pk": 64,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CMCSA",
         "market_cap": 81309.2256,
@@ -512,7 +512,7 @@
     }
 }, {
     "pk": 65,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CMCSK",
         "market_cap": 80631.3963,
@@ -520,7 +520,7 @@
     }
 }, {
     "pk": 66,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "DIS",
         "market_cap": 75884.5824,
@@ -528,7 +528,7 @@
     }
 }, {
     "pk": 67,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "UTX",
         "market_cap": 75703.8195,
@@ -536,7 +536,7 @@
     }
 }, {
     "pk": 68,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "TSM",
         "market_cap": 75668.8800,
@@ -544,7 +544,7 @@
     }
 }, {
     "pk": 69,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "TEF",
         "market_cap": 75351.6400,
@@ -552,7 +552,7 @@
     }
 }, {
     "pk": 70,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "UPS",
         "market_cap": 74458.6284,
@@ -560,7 +560,7 @@
     }
 }, {
     "pk": 71,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "HD",
         "market_cap": 74149.5170,
@@ -568,7 +568,7 @@
     }
 }, {
     "pk": 72,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "VALE",
         "market_cap": 74039.7045,
@@ -576,7 +576,7 @@
     }
 }, {
     "pk": 73,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "TD",
         "market_cap": 73610.4160,
@@ -584,7 +584,7 @@
     }
 }, {
     "pk": 74,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MTU",
         "market_cap": 72846.5955,
@@ -592,7 +592,7 @@
     }
 }, {
     "pk": 75,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CAT",
         "market_cap": 71270.4564,
@@ -600,7 +600,7 @@
     }
 }, {
     "pk": 76,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "DCM",
         "market_cap": 71200.5560,
@@ -608,7 +608,7 @@
     }
 }, {
     "pk": 77,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "HMC",
         "market_cap": 69028.0900,
@@ -616,7 +616,7 @@
     }
 }, {
     "pk": 78,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "STD",
         "market_cap": 67944.2540,
@@ -624,7 +624,7 @@
     }
 }, {
     "pk": 79,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BBL",
         "market_cap": 67497.3334,
@@ -632,7 +632,7 @@
     }
 }, {
     "pk": 80,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "KFT",
         "market_cap": 67048.1625,
@@ -640,7 +640,7 @@
     }
 }, {
     "pk": 81,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "WBK",
         "market_cap": 66464.4068,
@@ -648,7 +648,7 @@
     }
 }, {
     "pk": 82,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MO",
         "market_cap": 62638.5532,
@@ -656,7 +656,7 @@
     }
 }, {
     "pk": 83,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AXP",
         "market_cap": 61790.7360,
@@ -664,7 +664,7 @@
     }
 }, {
     "pk": 84,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CAJ",
         "market_cap": 61513.0112,
@@ -672,7 +672,7 @@
     }
 }, {
     "pk": 85,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MMM",
         "market_cap": 60832.9120,
@@ -680,7 +680,7 @@
     }
 }, {
     "pk": 86,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "DEO",
         "market_cap": 60616.4025,
@@ -688,7 +688,7 @@
     }
 }, {
     "pk": 87,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AZN",
         "market_cap": 60468.0885,
@@ -696,7 +696,7 @@
     }
 }, {
     "pk": 88,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AMGN",
         "market_cap": 59613.4854,
@@ -704,7 +704,7 @@
     }
 }, {
     "pk": 89,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "UNH",
         "market_cap": 59463.1534,
@@ -712,7 +712,7 @@
     }
 }, {
     "pk": 90,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "CVS",
         "market_cap": 59406.3932,
@@ -720,7 +720,7 @@
     }
 }, {
     "pk": 91,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "NTT",
         "market_cap": 59356.8745,
@@ -728,7 +728,7 @@
     }
 }, {
     "pk": 92,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "EMC",
         "market_cap": 59179.2396,
@@ -736,7 +736,7 @@
     }
 }, {
     "pk": 93,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BNS",
         "market_cap": 58744.9854,
@@ -744,7 +744,7 @@
     }
 }, {
     "pk": 94,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "GS",
         "market_cap": 57743.0399,
@@ -752,7 +752,7 @@
     }
 }, {
     "pk": 95,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "USB",
         "market_cap": 56717.6480,
@@ -760,7 +760,7 @@
     }
 }, {
     "pk": 96,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BMY",
         "market_cap": 55766.9823,
@@ -768,7 +768,7 @@
     }
 }, {
     "pk": 97,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "BA",
         "market_cap": 54471.3267,
@@ -776,7 +776,7 @@
     }
 }, {
     "pk": 98,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "SU",
         "market_cap": 54360.5790,
@@ -784,7 +784,7 @@
     }
 }, {
     "pk": 99,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "AIG",
         "market_cap": 53652.9650,
@@ -792,7 +792,7 @@
     }
 }, {
     "pk": 100,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "MA",
         "market_cap": 53245.4784,
@@ -800,7 +800,7 @@
     }
 }, {
     "pk": 225,
-    "model": "autocompleter_test_project.stock",
+    "model": "test_app.stock",
     "fields": {
         "symbol": "EL",
         "market_cap": 22751.4012,
