@@ -132,7 +132,7 @@ class StockMatchTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MAX_RESULTS', 10)
 
 class IndicatorMatchTestCase(AutocompleterTestCase):
-    fixtures = ['indicator_test_data_small.json']
+    fixtures = ['indicator_test_data.json']
 
     def setUp(self):
         self.autocomp = Autocompleter("indicator")
@@ -145,16 +145,33 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
     def test_out_of_order_setting(self):
         matches = self.autocomp.suggest('price index consumer')
         self.assertEqual(len(matches), 0)
-        matches = self.autocomp.suggest('us mortgage rate')
-        self.assertEqual(len(matches), 0)
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
         matches = self.autocomp.suggest('price index consumer')
         self.assertNotEqual(len(matches), 0)
-        matches = self.autocomp.suggest('us mortgage rate')
+        matches = self.autocomp.suggest('mortgage 30 rate')
         self.assertNotEqual(len(matches), 0)
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
 
-    
+class IndicatorAliasedTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
+    def setUp(self):
+        self.autocomp = Autocompleter("indicator_aliased")
+        self.autocomp.store_all()
+        super(IndicatorAliasedTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_out_of_order_setting(self):
+        matches = self.autocomp.suggest('us consumer price index')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('united states consumer price index')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('us cpi')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('united states consumer price index')
+        self.assertNotEqual(len(matches), 0)
     

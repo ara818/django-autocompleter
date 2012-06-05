@@ -1,4 +1,5 @@
 import re
+import copy
 import unicodedata
 
 from autocompleter import settings
@@ -41,30 +42,44 @@ def get_autocompleter_phrases_for_term(term, max_words=None):
 
     return phrases
 
-def get_aliases(term, aliases):
-    aliases = []
-    for phrase in phrase_map.keys():
-        if phrase in aliases:
-            pass # XXX NOT DONE
-    return aliases
 
-def get_phrase_map_for_term(term):
+def get_all_variations(term, phrase_aliases):
+    term_stack = [term]
+    term_aliases = {term : 1}
+    while len(term_stack) != 0:
+        term = term_stack.pop()
+        phrase_map = get_phrase_index_for_term(term)
+        for phrase in phrase_map.keys():
+            if phrase in phrase_aliases:
+                phrase_alias = phrase_aliases[phrase]
+                start_end = phrase_map[phrase]
+                phrase_start = start_end[0]
+                phrase_end = start_end[1]
+                term_words = term.split()
+                term_words[phrase_start:phrase_end] = [phrase_alias]
+                term_alias = ' '.join(term_words)
+                if term_alias not in term_aliases:
+                    term_aliases[term_alias] = 1
+                    term_stack.append(term_alias)
+    return term_aliases.keys()
+
+def get_phrase_index_for_term(term):
     """
-    For an term, return of mapping of every phrase in the term to it's 
-    word position (start word number, end word number,) within the term
+    For an term, return of index of every phrase in the term to it's 
+    word position (start word number, end word number,) within the term.
+
+    Note: if a phrase appears twice in a term, then the very last position
+    will be recorded. For our purposes, this works because other occurences
+    will be handled when this function is called recursively 
     """
     words = term.split()
     num_words = len(words)
     phrase_map = {}
-        
     for i in range(0, num_words):
         for j in range(1, num_words+1):
             if i >= j:
                 continue
             phrase = ' '.join(words[i:j])
-            if phrase in phrase_map:
-                phrase_map[phrase].push((i,j,))
-            else:
-                phrase_map[phrase] = [(i,j,)]
+            phrase_map[phrase] = (i,j,)
     return phrase_map
 

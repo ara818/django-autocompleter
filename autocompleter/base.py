@@ -6,7 +6,7 @@ from django.utils import simplejson
 from autocompleter import registry, settings, utils
 
 class AutocompleterProvider(object):
-    _alias_index = None
+    _phrase_aliases = None
 
     def __init__(self, obj):
         self.obj = obj
@@ -46,40 +46,13 @@ class AutocompleterProvider(object):
         DO NOT override this unless you know what you're doing.
         """
         norm_terms = [utils.get_normalized_term(term) for term in self.get_terms()]
-        aliases = self.__class__.get_norm_aliases()
-        if aliases == None:
+        phrase_aliases = self.__class__.get_norm_phrase_aliases()
+        if phrase_aliases == None:
             return norm_terms
 
         all_norm_terms = []
         for norm_term in norm_terms:
-            all_norm_terms.append(norm_term)
-            aliases = utils.get_aliasex(norm_term, alixes)
-
-            phrase_map = utils.get_phrase_map_for_term(norm_term)
-
-            """
-
-
-            # XXX
-            if norm_term == 'us consumer price index':
-                print phrase_map
-                print aliases
-            # XXX
-
-            for phrase in phrase_map.keys():
-                if phrase in aliases:
-                    phrase_start = phrase_map[phrase][0]
-                    phrase_end = phrase_map[phrase][1]
-                    norm_term_words = norm_term.split()
-                    norm_term_words[phrase_start:phrase_end] = [aliases[phrase]]
-                    
-                    # XXX
-                    if norm_term == 'us consumer price index':
-                        print "adding " + str(norm_term_words) + " for " + norm_term 
-                    # XXX
-
-                    all_norm_terms.append(' '.join(norm_term_words))
-            """
+            all_norm_terms = all_norm_terms + utils.get_all_variations(norm_term, phrase_aliases)
 
         return all_norm_terms
 
@@ -96,34 +69,33 @@ class AutocompleterProvider(object):
         return {}
 
     @classmethod
-    def get_alias_index(cls):
+    def get_phrase_aliases(cls):
         """
-        If you have aliases (i.e. 'US' = 'United States'), override this function
-        to return a dict of key value pairs. Autocompleter will also reverse these
-        aliases. So if 'US' maps to 'United States' then 'United States' will map
-        to 'US'
+        If you have aliases (i.e. 'US' = 'United States'), for phrases within 
+        terms of a particular model, override this function to return a dict of 
+        key value pairs. Autocompleter will also reverse these aliases. 
+        So if 'US' maps to 'United States' then 'United States' will map to 'US'
         """
         return {}
 
     @classmethod
-    def get_norm_alias_index(cls):
+    def get_norm_phrase_aliases(cls):
         """
         Take the dict from get_aliases() and normalize / reverse to get ready for
         actual usage.
         DO NOT override this unless you know what you're doing.
         """
-        if cls._alias_index == None:
-            aliases = cls.get_aliases()
-            norm_aliases = {}
+        if cls._phrase_aliases == None:
+            aliases = cls.get_phrase_aliases()
+            norm_phrase_aliases = {}
 
-            for key, value in cls.get_alias_index().items():
+            for key, value in cls.get_phrase_aliases().items():
                 norm_key = utils.get_normalized_term(key)
                 norm_value = utils.get_normalized_term(value)
-                norm_aliases[norm_key] = norm_value
-                norm_aliases[norm_value] = norm_key
-            cls._alias_index = norm_aliases
-    
-        return cls._alias_index
+                norm_phrase_aliases[norm_key] = norm_value
+                norm_phrase_aliases[norm_value] = norm_key
+            cls._phrase_aliases = norm_phrase_aliases
+        return cls._phrase_aliases
 
     @classmethod
     def get_queryset(cls):

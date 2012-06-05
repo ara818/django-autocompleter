@@ -57,13 +57,34 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
             'display_name' : u'%s' % (self.obj.name,),
             'search_name' : u'%s' % (self.obj.internal_name,),
         }
+
+class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
+    model = Indicator
+
+    def get_term(self):
+        return self.obj.name
+
+    def get_score(self):
+        return self.obj.score
+
+    def get_data(self):
+        return {
+            'type' : 'indicator',
+            'id' : self.obj.id,
+            'score' : self.get_score(),
+            'display_name' : u'%s' % (self.obj.name,),
+            'search_name' : u'%s' % (self.obj.internal_name,),
+        }
     
     @classmethod
-    def get_aliases(self):
+    def get_phrase_aliases(self):
         return {
-            'us' : 'united states',
-            'consumer price index' : 'cpi',
+            'US' : 'United States',
+            'Consumer Price Index' : 'CPI',
+            'Gross Domestic Product' : 'GDP',
         }
 
 registry.register_named("indicator", IndicatorAutocompleteProvider)
+registry.register_named("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register_named("mixed", IndicatorAutocompleteProvider)
+
