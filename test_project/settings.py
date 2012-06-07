@@ -29,3 +29,9 @@ AUTOCOMPLETER_REDIS_CONNECTION = {
 }
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--verbosity=2',
+    #'--with-coverage',
+    #'--cover-package=autocompleter'
+]

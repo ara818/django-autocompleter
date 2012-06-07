@@ -313,7 +313,7 @@ class Autocompleter(object):
             # If we prioritize exact matches, we need to grab them and merge them with our
             # other matches
             if num_ids > 0 and settings.MOVE_EXACT_MATCHES_TO_TOP:
-                print "got here!!!!"
+                
                 # Grab exact term match IDs
                 key = self.exact_base_name % (provider_name, norm_term,)
                 exact_ids = self.redis.zrevrange(key, 0, settings.MAX_RESULTS - 1)
@@ -341,7 +341,7 @@ class Autocompleter(object):
                     keys.append(key)
 
                 pipe = self.redis.pipeline()
-                pipe.zinterstore(norm_term_id, word_auto_terms, aggregate='MIN')
+                pipe.zinterstore(norm_term_id, keys, aggregate='MIN')
                 pipe.zrevrange(norm_term_id, 0, settings.MAX_RESULTS - 1 - num_ids)
                 pipe.delete(norm_term_id)
                 results = pipe.execute()

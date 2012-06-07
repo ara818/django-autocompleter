@@ -5,3 +5,4 @@ redis>=2.4.10
 # Only needed if you'd like to run tests
 nose
 django-nose
+coverage
