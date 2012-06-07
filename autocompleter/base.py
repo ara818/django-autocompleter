@@ -8,23 +8,21 @@ from autocompleter import registry, settings, utils
 class AutocompleterProvider(object):
     _phrase_aliases = None
 
+    provider_name = "main"
+
     def __init__(self, obj):
         self.obj = obj
 
-    def get_id(self):
+    def get_obj_id(self):
         """
-        The id for the object, should be unique for each model. Will normally not have to override this.
+        The ID for the object, should be unique for each model. 
+        Will normally not have to override this. However if model is such that
+        lots of objects have the same score, autcompleter sorts lexographically by ID
+        so it then helps to have this be a unique name representing the object instance
+        to help make the sorting of the results make sense.
+        i.e. for stock it might be stock name (assuming unique).
         """
         return str(self.obj.pk)
-    
-    def get_model_id(self):
-        """
-        Create a cross-model unique ID.  Will normally not have to override this. 
-        However, for very large autocompleter datasets, it might be worthwhile to 
-        customize these for more space efficient unique keys
-        """
-        base_id = self.get_id()
-        return "%s.%s" % (self.obj.__class__.__name__.lower(), base_id,)
 
     def get_term(self):
         """
@@ -79,11 +77,19 @@ class AutocompleterProvider(object):
         return {}
 
     @classmethod
+    def get_queryset(cls):
+        """
+        Get queryset representing all objects represented by this provider.
+        """
+        return cls.model._default_manager.all()
+  
+
+    @classmethod
     def get_norm_phrase_aliases(cls):
         """
         Take the dict from get_aliases() and normalize / reverse to get ready for
         actual usage.
-        DO NOT override this unless you know what you're doing.
+        DO NOT override this.
         """
         if cls._phrase_aliases == None:
             aliases = cls.get_phrase_aliases()
@@ -96,27 +102,27 @@ class AutocompleterProvider(object):
                 norm_phrase_aliases[norm_value] = norm_key
             cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
-
+  
     @classmethod
-    def get_queryset(cls):
+    def get_provider_name(cls):
         """
-        Get queryset representing all objects represented by this provider.
-        Will normally not have to override this.
+        A hook to get the class level provider_name variable when we have an instance.
+        DO NOT override this.
         """
-        return cls.model._default_manager.all()
-    
-    
+        print cls.provider_name
+        return cls.provider_name
+
 class Autocompleter(object):
     """
     Autocompleter class
     """
     def __init__(self, name=settings.DEFAULT_NAME):
         self.name = name
-        self.auto_base_name = 'djac.%s' % (name,)
-        self.prefix_base_name = '%s.p' % (self.auto_base_name,)
-        self.prefix_set_name = '%s.ps' % (self.auto_base_name,)
-        self.exact_base_name = '%s.e' % (self.auto_base_name,)
-        self.exact_set_name = '%s.es' % (self.auto_base_name,)
+        self.auto_base_name = 'djac.%s'
+        self.prefix_base_name = self.auto_base_name + '.p.%s'
+        self.prefix_set_base_name =  self.auto_base_name + '.ps'
+        self.exact_base_name = self.auto_base_name + '.e.%s'
+        self.exact_set_base_name = self.auto_base_name + '.es'
         
         # Make connection with Redis
         self.redis = redis.Redis(host=settings.REDIS_CONNECTION['host'], 
@@ -130,9 +136,11 @@ class Autocompleter(object):
         provider = self._get_provider(obj)
         if provider == None:
             return
-        
+        provider_name = provider.get_provider_name()
+        print provider_name
+
         # Get data from provider
-        model_id = provider.get_model_id()
+        obj_id = provider.get_obj_id()
         terms = provider.get_terms()
         score = provider.get_score()
         data = provider.get_data()
@@ -152,24 +160,30 @@ class Autocompleter(object):
             phrase_prefix = ''
             for char in phrase:
                 phrase_prefix += char
-                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
-                # Store prefix to model_id mapping, with score
-                pipe.zadd(key, model_id, score)
+                # Store prefix to obj ID mapping, with score
+                key = self.prefix_base_name % (provider_name, phrase_prefix,)
+                pipe.zadd(key, obj_id, score)
+
                 # Store autocompleter to prefix mapping so we know all prefixes
                 # of an autocompleter
-                pipe.sadd(self.prefix_set_name, phrase_prefix)
+                key =  self.prefix_set_base_name % (provider_name,)
+                pipe.sadd(key, phrase_prefix)
 
         # Process normalized term of object, placing object ID in a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_base_name, norm_term,)
-            pipe.zadd(key, model_id, score)
+            # Store exact term to obj ID mapping, with score
+            key = self.exact_base_name % (provider_name, norm_term,)
+            pipe.zadd(key, obj_id, score)
+
             # Store autocompleter to exact term mapping so we know all exact terms
             # of an autocompleter
-            pipe.sadd(self.exact_set_name, norm_term)
+            key = self.exact_set_base_name % (provider_name,)
+            pipe.sadd(key, norm_term)
 
-        # Store ID to data mapping
-        pipe.hset(self.auto_base_name, model_id, self._serialize_data(data))
+        # Store obj ID to data mapping
+        key = self.auto_base_name % (provider_name,)
+        pipe.hset(key, obj_id, self._serialize_data(data))
 
         # End pipeline
         pipe.execute()
@@ -178,6 +192,7 @@ class Autocompleter(object):
         """
         Store all objects of all providers register with this autocompleter.
         """
+        print "store alls"
         provider_classes = registry.get_all(self.name)
         if provider_classes == None:
             return
@@ -185,6 +200,62 @@ class Autocompleter(object):
         for provider_class in provider_classes:
             for obj in provider_class.get_queryset().iterator():
                 self.store(obj)
+
+    def remove_all(self):
+        """
+        Remove all objects for a given autocompleter.
+        This will clear the autocompleter even when the underlying objects don't exist.
+        """
+        providers = self._get_all_providers()
+        if providers == None:
+            return
+
+        for provider in providers:
+            provider_name = provider.provider_name
+
+            # Get list of all prefixes for autocompleter
+            prefix_set_name = self.prefix_set_base_name % (provider_name,)
+            prefixes = self.redis.smembers(prefix_set_name)
+
+            # Get list of all exact match terms for autocompleter
+            exact_set_name = self.exact_set_base_name % (provider_name,)
+            norm_terms = self.redis.smembers(exact_set_name)
+            
+            # Start pipeline
+            pipe = self.redis.pipeline()
+        
+            # For each prefix, delete sorted set
+            for prefix in prefixes:
+                key = self.prefix_base_name % (provider_name, prefix,)
+                pipe.delete(key)
+            # Delete the set of prefixes
+            pipe.delete(prefix_set_name)
+
+            # For each exact match term, deleting sorted set
+            for norm_term in norm_terms:
+                key = self.exact_base_name % (provider_name, norm_term,)
+                pipe.delete(key)
+            # Delete the set of exact matches
+            pipe.delete(exact_set_name)
+
+            # Remove the entire model ID to data mapping hash
+            pipe.delete(self.auto_base_name)
+
+            # End pipeline
+            pipe.execute()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def remove(self, obj):
         """
@@ -228,38 +299,7 @@ class Autocompleter(object):
         # End pipeline
         pipe.execute()
 
-    def remove_all(self):
-        """
-        Remove all objects for a given autocompleter.
-        This will clear the autocompleter even when the underlying objects don't exist.
-        """
-        # Get list of all prefixes for autocompleter
-        prefixes = self.redis.smembers(self.prefix_set_name)
-        # Get list of all exact match term for autocompleter
-        norm_terms = self.redis.smembers(self.exact_set_name)
-    
-        # Start pipeline
-        pipe = self.redis.pipeline()
-    
-        # For each prefix, delete sorted set
-        for prefix in prefixes:
-            key = '%s.%s' % (self.prefix_base_name, prefix,)
-            pipe.delete(key)
-        # Delete the set of prefixes
-        pipe.delete(self.prefix_set_name)
 
-        # For each exact match term, deleting sorted set
-        for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_base_name, norm_term,)
-            pipe.delete(key)
-        # Delete the set of exact matches
-        pipe.delete(self.exact_set_name)
-
-        # Remove the entire model ID to data mapping hash
-        pipe.delete(self.auto_base_name)
-
-        # End pipeline
-        pipe.execute()
 
     def suggest(self, term):
         """
@@ -340,14 +380,14 @@ class Autocompleter(object):
         return results
     
     def _get_provider(self, obj):
-        try:
-            provider_class = registry.get(self.name, type(obj))
-            if provider_class == None:
-                return None
-            return provider_class(obj)
-        except KeyError:
-            raise TypeError("Don't know what do with %s" % obj.__class__.__name__)
-    
+        provider_class = registry.get(self.name, type(obj))
+        if provider_class == None:
+            return None
+        return provider_class(obj)
+
+    def _get_all_providers(self):
+        return registry.get_all(self.name)
+
     def _serialize_data(self, data_dict):
         return simplejson.dumps(data_dict)
 

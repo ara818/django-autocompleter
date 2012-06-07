@@ -10,6 +10,11 @@ class Stock(models.Model):
 class StockAutocompleteProvider(AutocompleterProvider):
     model = Stock
 
+    provider_name = "stock"
+
+    def get_provider_id(self):
+        return "stock"
+
     def get_terms(self):
         """
         Term is the name or symbol of the company.
@@ -32,8 +37,8 @@ class StockAutocompleteProvider(AutocompleterProvider):
             'search_name' : self.obj.symbol,
         }
 
-registry.register_named("stock", StockAutocompleteProvider)
-registry.register_named("mixed", StockAutocompleteProvider)
+registry.register("stock", StockAutocompleteProvider)
+registry.register("mixed", StockAutocompleteProvider)
 
 class Indicator(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -42,6 +47,11 @@ class Indicator(models.Model):
 
 class IndicatorAutocompleteProvider(AutocompleterProvider):
     model = Indicator
+
+    provider_name = "ind"
+
+    def get_provider_id(self):
+        return "indicator"
 
     def get_term(self):
         return self.obj.name
@@ -60,6 +70,11 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
 
 class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
     model = Indicator
+
+    provider_name = "indal"
+
+    def get_provider_id(self):
+        return "indicator_aliased"
 
     def get_term(self):
         return self.obj.name
@@ -84,7 +99,7 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
             'Gross Domestic Product' : 'GDP',
         }
 
-registry.register_named("indicator", IndicatorAutocompleteProvider)
-registry.register_named("indicator_aliased", IndicatorAliasedAutocompleteProvider)
-registry.register_named("mixed", IndicatorAutocompleteProvider)
+registry.register("indicator", IndicatorAutocompleteProvider)
+registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
+registry.register("mixed", IndicatorAutocompleteProvider)
 

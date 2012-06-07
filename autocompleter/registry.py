@@ -4,44 +4,36 @@ class AutocompleterRegistry(object):
     
     def __init__(self):
         self._providers = {}
-        
-    def register_named(self, name, provider):
+
+    def register(self, name='main', provider=None):
         """
-        Register a model with a autocomplete provider.
-        A model can have a list of providers that it uses for autocomplete.
+        Register an autocompleter wit ha  provider. 
+        Each autocompleter can have multiple providers.
         """
+        if provider == None:
+            return
         if name not in self._providers:
             self._providers[name] = {}
 
         self._providers[name][provider.model] = provider
-
-    def register(self, provider):
-        """
-        Register a model with the base autocomplete provider.
-        """
-        self.register_named(settings.DEFAULT_NAME, provider)
         
-    def unregister_named(self, name, provider):
+    def unregister(self, name='main', provider=None):
         """
-        Urnegister a model with a autocomplete provider.
+        Unregister a provider from the autocompleter.
         """
+        if provider == None:
+            return
         if model_class in self._providers:
             del(self._providers[name][provider.model])
-
-    def unregister(self, provider):
-        """
-        Unregister a model with the base autocomplete provider.
-        """
-        self.unregister_named(settings.DEFAULT_NAME, provider)
     
-    def get(self, name, model):
+    def get(self, name='main', model=None):
         if name not in self._providers:
             return None
-        if model not in  self._providers[name]:
+        if model not in self._providers[name]:
             return None
         return self._providers[name][model]
 
-    def get_all(self, name):
+    def get_all(self, name='main'):
         if name not in self._providers:
             return None
         return self._providers[name].values()
