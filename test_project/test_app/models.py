@@ -26,7 +26,7 @@ class StockAutocompleteProvider(AutocompleterProvider):
         Score is company inverse of market cap, if available. 
         (High market caps get low scores so they end up first!)
         """
-        return 1.0 / self.obj.market_cap
+        return self.obj.market_cap
 
     def get_data(self):
         return {

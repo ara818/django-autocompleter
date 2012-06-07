@@ -109,7 +109,6 @@ class AutocompleterProvider(object):
         A hook to get the class level provider_name variable when we have an instance.
         DO NOT override this.
         """
-        print cls.provider_name
         return cls.provider_name
 
 class Autocompleter(object):
@@ -141,7 +140,7 @@ class Autocompleter(object):
         # Get data from provider
         obj_id = provider.get_obj_id()
         norm_terms = provider.get_norm_terms()
-        score = provider.get_score()
+        score = provider.get_score() 
         data = provider.get_data()
         
         # Turn each normalized term into possible prefixes
@@ -199,15 +198,6 @@ class Autocompleter(object):
             for obj in provider_class.get_queryset().iterator():
                 self.store(obj)
 
-    def remove_all(self):
-        """
-        Remove all objects for a given autocompleter.
-        This will clear the autocompleter even when the underlying objects don't exist.
-        """
-        providers = self._get_all_providers()
-        if providers == None:
-            return
-
     def remove(self, obj):
         """
         Remove an object from the autocompleter
@@ -236,20 +226,36 @@ class Autocompleter(object):
             phrase_prefix = ''
             for char in phrase:
                 phrase_prefix += char
-                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
-                pipe.zrem(key, model_id)
-        
+                key = self.prefix_base_name % (provider_name, phrase_prefix,)
+                pipe.zrem(key, obj_id)
+                
+                key =  self.prefix_set_base_name % (provider_name,)
+                pipe.srem(key, phrase_prefix)
+
         # Process normalized terms of object, removing object ID from a sorted set 
         # representing exact matches
         for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_base_name, norm_term,)
-            pipe.zrem(key, model_id,)
+            key = self.exact_base_name % (provider_name, norm_term,)
+            pipe.zrem(key, obj_id)
+
+            key = self.exact_set_base_name % (provider_name,)
+            pipe.srem(key, norm_term)
 
         # Remove model ID to data mapping
-        pipe.hdel(self.auto_base_name, model_id)
+        key = self.auto_base_name % (provider_name,)
+        pipe.hdel(key, obj_id)
 
         # End pipeline
         pipe.execute()
+
+    def remove_all(self):
+        """
+        Remove all objects for a given autocompleter.
+        This will clear the autocompleter even when the underlying objects don't exist.
+        """
+        providers = self._get_all_providers()
+        if providers == None:
+            return
 
         for provider in providers:
             provider_name = provider.provider_name
@@ -279,89 +285,101 @@ class Autocompleter(object):
             # Delete the set of exact matches
             pipe.delete(exact_set_name)
 
-            # Remove the entire model ID to data mapping hash
-            pipe.delete(self.auto_base_name)
+            # Remove the entire obj ID to data mapping hash
+            key = self.auto_base_name % (provider_name,)
+            pipe.delete(key)
 
             # End pipeline
             pipe.execute()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def suggest(self, term):
         """
         Suggest matching objects, given a term
         """
+        providers = self._get_all_providers()
+        if providers == None:
+            return
+
         norm_term = utils.get_normalized_term(term)
-        auto_term = '%s.%s' % (self.prefix_base_name, norm_term)
-        ids = self.redis.zrange(auto_term, 0, settings.MAX_RESULTS - 1)
-        num_ids = len(ids)
+   
+        results = []
+        for provider in providers:
+            provider_name = provider.provider_name
 
-        # If we prioritize exact matches, we need to grab them and merge them with our
-        # other matches
-        if num_ids > 0 and settings.MOVE_EXACT_MATCHES_TO_TOP:
-            # Grab exact term match IDs
-            exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
-            exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
+            key = self.prefix_base_name % (provider_name, norm_term,)
+            ids = self.redis.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+            num_ids = len(ids)
 
-            # Need to reverse exact IDs so high scores are behind low scores, since we 
-            # are inserted in front of list.
-            exact_ids.reverse()
+            # If we prioritize exact matches, we need to grab them and merge them with our
+            # other matches
+            if num_ids > 0 and settings.MOVE_EXACT_MATCHES_TO_TOP:
+                print "got here!!!!"
+                # Grab exact term match IDs
+                key = self.exact_base_name % (provider_name, norm_term,)
+                exact_ids = self.redis.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
-            # Merge exact IDs with non-exact IDs, puttting exacts IDs in front and removing
-            # from regular ID list if necessary
-            for i in exact_ids:
-                if i in ids:
-                    ids.remove(i)
-                ids.insert(0, i)
-        
-            if len(ids) > settings.MAX_RESULTS:
-                ids = ids[:settings.MAX_RESULTS]
-        
-        # If we have less results than we need AND we are told we match words from the term
-        # out of order, we split the term up into words, look for matches of each word in term, 
-        # intersect the matched result sets and add the results to the match set
-        if num_ids < settings.MAX_RESULTS and settings.MATCH_OUT_OF_ORDER:
-            norm_term_id = hashlib.md5(norm_term).hexdigest()
-            norm_words = norm_term.split()
-            word_auto_terms = []
-            for norm_word in norm_words:
-                word_auto_term =  '%s.%s' % (self.prefix_base_name, norm_word)
-                word_auto_terms.append(word_auto_term)
+                # Need to reverse exact IDs so high scores are behind low scores, since we 
+                # are inserted in front of list.
+                exact_ids.reverse()
 
-            pipe = self.redis.pipeline()
-            pipe.multi()
-            pipe.zinterstore(norm_term_id, word_auto_terms, aggregate='MIN')
-            pipe.zrange(norm_term_id, 0, settings.MAX_RESULTS - 1 - num_ids)
-            pipe.delete(norm_term_id)
-            results = pipe.execute()
-            ids = ids + results[1]
-        
-        # If at this point we still have no IDs, then we have return an empty result set
-        num_ids = len(ids)
-        if len(ids) == 0:
-            return []
+                # Merge exact IDs with non-exact IDs, puttting exacts IDs in front and removing
+                # from regular ID list if necessary
+                for i in exact_ids:
+                    if i in ids:
+                        ids.remove(i)
+                    ids.insert(0, i)
 
-        # Get match data based on our ID list
-        results = self.redis.hmget(self.auto_base_name, ids)
-        # We shouldn't have any bogus matches, but if we do clear out before we deserialize
-        results = [i for i in results if i != None]
-        results = [self._deserialize_data(i) for i in results]
+            # If we have less results than we need AND we are told we match words from the term
+            # out of order, we split the term up into words, look for matches of each word in term, 
+            # intersect the matched result sets and add the results to the match set
+            if num_ids < settings.MAX_RESULTS and settings.MATCH_OUT_OF_ORDER:
+                norm_term_id = hashlib.md5(norm_term).hexdigest()
+                norm_words = norm_term.split()
+                keys = []
+                for norm_word in norm_words:
+                    key = self.prefix_base_name % (provider_name, norm_word,)
+                    keys.append(key)
+
+                pipe = self.redis.pipeline()
+                pipe.zinterstore(norm_term_id, word_auto_terms, aggregate='MIN')
+                pipe.zrevrange(norm_term_id, 0, settings.MAX_RESULTS - 1 - num_ids)
+                pipe.delete(norm_term_id)
+                results = pipe.execute()
+                ids = ids + results[1]
+
+            # If at this point we still have no IDs, then we have nothing to do
+            if len(ids) == 0:
+                continue
+
+            # Get match data based on our ID list
+            key = self.auto_base_name % (provider_name,)
+            temp_results = self.redis.hmget(key, ids)
+            # We shouldn't have any bogus matches, but if we do clear out before we deserialize
+            temp_results = [i for i in temp_results if i != None]
+            # Now deserialize it
+            temp_results = [self._deserialize_data(i) for i in temp_results]
+            results = results + temp_results
+
         return results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     def exact_suggest(self, term):
         """
@@ -369,7 +387,7 @@ class Autocompleter(object):
         """
         norm_term = utils.get_normalized_term(term)
         exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
-        exact_ids = self.redis.zrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
+        exact_ids = self.redis.zrevrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
         if len(exact_ids) == 0:
             return []
         

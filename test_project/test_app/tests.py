@@ -23,64 +23,100 @@ class BasicStoringAndRemovingTestCase(AutocompleterTestCase):
 
     def test_store_and_remove_all(self):
         autocomp = Autocompleter("stock")
+
+        aapl = Stock.objects.get(symbol='AAPL')
+        autocomp.store(aapl)
+        keys = self.redis.hkeys('djac.stock')
+        self.assertEqual(len(keys), 1)
+
+        autocomp.remove(aapl)
+        keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+
         autocomp.store_all()
         keys = self.redis.hkeys('djac.stock')
         self.assertEqual(len(keys), 101)
-        #autocomp.remove_all()
-        #keys = self.redis.hkeys(autocomp.auto_base_name)
-        #self.assertEqual(len(keys), 0)
 
-"""
+        autocomp.remove_all()
+        keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+
 class MultiStoringAndRemovingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
     def test_store_and_remove_all(self):
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
-        keys = self.redis.hkeys(autocomp.auto_base_name)
-        self.assertEqual(len(keys), 201)
+        keys = self.redis.hkeys('djac.stock')
+        self.assertEqual(len(keys), 101)
+        keys = self.redis.hkeys('djac.ind')
+        self.assertEqual(len(keys), 100)
+
         autocomp.remove_all()
-        keys = self.redis.hkeys(autocomp.auto_base_name)
+        keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+        keys = self.redis.keys('djac.ind*')
         self.assertEqual(len(keys), 0)
 
-class MultiQueryingTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
-
-    def setUp(self):
-        self.autocomp = Autocompleter("mixed")
-        self.autocomp.store_all()
-        super(MultiQueryingTestCase, self).setUp()
-
-    def tearDown(self):
-        self.autocomp.remove_all()
-
-    def test_basic_match(self):
-        match = self.autocomp.suggest('Aapl')
-        self.assertEqual(len(match), 1)
-
-        match = self.autocomp.suggest('US Initial Claims')
-        self.assertEqual(len(match), 1)
-
-class MaxNumWordsTestCase(AutocompleterTestCase):
+class MaxNumWordsStoringTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
     def test_max_num_words_setting(self):
         autocomp = Autocompleter("indicator")
         autocomp.store_all()
-        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        prefix_keys = self.redis.keys('djac.ind.p*')
         num_keys1 = len(prefix_keys)
         autocomp.remove_all()
         
-        setattr(auto_settings, 'MAX_NUM_WORDS', 6)
+        setattr(auto_settings, 'MAX_NUM_WORDS', 3)
         autocomp = Autocompleter("indicator")
         autocomp.store_all()
-        prefix_keys = self.redis.keys('%s*' % autocomp.prefix_base_name)
+        prefix_keys = self.redis.keys('djac.ind.p*')
         num_keys2 = len(prefix_keys)
         autocomp.remove_all()
+
         self.assertTrue(num_keys2 < num_keys1)
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_NUM_WORDS', None)
+
+class MultiMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        self.autocomp = Autocompleter("mixed")
+        self.autocomp.store_all()
+        super(MultiMatchingTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+        pass
+
+    def test_basic_match(self):
+        matches = self.autocomp.suggest('Aapl')
+        self.assertEqual(len(matches), 1)
+
+        matches = self.autocomp.suggest('US Initial Claims')
+        self.assertEqual(len(matches), 1)
+
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), auto_settings.MAX_RESULTS * 2)
+
+class MultiMatchingPerfTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        self.autocomp = Autocompleter("mixed")
+        self.autocomp.store_all()
+        super(MultiMatchingPerfTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+        pass
+
+    def test_short_match(self):
+        for i in range(1, 1000):
+            matches = self.autocomp.suggest('a')
 
 class StockMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
@@ -146,6 +182,7 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
     def test_out_of_order_setting(self):
         matches = self.autocomp.suggest('price index consumer')
         self.assertEqual(len(matches), 0)
+ 
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
         matches = self.autocomp.suggest('price index consumer')
         self.assertNotEqual(len(matches), 0)
@@ -155,13 +192,13 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
 
-class IndicatorMatchAliasedTestCase(AutocompleterTestCase):
+class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
     def setUp(self):
         self.autocomp = Autocompleter("indicator_aliased")
         self.autocomp.store_all()
-        super(IndicatorMatchAliasedTestCase, self).setUp()
+        super(IndicatorAliasedMatchTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -175,4 +212,3 @@ class IndicatorMatchAliasedTestCase(AutocompleterTestCase):
         self.assertNotEqual(len(matches), 0)
         matches = self.autocomp.suggest('united states consumer price index')
         self.assertNotEqual(len(matches), 0)
-"""
