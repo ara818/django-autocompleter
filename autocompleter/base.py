@@ -137,17 +137,16 @@ class Autocompleter(object):
         if provider == None:
             return
         provider_name = provider.get_provider_name()
-        print provider_name
 
         # Get data from provider
         obj_id = provider.get_obj_id()
-        terms = provider.get_terms()
+        norm_terms = provider.get_norm_terms()
         score = provider.get_score()
         data = provider.get_data()
         
         # Turn each normalized term into possible prefixes
         phrases = []
-        norm_terms = provider.get_norm_terms()
+        
         for norm_term in norm_terms:
             phrases = phrases + \
                 utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
@@ -192,7 +191,6 @@ class Autocompleter(object):
         """
         Store all objects of all providers register with this autocompleter.
         """
-        print "store alls"
         provider_classes = registry.get_all(self.name)
         if provider_classes == None:
             return
@@ -209,6 +207,49 @@ class Autocompleter(object):
         providers = self._get_all_providers()
         if providers == None:
             return
+
+    def remove(self, obj):
+        """
+        Remove an object from the autocompleter
+        """
+        provider = self._get_provider(obj)
+        if provider == None:
+            return
+        provider_name = provider.get_provider_name()
+
+        # Get data from provider
+        obj_id = provider.get_obj_id()
+        norm_terms = provider.get_norm_terms()
+
+        # Turn each normalized term into possible prefixes
+        phrases = []
+        norm_terms = provider.get_norm_terms()
+        for norm_term in norm_terms:
+            phrases = phrases + \
+                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
+
+        # Start pipeline
+        pipe = self.redis.pipeline()
+
+        # Processes prefixes of object, removing object ID from sorted sets
+        for phrase in phrases:
+            phrase_prefix = ''
+            for char in phrase:
+                phrase_prefix += char
+                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
+                pipe.zrem(key, model_id)
+        
+        # Process normalized terms of object, removing object ID from a sorted set 
+        # representing exact matches
+        for norm_term in norm_terms:
+            key = '%s.%s' % (self.exact_base_name, norm_term,)
+            pipe.zrem(key, model_id,)
+
+        # Remove model ID to data mapping
+        pipe.hdel(self.auto_base_name, model_id)
+
+        # End pipeline
+        pipe.execute()
 
         for provider in providers:
             provider_name = provider.provider_name
@@ -257,47 +298,7 @@ class Autocompleter(object):
 
 
 
-    def remove(self, obj):
-        """
-        Remove an object from the autocompleter
-        """
-        provider = self._get_provider(obj)
-        if provider == None:
-            return
-        
-        # Get data from provider
-        model_id = provider.get_model_id()
-        terms = provider.get_terms()
-        
-        # Turn each normalized term into possible prefixes
-        phrases = []
-        norm_terms = provider.get_norm_terms()
-        for norm_term in norm_terms:
-            phrases = phrases + \
-                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
 
-        # Start pipeline
-        pipe = self.redis.pipeline()
-
-        # Processes prefixes of object, removing object ID from sorted sets
-        for phrase in phrases:
-            phrase_prefix = ''
-            for char in phrase:
-                phrase_prefix += char
-                key = '%s.%s' % (self.prefix_base_name, phrase_prefix,)
-                pipe.zrem(key, model_id)
-        
-        # Process normalized terms of object, removing object ID from a sorted set 
-        # representing exact matches
-        for norm_term in norm_terms:
-            key = '%s.%s' % (self.exact_base_name, norm_term,)
-            pipe.zrem(key, model_id,)
-
-        # Remove model ID to data mapping
-        pipe.hdel(self.auto_base_name, model_id)
-
-        # End pipeline
-        pipe.execute()
 
 
 
