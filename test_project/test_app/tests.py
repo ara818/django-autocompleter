@@ -103,7 +103,7 @@ class MultiMatchingTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), auto_settings.MAX_RESULTS * 2)
 
 class MultiMatchingPerfTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+    fixtures = ['stock_test_data.json', 'indicator_test_data.json']
 
     def setUp(self):
         self.autocomp = Autocompleter("mixed")
@@ -115,8 +115,17 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         pass
 
     def test_short_match(self):
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
+
         for i in range(1, 1000):
-            matches = self.autocomp.suggest('a')
+            matches = self.autocomp.suggest2('ma')
+
+        for i in range(1, 1000):
+            matches = self.autocomp.suggest2('price consumer')
+
+        for i in range(1, 1000):
+            matches = self.autocomp.suggest2('a')
+
 
 class StockMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
@@ -182,7 +191,7 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
     def test_out_of_order_setting(self):
         matches = self.autocomp.suggest('price index consumer')
         self.assertEqual(len(matches), 0)
- 
+
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
         matches = self.autocomp.suggest('price index consumer')
         self.assertNotEqual(len(matches), 0)
