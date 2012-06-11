@@ -6,6 +6,7 @@ from django.utils import simplejson
 
 from autocompleter import registry, settings, utils
 
+
 class AutocompleterProvider(object):
     _phrase_aliases = None
 
@@ -16,7 +17,7 @@ class AutocompleterProvider(object):
 
     def get_obj_id(self):
         """
-        The ID for the object, should be unique for each model. 
+        The ID for the object, should be unique for each model.
         Will normally not have to override this. However if model is such that
         lots of objects have the same score, autcompleter sorts lexographically by ID
         so it then helps to have this be a unique name representing the object instance
@@ -30,14 +31,14 @@ class AutocompleterProvider(object):
         The term for the object, which will support autocompletion.
         """
         return str(self.obj)
-    
+
     def get_terms(self):
         """
         Terms of the objects, which will suport autocompletion.
         Define this if an object can be searched for using more than one term.
         """
         return [self.get_term()]
-    
+
     def get_norm_terms(self):
         """
         Normalize each term in list of terms. Also, look to see if there are any aliases
@@ -70,9 +71,9 @@ class AutocompleterProvider(object):
     @classmethod
     def get_phrase_aliases(cls):
         """
-        If you have aliases (i.e. 'US' = 'United States'), for phrases within 
-        terms of a particular model, override this function to return a dict of 
-        key value pairs. Autocompleter will also reverse these aliases. 
+        If you have aliases (i.e. 'US' = 'United States'), for phrases within
+        terms of a particular model, override this function to return a dict of
+        key value pairs. Autocompleter will also reverse these aliases.
         So if 'US' maps to 'United States' then 'United States' will map to 'US'
         """
         return {}
@@ -83,7 +84,6 @@ class AutocompleterProvider(object):
         Get queryset representing all objects represented by this provider.
         """
         return cls.model._default_manager.all()
-  
 
     @classmethod
     def get_norm_phrase_aliases(cls):
@@ -93,7 +93,6 @@ class AutocompleterProvider(object):
         DO NOT override this.
         """
         if cls._phrase_aliases == None:
-            aliases = cls.get_phrase_aliases()
             norm_phrase_aliases = {}
 
             for key, value in cls.get_phrase_aliases().items():
@@ -103,7 +102,7 @@ class AutocompleterProvider(object):
                 norm_phrase_aliases[norm_value] = norm_key
             cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
-  
+
     @classmethod
     def get_provider_name(cls):
         """
@@ -111,6 +110,7 @@ class AutocompleterProvider(object):
         DO NOT override this.
         """
         return cls.provider_name
+
 
 class Autocompleter(object):
     """
@@ -120,12 +120,12 @@ class Autocompleter(object):
         self.name = name
         self.auto_base_name = 'djac.%s'
         self.prefix_base_name = self.auto_base_name + '.p.%s'
-        self.prefix_set_base_name =  self.auto_base_name + '.ps'
+        self.prefix_set_base_name = self.auto_base_name + '.ps'
         self.exact_base_name = self.auto_base_name + '.e.%s'
         self.exact_set_base_name = self.auto_base_name + '.es'
-        
+
         # Make connection with Redis
-        self.redis = redis.Redis(host=settings.REDIS_CONNECTION['host'], 
+        self.redis = redis.Redis(host=settings.REDIS_CONNECTION['host'],
             port=settings.REDIS_CONNECTION['port'], 
             db=settings.REDIS_CONNECTION['db'])
 
