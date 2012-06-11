@@ -94,13 +94,14 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
     def test_basic_match(self):
         matches = self.autocomp.suggest('Aapl')
-        self.assertEqual(len(matches), 1)
+        self.assertEqual(len(matches['stock']), 1)
 
         matches = self.autocomp.suggest('US Initial Claims')
-        self.assertEqual(len(matches), 1)
+        self.assertEqual(len(matches['ind']), 1)
 
         matches = self.autocomp.suggest('a')
-        self.assertEqual(len(matches), auto_settings.MAX_RESULTS * 2)
+        self.assertEqual(len(matches['stock']), auto_settings.MAX_RESULTS)
+        self.assertEqual(len(matches['ind']), auto_settings.MAX_RESULTS)
 
 class MultiMatchingPerfTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data.json', 'indicator_test_data.json']
