@@ -350,10 +350,13 @@ class Autocompleter(object):
                         ids.remove(j)
                     ids.insert(0, j)
 
+            # Add in out of order matches to the end of the list, where they don't already exist
             if settings.MATCH_OUT_OF_ORDER and num_words > 1:
-                ids.extend(results.pop(0))
+                for j in results.pop(0):
+                    if j not in ids:
+                        ids.append(j)
 
-            provider_results[provider_name] = ids
+            provider_results[provider_name] = ids[:settings.MAX_RESULTS]
 
         # Get the results for each provider
         pipe = self.redis.pipeline()
