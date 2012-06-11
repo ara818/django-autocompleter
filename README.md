@@ -4,4 +4,4 @@ Django completer is redis-backed autocompleter for Django. It provides, fast, se
 models with a minimum of effort.
 
 
-NOTE: Django autocompleter is undergoing a heavy rewrited. Stay tuned for full documentation and examples.
+NOTE: Django autocompleter is undergoing a heavy rewrite. Stay tuned for full documentation and examples.
