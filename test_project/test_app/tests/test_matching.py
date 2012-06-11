@@ -51,6 +51,20 @@ class StockMatchTestCase(AutocompleterTestCase):
         matches_symbol = self.autocomp.suggest('a')
         self.assertEqual(len(matches_symbol), auto_settings.MAX_RESULTS)
 
+    def test_exact_match(self):
+        """
+        Exact matching works
+        """
+        matches_symbol = self.autocomp.exact_suggest('ma')
+        self.assertEqual(len(matches_symbol), 1)
+
+    def test_no_match(self):
+        """
+        Phrases that match nothing work
+        """
+        matches_symbol = self.autocomp.suggest('gobblygook')
+        self.assertEqual(len(matches_symbol), 0)
+
     def test_dual_term_matches(self):
         """
         Items in autocompleter can match against multiple unique terms
@@ -63,7 +77,7 @@ class StockMatchTestCase(AutocompleterTestCase):
 
     def test_accented_matches(self):
         """
-        Accented terms match against both their orignal accented form, and their non-accented basic form.
+        Accented phrases match against both their orignal accented form, and their non-accented basic form.
         """
         matches = self.autocomp.suggest('estee lauder')
         self.assertEqual(len(matches), 1)

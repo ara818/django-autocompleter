@@ -293,6 +293,34 @@ class Autocompleter(object):
             # End pipeline
             pipe.execute()
 
+    def exact_suggest(self, term):
+        """
+        Suggest matching objects exacting matching term given, given a term
+        """
+        providers = self._get_all_providers()
+        if providers == None:
+            return []
+
+        num_providers = len(providers)
+        provider_results = SortedDict()
+        norm_term = utils.get_normalized_term(term)
+
+        # Get the matched result IDs
+        pipe = self.redis.pipeline()
+        for provider in providers:
+            provider_name = provider.provider_name
+            key = self.exact_base_name % (provider_name, norm_term,)
+            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+        results = pipe.execute()
+
+        # Create a dict mapping provider to result IDs
+        for i in range(0, num_providers):
+            provider_name = providers[i].provider_name
+            exact_ids = results.pop(0)
+            provider_results[provider_name] = exact_ids[:settings.MAX_RESULTS]
+
+        return self._get_results_from_ids(provider_results)
+
     def suggest(self, term):
         """
         Suggest matching objects, given a term
@@ -328,8 +356,8 @@ class Autocompleter(object):
                 pipe.zrevrange("oooresults", 0, settings.MAX_RESULTS - 1)
         results = [i for i in pipe.execute() if type(i) == list]
 
-        # Now combine the 3 different kind of ID into one unifed
-        # result ID list per provider
+        # Create a dict mapping provider to result IDs
+        # We combine the 3 different kinds of results into 1 result ID list per provider.
         for i in range(0, num_providers):
             provider_name = providers[i].provider_name
             ids = results.pop(0)
@@ -358,6 +386,14 @@ class Autocompleter(object):
 
             provider_results[provider_name] = ids[:settings.MAX_RESULTS]
 
+        return self._get_results_from_ids(provider_results)
+
+    def _get_results_from_ids(self, provider_results):
+        """
+        Given a dict mapping providers to results IDs, return
+        a dict mapping providers to results
+        """
+        num_providers = len(provider_results.keys())
         # Get the results for each provider
         pipe = self.redis.pipeline()
         for provider_name, ids in provider_results.items():
@@ -384,41 +420,6 @@ class Autocompleter(object):
     def _deserialize_data(self, raw):
         return simplejson.loads(raw)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    def exact_suggest(self, term):
-        """
-        Suggest matching objects exacting matching term given, given a term
-        """
-        norm_term = utils.get_normalized_term(term)
-        exact_auto_term = '%s.%s' % (self.exact_base_name, norm_term,)
-        exact_ids = self.redis.zrevrange(exact_auto_term, 0, settings.MAX_RESULTS - 1)
-        if len(exact_ids) == 0:
-            return []
-        
-        # Get match data based on our ID list
-        results = self.redis.hmget(self.auto_base_name, exact_ids)
-        # We shouldn't have any bogus matches, but if we do clear out before we deserialize
-        results = [i for i in results if i != None]
-        results = [self._deserialize_data(i) for i in results]
-        return results
-    
     def _get_provider(self, obj):
         provider_class = registry.get(self.name, type(obj))
         if provider_class == None:
@@ -427,5 +428,3 @@ class Autocompleter(object):
 
     def _get_all_providers(self):
         return registry.get_all(self.name)
-
-
