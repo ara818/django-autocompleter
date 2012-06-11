@@ -118,13 +118,13 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
 
         for i in range(1, 1000):
-            matches = self.autocomp.suggest2('ma')
+            matches = self.autocomp.suggest('ma')
 
         for i in range(1, 1000):
-            matches = self.autocomp.suggest2('price consumer')
+            matches = self.autocomp.suggest('price consumer')
 
         for i in range(1, 1000):
-            matches = self.autocomp.suggest2('a')
+            matches = self.autocomp.suggest('a')
 
 
 class StockMatchTestCase(AutocompleterTestCase):

@@ -1,6 +1,7 @@
 import hashlib
 import redis
 
+from django.utils.datastructures import SortedDict
 from django.utils import simplejson
 
 from autocompleter import registry, settings, utils
@@ -267,10 +268,10 @@ class Autocompleter(object):
             # Get list of all exact match terms for autocompleter
             exact_set_name = self.exact_set_base_name % (provider_name,)
             norm_terms = self.redis.smembers(exact_set_name)
-            
+
             # Start pipeline
             pipe = self.redis.pipeline()
-        
+
             # For each prefix, delete sorted set
             for prefix in prefixes:
                 key = self.prefix_base_name % (provider_name, prefix,)
@@ -298,70 +299,87 @@ class Autocompleter(object):
         """
         providers = self._get_all_providers()
         if providers == None:
-            return
+            return []
 
+        num_providers = len(providers)
+        provider_results = SortedDict()
         norm_term = utils.get_normalized_term(term)
-   
-        results = []
+        norm_words = norm_term.split()
+        num_words = len(norm_words)
+
+        # Get the matched result IDs
+        pipe = self.redis.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
 
+            # Get base autocompleter matches
             key = self.prefix_base_name % (provider_name, norm_term,)
-            ids = self.redis.zrevrange(key, 0, settings.MAX_RESULTS - 1)
-            num_ids = len(ids)
+            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
-            # If we prioritize exact matches, we need to grab them and merge them with our
-            # other matches
-            if num_ids > 0 and settings.MOVE_EXACT_MATCHES_TO_TOP:
-                
-                # Grab exact term match IDs
+            # Get exact matches
+            if settings.MOVE_EXACT_MATCHES_TO_TOP:
                 key = self.exact_base_name % (provider_name, norm_term,)
-                exact_ids = self.redis.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+                pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
-                # Need to reverse exact IDs so high scores are behind low scores, since we 
+            # Get out of order matches
+            if settings.MATCH_OUT_OF_ORDER and num_words > 1:
+                keys = [self.prefix_base_name % (provider_name, i,) for i in norm_words]
+                pipe.zinterstore("oooresults", keys, aggregate='MIN')
+                pipe.zrevrange("oooresults", 0, settings.MAX_RESULTS - 1)
+        results = [i for i in pipe.execute() if type(i) == list]
+
+        # Now combine the 3 different kind of ID into one unifed
+        # result ID list per provider
+        for i in range(0, num_providers):
+            provider_name = providers[i].provider_name
+            ids = results.pop(0)
+
+            # We merge exact matches with base matches by moving them to
+            # the head of the results
+            if settings.MOVE_EXACT_MATCHES_TO_TOP:
+                exact_ids = results.pop(0)
+
+                # Need to reverse exact IDs so high scores are behind low scores, since we
                 # are inserted in front of list.
                 exact_ids.reverse()
 
                 # Merge exact IDs with non-exact IDs, puttting exacts IDs in front and removing
                 # from regular ID list if necessary
-                for i in exact_ids:
-                    if i in ids:
-                        ids.remove(i)
-                    ids.insert(0, i)
+                for j in exact_ids:
+                    if j in ids:
+                        ids.remove(j)
+                    ids.insert(0, j)
 
-            # If we have less results than we need AND we are told we match words from the term
-            # out of order, we split the term up into words, look for matches of each word in term, 
-            # intersect the matched result sets and add the results to the match set
-            if num_ids < settings.MAX_RESULTS and settings.MATCH_OUT_OF_ORDER:
-                norm_term_id = hashlib.md5(norm_term).hexdigest()
-                norm_words = norm_term.split()
-                keys = []
-                for norm_word in norm_words:
-                    key = self.prefix_base_name % (provider_name, norm_word,)
-                    keys.append(key)
+            if settings.MATCH_OUT_OF_ORDER and num_words > 1:
+                ids.extend(results.pop(0))
 
-                pipe = self.redis.pipeline()
-                pipe.zinterstore(norm_term_id, keys, aggregate='MIN')
-                pipe.zrevrange(norm_term_id, 0, settings.MAX_RESULTS - 1 - num_ids)
-                pipe.delete(norm_term_id)
-                results = pipe.execute()
-                ids = ids + results[1]
+            provider_results[provider_name] = ids
 
-            # If at this point we still have no IDs, then we have nothing to do
-            if len(ids) == 0:
-                continue
+        # Get the results for each provider
+        pipe = self.redis.pipeline()
+        for provider_name, ids in provider_results.items():
+            if len(ids) > 0:
+                key = self.auto_base_name % (provider_name,)
+                pipe.hmget(key, ids)
+        results = pipe.execute()
 
-            # Get match data based on our ID list
-            key = self.auto_base_name % (provider_name,)
-            temp_results = self.redis.hmget(key, ids)
-            # We shouldn't have any bogus matches, but if we do clear out before we deserialize
-            temp_results = [i for i in temp_results if i != None]
-            # Now deserialize it
-            temp_results = [self._deserialize_data(i) for i in temp_results]
-            results = results + temp_results
+        # Put them in the  provider results didct
+        for provider_name, ids in provider_results.items():
+            if len(ids) > 0:
+                provider_results[provider_name] = \
+                    [self._deserialize_data(i) for i in results.pop(0) if i != None]
 
-        return results
+        # If we only have one type of provider, don't bother sending the provider dict,
+        # just the results list is sufficient
+        if num_providers == 1:
+            return provider_results.values()[0]
+        return provider_results
 
+    def _serialize_data(self, data_dict):
+        return simplejson.dumps(data_dict)
+
+    def _deserialize_data(self, raw):
+        return simplejson.loads(raw)
 
 
 
@@ -407,8 +425,4 @@ class Autocompleter(object):
     def _get_all_providers(self):
         return registry.get_all(self.name)
 
-    def _serialize_data(self, data_dict):
-        return simplejson.dumps(data_dict)
 
-    def _deserialize_data(self, raw):
-        return simplejson.loads(raw)
