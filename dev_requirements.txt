@@ -1,0 +1,4 @@
+# Packages needed if you'd like to test / develop on django-autocompleter
+nose
+django-nose
+coverage
