@@ -18,19 +18,19 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         self.autocomp.remove_all()
         pass
 
-    def test_repeated_matche(self):
+    def test_repeated_matches(self):
         """
         Matching is fast
         """
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
 
-        for i in range(1, 500):
+        for i in range(1, 1000):
             self.autocomp.suggest('ma')
 
-        for i in range(1, 500):
+        for i in range(1, 1000):
             self.autocomp.suggest('price consumer')
 
-        for i in range(1, 500):
+        for i in range(1, 1000):
             self.autocomp.suggest('a')
 
         # Must set the setting back to where it was as it will persist

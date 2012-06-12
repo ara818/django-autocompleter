@@ -1,9 +1,11 @@
 VERSION = (0, 1, 3)
 
 from autocompleter.registry import registry
-from autocompleter.base import AutocompleterProvider, Autocompleter
+from autocompleter.base import AutocompleterBase, AutocompleterProvider, Autocompleter
 
 LOADING_AUTOCOMPELTER = False
+
+
 def autodiscover():
     """
     Auto-discover INSTALLED_APPS autocompleters.py modules and fail silently when

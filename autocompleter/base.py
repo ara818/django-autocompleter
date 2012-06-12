@@ -1,13 +1,35 @@
-import hashlib
 import redis
 
 from django.utils.datastructures import SortedDict
-from django.utils import simplejson
-
+import json
 from autocompleter import registry, settings, utils
 
+REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
+    port=settings.REDIS_CONNECTION['port'],
+    db=settings.REDIS_CONNECTION['db'])
 
-class AutocompleterProvider(object):
+AUTO_BASE_NAME = 'djac.%s'
+PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
+PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
+EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
+EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
+
+
+class AutocompleterBase(object):
+    def _serialize_data(self, data_dict):
+        return json.dumps(data_dict)
+
+    def _deserialize_data(self, raw):
+        return json.loads(raw)
+
+    def _get_provider(self, name, obj):
+        provider_class = registry.get(name, type(obj))
+        if provider_class == None:
+            return None
+        return provider_class(obj)
+
+
+class AutocompleterProvider(AutocompleterBase):
     _phrase_aliases = None
 
     provider_name = "main"
@@ -20,9 +42,9 @@ class AutocompleterProvider(object):
         The ID for the object, should be unique for each model.
         Will normally not have to override this. However if model is such that
         lots of objects have the same score, autcompleter sorts lexographically by ID
-        so it then helps to have this be a unique name representing the object instance
+        so it then helps to have this be a unique textual name representing the object instance
         to help make the sorting of the results make sense.
-        i.e. for stock it might be stock name (assuming unique).
+        i.e. for stock it might be company name (assuming unique).
         """
         return str(self.obj.pk)
 
@@ -82,6 +104,7 @@ class AutocompleterProvider(object):
     def get_queryset(cls):
         """
         Get queryset representing all objects represented by this provider.
+        Will normally not have to override this.
         """
         return cls.model._default_manager.all()
 
@@ -111,48 +134,26 @@ class AutocompleterProvider(object):
         """
         return cls.provider_name
 
-
-class Autocompleter(object):
-    """
-    Autocompleter class
-    """
-    def __init__(self, name=settings.DEFAULT_NAME):
-        self.name = name
-        self.auto_base_name = 'djac.%s'
-        self.prefix_base_name = self.auto_base_name + '.p.%s'
-        self.prefix_set_base_name = self.auto_base_name + '.ps'
-        self.exact_base_name = self.auto_base_name + '.e.%s'
-        self.exact_set_base_name = self.auto_base_name + '.es'
-
-        # Make connection with Redis
-        self.redis = redis.Redis(host=settings.REDIS_CONNECTION['host'],
-            port=settings.REDIS_CONNECTION['port'], 
-            db=settings.REDIS_CONNECTION['db'])
-
-    def store(self, obj):
+    def store(self):
         """
         Add an object to the autocompleter
         """
-        provider = self._get_provider(obj)
-        if provider == None:
-            return
-        provider_name = provider.get_provider_name()
+        # Init data
+        provider_name = self.get_provider_name()
+        obj_id = self.get_obj_id()
+        norm_terms = self.get_norm_terms()
+        score = self.get_score()
+        data = self.get_data()
 
-        # Get data from provider
-        obj_id = provider.get_obj_id()
-        norm_terms = provider.get_norm_terms()
-        score = provider.get_score() 
-        data = provider.get_data()
-        
         # Turn each normalized term into possible prefixes
         phrases = []
-        
+
         for norm_term in norm_terms:
             phrases = phrases + \
                 utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
 
         # Start pipeline
-        pipe = self.redis.pipeline()
+        pipe = REDIS.pipeline()
 
         # Processes prefixes of object, placing object ID in sorted sets
         for phrase in phrases:
@@ -160,172 +161,148 @@ class Autocompleter(object):
             for char in phrase:
                 phrase_prefix += char
                 # Store prefix to obj ID mapping, with score
-                key = self.prefix_base_name % (provider_name, phrase_prefix,)
+                key = PREFIX_BASE_NAME % (provider_name, phrase_prefix,)
                 pipe.zadd(key, obj_id, score)
 
                 # Store autocompleter to prefix mapping so we know all prefixes
                 # of an autocompleter
-                key =  self.prefix_set_base_name % (provider_name,)
+                key = PREFIX_SET_BASE_NAME % (provider_name,)
                 pipe.sadd(key, phrase_prefix)
 
-        # Process normalized term of object, placing object ID in a sorted set 
+        # Process normalized term of object, placing object ID in a sorted set
         # representing exact matches
         for norm_term in norm_terms:
             # Store exact term to obj ID mapping, with score
-            key = self.exact_base_name % (provider_name, norm_term,)
+            key = EXACT_BASE_NAME % (provider_name, norm_term,)
             pipe.zadd(key, obj_id, score)
 
             # Store autocompleter to exact term mapping so we know all exact terms
             # of an autocompleter
-            key = self.exact_set_base_name % (provider_name,)
+            key = EXACT_SET_BASE_NAME % (provider_name,)
             pipe.sadd(key, norm_term)
 
         # Store obj ID to data mapping
-        key = self.auto_base_name % (provider_name,)
+        key = AUTO_BASE_NAME % (provider_name,)
         pipe.hset(key, obj_id, self._serialize_data(data))
 
         # End pipeline
         pipe.execute()
 
-    def store_all(self):
-        """
-        Store all objects of all providers register with this autocompleter.
-        """
-        provider_classes = registry.get_all(self.name)
-        if provider_classes == None:
-            return
-
-        for provider_class in provider_classes:
-            for obj in provider_class.get_queryset().iterator():
-                self.store(obj)
-
-    def remove(self, obj):
+    def remove(self):
         """
         Remove an object from the autocompleter
         """
-        provider = self._get_provider(obj)
-        if provider == None:
-            return
-        provider_name = provider.get_provider_name()
-
-        # Get data from provider
-        obj_id = provider.get_obj_id()
-        norm_terms = provider.get_norm_terms()
+        # Init data
+        provider_name = self.get_provider_name()
+        obj_id = self.get_obj_id()
+        norm_terms = self.get_norm_terms()
 
         # Turn each normalized term into possible prefixes
         phrases = []
-        norm_terms = provider.get_norm_terms()
+        norm_terms = self.get_norm_terms()
         for norm_term in norm_terms:
             phrases = phrases + \
-                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS) 
+                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
 
         # Start pipeline
-        pipe = self.redis.pipeline()
+        pipe = REDIS.pipeline()
 
         # Processes prefixes of object, removing object ID from sorted sets
         for phrase in phrases:
             phrase_prefix = ''
             for char in phrase:
                 phrase_prefix += char
-                key = self.prefix_base_name % (provider_name, phrase_prefix,)
+                key = PREFIX_BASE_NAME % (provider_name, phrase_prefix,)
                 pipe.zrem(key, obj_id)
-                
-                key =  self.prefix_set_base_name % (provider_name,)
+
+                key = PREFIX_SET_BASE_NAME % (provider_name,)
                 pipe.srem(key, phrase_prefix)
 
-        # Process normalized terms of object, removing object ID from a sorted set 
+        # Process normalized terms of object, removing object ID from a sorted set
         # representing exact matches
         for norm_term in norm_terms:
-            key = self.exact_base_name % (provider_name, norm_term,)
+            key = EXACT_BASE_NAME % (provider_name, norm_term,)
             pipe.zrem(key, obj_id)
 
-            key = self.exact_set_base_name % (provider_name,)
+            key = EXACT_SET_BASE_NAME % (provider_name,)
             pipe.srem(key, norm_term)
 
         # Remove model ID to data mapping
-        key = self.auto_base_name % (provider_name,)
+        key = AUTO_BASE_NAME % (provider_name,)
         pipe.hdel(key, obj_id)
 
         # End pipeline
         pipe.execute()
+
+
+class Autocompleter(AutocompleterBase):
+    """
+    Autocompleter class
+    """
+    def __init__(self, name=settings.DEFAULT_NAME):
+        self.name = name
+
+    def store_all(self):
+        """
+        Store all objects of all providers register with this autocompleter.
+        """
+        provider_classes = self._get_all_providers_by_autocompleter()
+        if provider_classes == None:
+            return
+
+        for provider_class in provider_classes:
+            for obj in provider_class.get_queryset().iterator():
+                provider_class(obj).store()
 
     def remove_all(self):
         """
         Remove all objects for a given autocompleter.
         This will clear the autocompleter even when the underlying objects don't exist.
         """
-        providers = self._get_all_providers()
-        if providers == None:
+        provider_classes = self._get_all_providers_by_autocompleter()
+        if provider_classes == None:
             return
 
-        for provider in providers:
-            provider_name = provider.provider_name
+        for provider_class in provider_classes:
+            provider_name = provider_class.provider_name
 
             # Get list of all prefixes for autocompleter
-            prefix_set_name = self.prefix_set_base_name % (provider_name,)
-            prefixes = self.redis.smembers(prefix_set_name)
+            prefix_set_name = PREFIX_SET_BASE_NAME % (provider_name,)
+            prefixes = REDIS.smembers(prefix_set_name)
 
             # Get list of all exact match terms for autocompleter
-            exact_set_name = self.exact_set_base_name % (provider_name,)
-            norm_terms = self.redis.smembers(exact_set_name)
+            exact_set_name = EXACT_SET_BASE_NAME % (provider_name,)
+            norm_terms = REDIS.smembers(exact_set_name)
 
             # Start pipeline
-            pipe = self.redis.pipeline()
+            pipe = REDIS.pipeline()
 
             # For each prefix, delete sorted set
             for prefix in prefixes:
-                key = self.prefix_base_name % (provider_name, prefix,)
+                key = PREFIX_BASE_NAME % (provider_name, prefix,)
                 pipe.delete(key)
             # Delete the set of prefixes
             pipe.delete(prefix_set_name)
 
             # For each exact match term, deleting sorted set
             for norm_term in norm_terms:
-                key = self.exact_base_name % (provider_name, norm_term,)
+                key = EXACT_BASE_NAME % (provider_name, norm_term,)
                 pipe.delete(key)
             # Delete the set of exact matches
             pipe.delete(exact_set_name)
 
             # Remove the entire obj ID to data mapping hash
-            key = self.auto_base_name % (provider_name,)
+            key = AUTO_BASE_NAME % (provider_name,)
             pipe.delete(key)
 
             # End pipeline
             pipe.execute()
 
-    def exact_suggest(self, term):
-        """
-        Suggest matching objects exacting matching term given, given a term
-        """
-        providers = self._get_all_providers()
-        if providers == None:
-            return []
-
-        num_providers = len(providers)
-        provider_results = SortedDict()
-        norm_term = utils.get_normalized_term(term)
-
-        # Get the matched result IDs
-        pipe = self.redis.pipeline()
-        for provider in providers:
-            provider_name = provider.provider_name
-            key = self.exact_base_name % (provider_name, norm_term,)
-            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
-        results = pipe.execute()
-
-        # Create a dict mapping provider to result IDs
-        for i in range(0, num_providers):
-            provider_name = providers[i].provider_name
-            exact_ids = results.pop(0)
-            provider_results[provider_name] = exact_ids[:settings.MAX_RESULTS]
-
-        return self._get_results_from_ids(provider_results)
-
     def suggest(self, term):
         """
         Suggest matching objects, given a term
         """
-        providers = self._get_all_providers()
+        providers = self._get_all_providers_by_autocompleter()
         if providers == None:
             return []
 
@@ -336,22 +313,22 @@ class Autocompleter(object):
         num_words = len(norm_words)
 
         # Get the matched result IDs
-        pipe = self.redis.pipeline()
+        pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
 
             # Get base autocompleter matches
-            key = self.prefix_base_name % (provider_name, norm_term,)
+            key = PREFIX_BASE_NAME % (provider_name, norm_term,)
             pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
-                key = self.exact_base_name % (provider_name, norm_term,)
+                key = EXACT_BASE_NAME % (provider_name, norm_term,)
                 pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
             # Get out of order matches
             if settings.MATCH_OUT_OF_ORDER and num_words > 1:
-                keys = [self.prefix_base_name % (provider_name, i,) for i in norm_words]
+                keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
                 pipe.zinterstore("oooresults", keys, aggregate='MIN')
                 pipe.zrevrange("oooresults", 0, settings.MAX_RESULTS - 1)
         results = [i for i in pipe.execute() if type(i) == list]
@@ -388,6 +365,34 @@ class Autocompleter(object):
 
         return self._get_results_from_ids(provider_results)
 
+    def exact_suggest(self, term):
+        """
+        Suggest matching objects exacting matching term given, given a term
+        """
+        providers = self._get_all_providers_by_autocompleter()
+        if providers == None:
+            return []
+
+        num_providers = len(providers)
+        provider_results = SortedDict()
+        norm_term = utils.get_normalized_term(term)
+
+        # Get the matched result IDs
+        pipe = REDIS.pipeline()
+        for provider in providers:
+            provider_name = provider.provider_name
+            key = EXACT_BASE_NAME % (provider_name, norm_term,)
+            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+        results = pipe.execute()
+
+        # Create a dict mapping provider to result IDs
+        for i in range(0, num_providers):
+            provider_name = providers[i].provider_name
+            exact_ids = results.pop(0)
+            provider_results[provider_name] = exact_ids[:settings.MAX_RESULTS]
+
+        return self._get_results_from_ids(provider_results)
+
     def _get_results_from_ids(self, provider_results):
         """
         Given a dict mapping providers to results IDs, return
@@ -395,10 +400,10 @@ class Autocompleter(object):
         """
         num_providers = len(provider_results.keys())
         # Get the results for each provider
-        pipe = self.redis.pipeline()
+        pipe = REDIS.pipeline()
         for provider_name, ids in provider_results.items():
             if len(ids) > 0:
-                key = self.auto_base_name % (provider_name,)
+                key = AUTO_BASE_NAME % (provider_name,)
                 pipe.hmget(key, ids)
         results = pipe.execute()
 
@@ -414,17 +419,5 @@ class Autocompleter(object):
             return provider_results.values()[0]
         return provider_results
 
-    def _serialize_data(self, data_dict):
-        return simplejson.dumps(data_dict)
-
-    def _deserialize_data(self, raw):
-        return simplejson.loads(raw)
-
-    def _get_provider(self, obj):
-        provider_class = registry.get(self.name, type(obj))
-        if provider_class == None:
-            return None
-        return provider_class(obj)
-
-    def _get_all_providers(self):
-        return registry.get_all(self.name)
+    def _get_all_providers_by_autocompleter(self):
+        return registry.get_all_by_autocompleter(self.name)
