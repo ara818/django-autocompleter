@@ -76,5 +76,8 @@ class AutocompleterSignalRegistry(object):
         post_delete.connect(remove_obj_from_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 
+    def unregister(self, model):
+        post_save.disconnect(add_obj_to_autocompleter, sender=model)
+        post_delete.disconnect(remove_obj_from_autocompleter, sender=model)
 
 signal_registry = AutocompleterSignalRegistry()

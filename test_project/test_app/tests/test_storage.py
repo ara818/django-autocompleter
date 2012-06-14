@@ -17,7 +17,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = AutocompleterBase()
 
         aapl = Stock.objects.get(symbol='AAPL')
-        provider = autocomp.get_provider("stock", aapl)
+        provider = autocomp._get_provider("stock", aapl)
 
         provider.store()
         keys = self.redis.hkeys('djac.stock')
@@ -38,6 +38,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 101)
 
         autocomp.remove_all()
+        print "hihihi"
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
 
@@ -104,4 +105,3 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         aapl.delete()
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
-

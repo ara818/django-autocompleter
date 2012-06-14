@@ -260,7 +260,10 @@ class Autocompleter(AutocompleterBase):
         """
         provider_classes = self._get_all_providers_by_autocompleter()
         if provider_classes == None:
+            print "fuck me"
             return
+        print "shit"
+        print provider_classes
 
         for provider_class in provider_classes:
             provider_name = provider_class.provider_name
