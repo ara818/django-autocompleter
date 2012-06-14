@@ -1,6 +1,6 @@
 VERSION = (0, 1, 3)
 
-from autocompleter.registry import registry
+from autocompleter.registry import registry, signal_registry
 from autocompleter.base import AutocompleterBase, AutocompleterProvider, Autocompleter
 
 LOADING_AUTOCOMPELTER = False

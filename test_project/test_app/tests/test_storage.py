@@ -3,7 +3,7 @@
 
 from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock
-from autocompleter import AutocompleterBase, Autocompleter
+from autocompleter import AutocompleterBase, Autocompleter, signal_registry
 from autocompleter import settings as auto_settings
 
 
@@ -84,3 +84,24 @@ class MaxNumWordsStoringTestCase(AutocompleterTestCase):
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_NUM_WORDS', None)
+
+
+class SignalBasedStoringTestCase(AutocompleterTestCase):
+    def test_listener(self):
+        """
+        Turning on signals will automatically add and remove and object from the autocompleter
+        """
+        aapl = Stock(symbol='AAPL', name='Apple', market_cap=50)
+        aapl.save()
+        keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+
+        signal_registry.register(Stock)
+        aapl.save()
+        keys = self.redis.keys('djac.stock*')
+        self.assertNotEqual(len(keys), 0)
+
+        aapl.delete()
+        keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+

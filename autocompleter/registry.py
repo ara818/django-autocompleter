@@ -1,7 +1,7 @@
-from autocompleter import settings
+from django.db.models.signals import post_save, post_delete
+
 
 class AutocompleterRegistry(object):
-    
     def __init__(self):
         self._providers_by_ac = {}
         self._providers_by_model = {}
@@ -16,10 +16,11 @@ class AutocompleterRegistry(object):
         if name not in self._providers_by_ac:
             self._providers_by_ac[name] = {}
         if  provider.model not in self._providers_by_model:
-            self._providers_by_model[provider.model] = {}
+            self._providers_by_model[provider.model] = []
 
         self._providers_by_ac[name][provider.model] = provider
-        self._providers_by_model[provider.model][name] = provider
+        if provider not in self._providers_by_model[provider.model]:
+            self._providers_by_model[provider.model].append(provider)
 
     def unregister(self, name='main', provider=None):
         """
@@ -31,8 +32,8 @@ class AutocompleterRegistry(object):
             provider.model in self._providers_by_ac[name]:
             del self._providers_by_ac[name][provider.model]
         if provider.model in self._providers_by_model and \
-            name in self._providers_by_model[provider.model]:
-            del self._providers_by_model[name][provider.model]
+            provider in self._providers_by_model[provider.model]:
+            self._providers_by_model[provider.model].remove(provider)
 
     def get(self, name='main', model=None):
         if name not in self._providers_by_ac:
@@ -51,7 +52,29 @@ class AutocompleterRegistry(object):
             return None
         if model not in self._providers_by_model:
             return None
-        return self._providers_by_model[model].values()
+        return self._providers_by_model[model]
+
 
 registry = AutocompleterRegistry()
 
+
+def add_obj_to_autocompleter(sender, instance, created, **kwargs):
+    providers = registry.get_all_by_model(sender)
+    for provider in providers:
+        provider(instance).store()
+
+def remove_obj_from_autocompleter(sender, instance, **kwargs):
+    providers = registry.get_all_by_model(sender)
+    for provider in providers:
+        provider(instance).remove()
+
+
+class AutocompleterSignalRegistry(object):
+    def register(self, model):
+        post_save.connect(add_obj_to_autocompleter, sender=model,
+            dispatch_uid='autocompleter.%s.add' % (model))
+        post_delete.connect(remove_obj_from_autocompleter,
+            sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
+
+
+signal_registry = AutocompleterSignalRegistry()

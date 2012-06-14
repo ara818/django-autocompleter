@@ -1,11 +1,13 @@
 from django.conf import settings
 
-REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
+DEFAULT_NAME = "main"
 
-DEFAULT_NAME = getattr(settings, 'AUTOCOMPLETER_DEFAULT_NAME', '__default__')
+# Basic set up
+REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
 SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
 
+# Matching
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
 MAX_NUM_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_NUM_WORDS', None)

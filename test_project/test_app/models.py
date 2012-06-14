@@ -1,11 +1,13 @@
 from django.db import models
 
-from autocompleter import registry, AutocompleterProvider, Autocompleter
+from autocompleter import AutocompleterProvider, registry, signal_registry
+
 
 class Stock(models.Model):
     symbol = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=200)
     market_cap = models.FloatField(null=True, blank=True)
+
 
 class StockAutocompleteProvider(AutocompleterProvider):
     model = Stock
@@ -19,31 +21,32 @@ class StockAutocompleteProvider(AutocompleterProvider):
         """
         Term is the name or symbol of the company.
         """
-        return [self.obj.name, self.obj.symbol,]
+        return [self.obj.name, self.obj.symbol]
 
     def get_score(self):
         """
-        Score is company inverse of market cap, if available. 
-        (High market caps get low scores so they end up first!)
+        Larger companies should end up higher in search results.
         """
         return self.obj.market_cap
 
     def get_data(self):
         return {
-            'type' : 'stock',
-            'id' : self.obj.id,
-            'score' : self.get_score(),
-            'display_name' : u'%s (%s)' % (self.obj.name, self.obj.symbol),
-            'search_name' : self.obj.symbol,
+            'type': 'stock',
+            'id': self.obj.id,
+            'score': self.get_score(),
+            'display_name': u'%s (%s)' % (self.obj.name, self.obj.symbol),
+            'search_name': self.obj.symbol,
         }
 
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
 
+
 class Indicator(models.Model):
     name = models.CharField(max_length=200, unique=True)
     internal_name = models.CharField(max_length=200, unique=True)
     score = models.FloatField(null=True, blank=True)
+
 
 class IndicatorAutocompleteProvider(AutocompleterProvider):
     model = Indicator
@@ -61,12 +64,13 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
 
     def get_data(self):
         return {
-            'type' : 'indicator',
-            'id' : self.obj.id,
-            'score' : self.get_score(),
-            'display_name' : u'%s' % (self.obj.name,),
-            'search_name' : u'%s' % (self.obj.internal_name,),
+            'type': 'indicator',
+            'id': self.obj.id,
+            'score': self.get_score(),
+            'display_name': u'%s' % (self.obj.name,),
+            'search_name': u'%s' % (self.obj.internal_name,),
         }
+
 
 class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
     model = Indicator
@@ -84,22 +88,21 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
 
     def get_data(self):
         return {
-            'type' : 'indicator',
-            'id' : self.obj.id,
-            'score' : self.get_score(),
-            'display_name' : u'%s' % (self.obj.name,),
-            'search_name' : u'%s' % (self.obj.internal_name,),
+            'type': 'indicator',
+            'id': self.obj.id,
+            'score': self.get_score(),
+            'display_name': u'%s' % (self.obj.name,),
+            'search_name': u'%s' % (self.obj.internal_name,),
         }
-    
+
     @classmethod
     def get_phrase_aliases(self):
         return {
-            'US' : 'United States',
-            'Consumer Price Index' : 'CPI',
-            'Gross Domestic Product' : 'GDP',
+            'US': 'United States',
+            'Consumer Price Index': 'CPI',
+            'Gross Domestic Product': 'GDP',
         }
 
 registry.register("indicator", IndicatorAutocompleteProvider)
 registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register("mixed", IndicatorAutocompleteProvider)
-
