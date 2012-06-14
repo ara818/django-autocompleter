@@ -63,6 +63,7 @@ def add_obj_to_autocompleter(sender, instance, created, **kwargs):
     for provider in providers:
         provider(instance).store()
 
+
 def remove_obj_from_autocompleter(sender, instance, **kwargs):
     providers = registry.get_all_by_model(sender)
     for provider in providers:
@@ -77,7 +78,9 @@ class AutocompleterSignalRegistry(object):
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 
     def unregister(self, model):
-        post_save.disconnect(add_obj_to_autocompleter, sender=model)
-        post_delete.disconnect(remove_obj_from_autocompleter, sender=model)
+        post_save.disconnect(add_obj_to_autocompleter,
+            sender=model, dispatch_uid='autocompleter.%s.add' % (model))
+        post_delete.disconnect(remove_obj_from_autocompleter,
+            sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 
 signal_registry = AutocompleterSignalRegistry()

@@ -38,7 +38,6 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 101)
 
         autocomp.remove_all()
-        print "hihihi"
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
 
@@ -98,6 +97,7 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 0)
 
         signal_registry.register(Stock)
+
         aapl.save()
         keys = self.redis.keys('djac.stock*')
         self.assertNotEqual(len(keys), 0)
@@ -105,3 +105,5 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         aapl.delete()
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
+
+        signal_registry.unregister(Stock)
