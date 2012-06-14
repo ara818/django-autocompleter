@@ -92,12 +92,12 @@ class StockMatchTestCase(AutocompleterTestCase):
         MOVE_EXACT_MATCHES_TO_TOP works
         """
         matches = self.autocomp.suggest('Ma')
-        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
         matches2 = self.autocomp.suggest('Ma')
         self.assertNotEqual(matches[0]['search_name'], matches2[0]['search_name'])
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
 
     def test_max_results_setting(self):
         """
