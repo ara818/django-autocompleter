@@ -112,6 +112,38 @@ class StockMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_RESULTS', 10)
 
+    def test_caching(self):
+        """
+        Caching works
+        """
+        matches = self.autocomp.suggest('a')
+
+        setattr(auto_settings, 'CACHE_TIMEOUT', 3600)
+
+        for i in range(0, 3):
+            matches2 = self.autocomp.suggest('a')
+
+        self.assertEqual(len(matches), len(matches2))
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'CACHE_TIMEOUT', 0)
+
+    def test_exact_caching(self):
+        """
+        Exact caching works
+        """
+        matches = self.autocomp.exact_suggest('aapl')
+
+        setattr(auto_settings, 'CACHE_TIMEOUT', 3600)
+
+        for i in range(0, 10):
+            matches2 = self.autocomp.exact_suggest('aapl')
+
+        self.assertEqual(len(matches), len(matches2))
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'CACHE_TIMEOUT', 0)
+
 
 class IndicatorMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']

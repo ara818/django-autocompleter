@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, pre_save, post_delete
 
 
 class AutocompleterRegistry(object):
@@ -59,12 +59,29 @@ registry = AutocompleterRegistry()
 
 
 def add_obj_to_autocompleter(sender, instance, created, **kwargs):
+    if instance == None:
+        return
+
     providers = registry.get_all_by_model(sender)
     for provider in providers:
         provider(instance).store()
 
 
+def remove_old_obj_from_autocompleter(sender, instance, **kwargs):
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+
+        providers = registry.get_all_by_model(sender)
+        for provider in providers:
+            provider(old_instance).remove()
+    except sender.DoesNotExist:
+        return
+
+
 def remove_obj_from_autocompleter(sender, instance, **kwargs):
+    if instance == None:
+        return
+
     providers = registry.get_all_by_model(sender)
     for provider in providers:
         provider(instance).remove()
@@ -74,12 +91,16 @@ class AutocompleterSignalRegistry(object):
     def register(self, model):
         post_save.connect(add_obj_to_autocompleter, sender=model,
             dispatch_uid='autocompleter.%s.add' % (model))
+        pre_save.connect(remove_old_obj_from_autocompleter, sender=model,
+            dispatch_uid='autocompleter.%s.remoe_old' % (model))
         post_delete.connect(remove_obj_from_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 
     def unregister(self, model):
         post_save.disconnect(add_obj_to_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.add' % (model))
+        pre_save.disconnect(remove_old_obj_from_autocompleter, sender=model,
+            dispatch_uid='autocompleter.%s.remoe_old' % (model))
         post_delete.disconnect(remove_obj_from_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 

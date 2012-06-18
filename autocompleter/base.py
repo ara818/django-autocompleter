@@ -9,6 +9,8 @@ REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
     db=settings.REDIS_CONNECTION['db'])
 
 AUTO_BASE_NAME = 'djac.%s'
+CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s'
+EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
 PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
 PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
 EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
@@ -16,8 +18,8 @@ EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
 
 
 class AutocompleterBase(object):
-    def _serialize_data(self, data_dict):
-        return json.dumps(data_dict)
+    def _serialize_data(self, data):
+        return json.dumps(data)
 
     def _deserialize_data(self, raw):
         return json.loads(raw)
@@ -297,6 +299,15 @@ class Autocompleter(AutocompleterBase):
             # End pipeline
             pipe.execute()
 
+        # Just to be extra super clean, let's delete all cached results
+        # for this autocompleter
+        cache_key = CACHE_BASE_NAME % (self.name, '*',)
+        exact_cache_key = EXACT_CACHE_BASE_NAME % (self.name, '*',)
+
+        keys = REDIS.keys(cache_key) + REDIS.keys(exact_cache_key)
+        if len(keys) > 0:
+            REDIS.delete(*keys)
+
     def suggest(self, term):
         """
         Suggest matching objects, given a term
@@ -305,9 +316,15 @@ class Autocompleter(AutocompleterBase):
         if providers == None:
             return []
 
+        norm_term = utils.get_normalized_term(term)
+        cache_key = CACHE_BASE_NAME % (self.name, norm_term,)
+
+        # If we have a cached version of the search results available, return it!
+        if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
+            return self._deserialize_data(REDIS.get(cache_key))
+
         num_providers = len(providers)
         provider_results = SortedDict()
-        norm_term = utils.get_normalized_term(term)
         norm_words = norm_term.split()
         num_words = len(norm_words)
 
@@ -362,7 +379,14 @@ class Autocompleter(AutocompleterBase):
 
             provider_results[provider_name] = ids[:settings.MAX_RESULTS]
 
-        return self._get_results_from_ids(provider_results)
+        results = self._get_results_from_ids(provider_results)
+
+        # If told to, cache the final results for CACHE_TIMEOUT secnds
+        if settings.CACHE_TIMEOUT:
+            REDIS.set(cache_key, self._serialize_data(results))
+            REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
+
+        return results
 
     def exact_suggest(self, term):
         """
@@ -372,9 +396,15 @@ class Autocompleter(AutocompleterBase):
         if providers == None:
             return []
 
+        norm_term = utils.get_normalized_term(term)
+        cache_key = EXACT_CACHE_BASE_NAME % (self.name, norm_term,)
+
+        # If we have a cached version of the search results available, return it!
+        if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
+            return self._deserialize_data(REDIS.get(cache_key))
+
         num_providers = len(providers)
         provider_results = SortedDict()
-        norm_term = utils.get_normalized_term(term)
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
@@ -390,7 +420,13 @@ class Autocompleter(AutocompleterBase):
             exact_ids = results.pop(0)
             provider_results[provider_name] = exact_ids[:settings.MAX_RESULTS]
 
-        return self._get_results_from_ids(provider_results)
+        results = self._get_results_from_ids(provider_results)
+
+        # If told to, cache the final results for CACHE_TIMEOUT secnds
+        if settings.CACHE_TIMEOUT:
+            REDIS.set(cache_key, self._serialize_data(results))
+            REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
+        return results
 
     def _get_results_from_ids(self, provider_results):
         """
