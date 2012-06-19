@@ -1,12 +1,13 @@
 from django.db.models.signals import post_save, pre_save, post_delete
 
+from autocompleter import settings
 
 class AutocompleterRegistry(object):
     def __init__(self):
         self._providers_by_ac = {}
         self._providers_by_model = {}
 
-    def register(self, name='main', provider=None):
+    def register(self, name=settings.DEFAULT_NAME, provider=None):
         """
         Register an autocompleter wit ha  provider.
         Each autocompleter can have multiple providers.
@@ -22,7 +23,7 @@ class AutocompleterRegistry(object):
         if provider not in self._providers_by_model[provider.model]:
             self._providers_by_model[provider.model].append(provider)
 
-    def unregister(self, name='main', provider=None):
+    def unregister(self, name=settings.DEFAULT_NAME, provider=None):
         """
         Unregister a provider from the autocompleter.
         """
@@ -35,14 +36,14 @@ class AutocompleterRegistry(object):
             provider in self._providers_by_model[provider.model]:
             self._providers_by_model[provider.model].remove(provider)
 
-    def get(self, name='main', model=None):
+    def get(self, name=settings.DEFAULT_NAME, model=None):
         if name not in self._providers_by_ac:
             return None
         if model not in self._providers_by_ac[name]:
             return None
         return self._providers_by_ac[name][model]
 
-    def get_all_by_autocompleter(self, name='main'):
+    def get_all_by_autocompleter(self, name=settings.DEFAULT_NAME):
         if name not in self._providers_by_ac:
             return None
         return self._providers_by_ac[name].values()

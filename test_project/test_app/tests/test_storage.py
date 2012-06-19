@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock
-from autocompleter import AutocompleterBase, Autocompleter, signal_registry
+from test_app.models import Stock, StockAutocompleteProvider
+from autocompleter import AutocompleterBase, Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
 
 
@@ -166,3 +166,16 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 0)
 
         signal_registry.unregister(Stock)
+
+    def test_register(self):
+        """
+        Register/Unregister works
+        """
+        registry.unregister("stock", StockAutocompleteProvider)
+        providers = registry.get_all_by_autocompleter("stock")
+        self.assertEqual(len(providers), 0)
+
+        # Have to leave things the way models.py init-ed them for other tests!
+        registry.register("stock", StockAutocompleteProvider)
+        providers = registry.get_all_by_autocompleter("stock")
+        self.assertEqual(len(providers), 1)
