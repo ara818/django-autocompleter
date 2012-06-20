@@ -32,8 +32,8 @@ class AutocompleterBase(object):
 
 
 class AutocompleterProvider(AutocompleterBase):
-    _phrase_aliases = None
     provider_name = None
+    _phrase_aliases = None
 
     def __init__(self, obj):
         self.obj = obj

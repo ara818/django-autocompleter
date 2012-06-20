@@ -12,7 +12,7 @@ def suggest(request, name=settings.DEFAULT_NAME):
         results = ac.suggest(term)
 
         json = simplejson.dumps(results)
-        return HttpResponse(json)
+        return HttpResponse(json, mimetype='application/json')
     return HttpResponseServerError("Search paramater not found.")
 
 
@@ -23,5 +23,5 @@ def exact_suggest(request, name=settings.DEFAULT_NAME):
         results = ac.exact_suggest(term)
 
         json = simplejson.dumps(results)
-        return HttpResponse(json)
+        return HttpResponse(json, mimetype='application/json')
     return HttpResponseServerError("Search paramater not found.")
