@@ -1,7 +1,8 @@
 import redis
+import json
 
 from django.utils.datastructures import SortedDict
-import json
+
 from autocompleter import registry, settings, utils
 
 REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
@@ -433,7 +434,6 @@ class Autocompleter(AutocompleterBase):
         Given a dict mapping providers to results IDs, return
         a dict mapping providers to results
         """
-        num_providers = len(provider_results.keys())
         # Get the results for each provider
         pipe = REDIS.pipeline()
         for provider_name, ids in provider_results.items():
@@ -448,10 +448,6 @@ class Autocompleter(AutocompleterBase):
                 provider_results[provider_name] = \
                     [self._deserialize_data(i) for i in results.pop(0) if i != None]
 
-        # If we only have one type of provider, don't bother sending the provider dict,
-        # just the results list is sufficient
-        if num_providers == 1:
-            return provider_results.values()[0]
         return provider_results
 
     def _get_all_providers_by_autocompleter(self):
