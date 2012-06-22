@@ -158,12 +158,12 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
 
     def test_out_of_order_matching(self):
         """
-        MATCH_OUT_OF_ORDER works
+        MATCH_OUT_OF_ORDER_WORDS works
         """
         matches = self.autocomp.suggest('price index consumer')
         self.assertEqual(len(matches), 0)
 
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
         matches = self.autocomp.suggest('price index consumer')
         self.assertNotEqual(len(matches), 0)
 
@@ -171,19 +171,19 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         self.assertNotEqual(len(matches), 0)
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
 
     def test_out_of_order_duplication(self):
         """
-        MATCH_OUT_OF_ORDER does not cause result duplication
+        MATCH_OUT_OF_ORDER_WORDS does not cause result duplication
         """
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
 
         matches = self.autocomp.suggest('us consumer price index medical')
         self.assertEqual(len(matches), 1)
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
 
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):

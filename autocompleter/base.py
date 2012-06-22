@@ -344,7 +344,7 @@ class Autocompleter(AutocompleterBase):
                 pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
 
             # Get out of order matches
-            if settings.MATCH_OUT_OF_ORDER and num_words > 1:
+            if settings.MATCH_OUT_OF_ORDER_WORDS and num_words > 1:
                 keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
                 pipe.zinterstore("oooresults", keys, aggregate='MIN')
                 pipe.zrevrange("oooresults", 0, settings.MAX_RESULTS - 1)
@@ -373,7 +373,7 @@ class Autocompleter(AutocompleterBase):
                     ids.insert(0, j)
 
             # Add in out of order matches to the end of the list, where they don't already exist
-            if settings.MATCH_OUT_OF_ORDER and num_words > 1:
+            if settings.MATCH_OUT_OF_ORDER_WORDS and num_words > 1:
                 for j in results.pop(0):
                     if j not in ids:
                         ids.append(j)
@@ -448,6 +448,8 @@ class Autocompleter(AutocompleterBase):
                 provider_results[provider_name] = \
                     [self._deserialize_data(i) for i in results.pop(0) if i != None]
 
+        if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results.keys()) == 1:
+            provider_results = provider_results.values()[0]
         return provider_results
 
     def _get_all_providers_by_autocompleter(self):

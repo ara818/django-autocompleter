@@ -22,7 +22,7 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         """
         Matching is fast
         """
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', True)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
 
         for i in range(1, 1000):
@@ -35,6 +35,6 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
             self.autocomp.suggest('a')
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER', False)
+        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
 
