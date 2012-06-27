@@ -33,6 +33,6 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--verbosity=2',
     '--nocapture',
-    '--with-coverage',
-    '--cover-package=autocompleter'
+    #'--with-coverage',
+    #'--cover-package=autocompleter'
 ]

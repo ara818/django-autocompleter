@@ -147,29 +147,35 @@ class AutocompleterProvider(AutocompleterBase):
         score = self.get_score()
         data = self.get_data()
 
-        # Turn each normalized term into possible prefixes
-        phrases = []
-
-        for norm_term in norm_terms:
-            phrases = phrases + \
-                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
+        # Redis orders low to high, with equal scores being sorted lexographically by obj ID,
+        # so here we convert high to low score to low to high. Note that we can not use
+        # ZREVRANGE instead because that sorts obj IDs lexograpahically ascending. Using
+        # low to high scores allows for people to have autocompleters with lots of objects
+        # with the same score and a word based object ID (say, a unique name) and have these
+        # objects returned in alphabetical order when they have the same score.
+        try:
+            score = 1 / float(score)
+        except ZeroDivisionError:
+            score = float('inf')
 
         # Start pipeline
         pipe = REDIS.pipeline()
 
         # Processes prefixes of object, placing object ID in sorted sets
-        for phrase in phrases:
-            phrase_prefix = ''
-            for char in phrase:
-                phrase_prefix += char
-                # Store prefix to obj ID mapping, with score
-                key = PREFIX_BASE_NAME % (provider_name, phrase_prefix,)
-                pipe.zadd(key, obj_id, score)
+        for norm_term in norm_terms:
+            norm_words = norm_term.split()
+            for norm_word in norm_words:
+                word_prefix = ''
+                for char in norm_word:
+                    word_prefix += char
+                    # Store prefix to obj ID mapping, with score
+                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
+                    pipe.zadd(key, obj_id, score)
 
-                # Store autocompleter to prefix mapping so we know all prefixes
-                # of an autocompleter
-                key = PREFIX_SET_BASE_NAME % (provider_name,)
-                pipe.sadd(key, phrase_prefix)
+                    # Store autocompleter to prefix mapping so we know all prefixes
+                    # of an autocompleter
+                    key = PREFIX_SET_BASE_NAME % (provider_name,)
+                    pipe.sadd(key, word_prefix)
 
         # Process normalized term of object, placing object ID in a sorted set
         # representing exact matches
@@ -199,26 +205,21 @@ class AutocompleterProvider(AutocompleterBase):
         obj_id = self.get_obj_id()
         norm_terms = self.get_norm_terms()
 
-        # Turn each normalized term into possible prefixes
-        phrases = []
-        norm_terms = self.get_norm_terms()
-        for norm_term in norm_terms:
-            phrases = phrases + \
-                utils.get_autocompleter_phrases_for_term(norm_term, settings.MAX_NUM_WORDS)
-
         # Start pipeline
         pipe = REDIS.pipeline()
 
         # Processes prefixes of object, removing object ID from sorted sets
-        for phrase in phrases:
-            phrase_prefix = ''
-            for char in phrase:
-                phrase_prefix += char
-                key = PREFIX_BASE_NAME % (provider_name, phrase_prefix,)
-                pipe.zrem(key, obj_id)
+        for norm_term in norm_terms:
+            norm_words = norm_term.split()
+            for norm_word in norm_words:
+                word_prefix = ''
+                for char in norm_word:
+                    word_prefix += char
+                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
+                    pipe.zrem(key, obj_id)
 
-                key = PREFIX_SET_BASE_NAME % (provider_name,)
-                pipe.srem(key, phrase_prefix)
+                    key = PREFIX_SET_BASE_NAME % (provider_name,)
+                    pipe.srem(key, word_prefix)
 
         # Process normalized terms of object, removing object ID from a sorted set
         # representing exact matches
@@ -327,31 +328,26 @@ class Autocompleter(AutocompleterBase):
         num_providers = len(providers)
         provider_results = SortedDict()
         norm_words = norm_term.split()
-        num_words = len(norm_words)
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
 
-            # Get base autocompleter matches
-            key = PREFIX_BASE_NAME % (provider_name, norm_term,)
-            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+            # Get out of order matches
+            keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
+            pipe.zinterstore("oooresults", keys, aggregate='MIN')
+            pipe.zrange("oooresults", 0, settings.MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
                 key = EXACT_BASE_NAME % (provider_name, norm_term,)
-                pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
+                pipe.zrange(key, 0, settings.MAX_RESULTS - 1)
 
-            # Get out of order matches
-            if settings.MATCH_OUT_OF_ORDER_WORDS and num_words > 1:
-                keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
-                pipe.zinterstore("oooresults", keys, aggregate='MIN')
-                pipe.zrevrange("oooresults", 0, settings.MAX_RESULTS - 1)
         results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs
-        # We combine the 3 different kinds of results into 1 result ID list per provider.
+        # We combine the 2 different kinds of results into 1 result ID list per provider.
         for i in range(0, num_providers):
             provider_name = providers[i].provider_name
             ids = results.pop(0)
@@ -371,12 +367,6 @@ class Autocompleter(AutocompleterBase):
                     if j in ids:
                         ids.remove(j)
                     ids.insert(0, j)
-
-            # Add in out of order matches to the end of the list, where they don't already exist
-            if settings.MATCH_OUT_OF_ORDER_WORDS and num_words > 1:
-                for j in results.pop(0):
-                    if j not in ids:
-                        ids.append(j)
 
             provider_results[provider_name] = ids[:settings.MAX_RESULTS]
 

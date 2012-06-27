@@ -56,6 +56,9 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
     def get_provider_id(self):
         return "indicator"
 
+    def get_obj_id(self):
+        return self.obj.name
+
     def get_term(self):
         return self.obj.name
 

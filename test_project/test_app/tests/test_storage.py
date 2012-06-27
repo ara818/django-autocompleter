@@ -90,32 +90,6 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 0)
 
 
-class MaxNumWordsStoringTestCase(AutocompleterTestCase):
-    fixtures = ['indicator_test_data_small.json']
-
-    def test_max_num_words_setting(self):
-        """
-        MAX_NUM_WORDS restricts the number matchable phrases stored stored
-        """
-        autocomp = Autocompleter("indicator")
-        autocomp.store_all()
-        prefix_keys = self.redis.keys('djac.ind.p*')
-        num_keys1 = len(prefix_keys)
-        autocomp.remove_all()
-
-        setattr(auto_settings, 'MAX_NUM_WORDS', 3)
-        autocomp = Autocompleter("indicator")
-        autocomp.store_all()
-        prefix_keys = self.redis.keys('djac.ind.p*')
-        num_keys2 = len(prefix_keys)
-        autocomp.remove_all()
-
-        self.assertTrue(num_keys2 < num_keys1)
-
-        # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MAX_NUM_WORDS', None)
-
-
 class SignalBasedStoringTestCase(AutocompleterTestCase):
     def test_signal_based_add_and_remove(self):
         """

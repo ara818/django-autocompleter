@@ -156,34 +156,14 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
     def tearDown(self):
         self.autocomp.remove_all()
 
-    def test_out_of_order_matching(self):
+    def test_same_score_word_based_id_ordering(self):
         """
-        MATCH_OUT_OF_ORDER_WORDS works
+        Two results with the same score are returned in lexographic order of object ID
         """
-        matches = self.autocomp.suggest('price index consumer')
-        self.assertEqual(len(matches), 0)
-
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
-        matches = self.autocomp.suggest('price index consumer')
-        self.assertNotEqual(len(matches), 0)
-
-        matches = self.autocomp.suggest('mortgage 30 rate')
-        self.assertNotEqual(len(matches), 0)
-
-        # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
-
-    def test_out_of_order_duplication(self):
-        """
-        MATCH_OUT_OF_ORDER_WORDS does not cause result duplication
-        """
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
-
-        matches = self.autocomp.suggest('us consumer price index medical')
-        self.assertEqual(len(matches), 1)
-
-        # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
+        matches = self.autocomp.suggest('us')
+        self.assertEqual(matches[1]['display_name'], 'Bank Credit of All US Commercial Banks')
+        self.assertEqual(matches[9]['display_name'], 'Trade Weighted US Dollar Index: Major Currencies')
+        return matches
 
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
