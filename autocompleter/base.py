@@ -1,5 +1,7 @@
 import redis
 import json
+import copy
+import itertools
 
 from django.utils.datastructures import SortedDict
 
@@ -63,23 +65,6 @@ class AutocompleterProvider(AutocompleterBase):
         """
         return [self.get_term()]
 
-    def get_norm_terms(self):
-        """
-        Normalize each term in list of terms. Also, look to see if there are any aliases
-        for any words in the term and use them to create alternate normalized terms
-        DO NOT override this unless you know what you're doing.
-        """
-        norm_terms = [utils.get_normalized_term(term) for term in self.get_terms()]
-        phrase_aliases = self.__class__.get_norm_phrase_aliases()
-        if phrase_aliases == None:
-            return norm_terms
-
-        all_norm_terms = []
-        for norm_term in norm_terms:
-            all_norm_terms = all_norm_terms + utils.get_all_variations(norm_term, phrase_aliases)
-
-        return all_norm_terms
-
     def get_score(self):
         """
         The score for the object, that will dictate the order of autocompletion.
@@ -110,6 +95,27 @@ class AutocompleterProvider(AutocompleterBase):
         """
         return cls.model._default_manager.all()
 
+    def get_norm_terms(self):
+        """
+        Normalize each term in list of terms. Also, look to see if there are any aliases
+        for any words in the term and use them to create alternate normalized terms
+        DO NOT override this
+        """
+        terms = self.get_terms()
+
+        norm_terms = [utils.get_norm_term_variations(term) for term in terms]
+        norm_terms = itertools.chain(*norm_terms)
+
+        norm_terms_with_variations = []
+        # Now we get alternate norm terms by looking for alias phrases in any of the terms
+        phrase_aliases = self.__class__.get_norm_phrase_aliases()
+        if phrase_aliases != None:
+            for norm_term in norm_terms:
+                norm_terms_with_variations = norm_terms_with_variations + \
+                    utils.get_all_variations(norm_term, phrase_aliases)
+
+        return norm_terms_with_variations
+
     @classmethod
     def get_norm_phrase_aliases(cls):
         """
@@ -121,10 +127,12 @@ class AutocompleterProvider(AutocompleterBase):
             norm_phrase_aliases = {}
 
             for key, value in cls.get_phrase_aliases().items():
-                norm_key = utils.get_normalized_term(key)
-                norm_value = utils.get_normalized_term(value)
-                norm_phrase_aliases[norm_key] = norm_value
-                norm_phrase_aliases[norm_value] = norm_key
+                norm_keys = utils.get_norm_term_variations(key)
+                norm_values = utils.get_norm_term_variations(value)
+                for norm_key in norm_keys:
+                    for norm_value in norm_values:
+                        norm_phrase_aliases[norm_key] = norm_value
+                        norm_phrase_aliases[norm_value] = norm_key
             cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
 
@@ -163,7 +171,7 @@ class AutocompleterProvider(AutocompleterBase):
 
         # Processes prefixes of object, placing object ID in sorted sets
         for norm_term in norm_terms:
-            norm_words = norm_term.split()
+            norm_words = norm_term.split(' ')
             for norm_word in norm_words:
                 word_prefix = ''
                 for char in norm_word:
@@ -210,7 +218,7 @@ class AutocompleterProvider(AutocompleterBase):
 
         # Processes prefixes of object, removing object ID from sorted sets
         for norm_term in norm_terms:
-            norm_words = norm_term.split()
+            norm_words = norm_term.split(' ')
             for norm_word in norm_words:
                 word_prefix = ''
                 for char in norm_word:
@@ -318,31 +326,40 @@ class Autocompleter(AutocompleterBase):
         if providers == None:
             return []
 
-        norm_term = utils.get_normalized_term(term)
-        cache_key = CACHE_BASE_NAME % (self.name, norm_term,)
-
         # If we have a cached version of the search results available, return it!
+        cache_key = CACHE_BASE_NAME % \
+            (self.name, utils.get_normalized_term(term, dash_replacement=''),)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
 
+        # Get the normalized we need to search for each term... A single term
+        # could turn into multiple terms we need to search.
+        norm_terms = utils.get_norm_term_variations(term)
+
         num_providers = len(providers)
         provider_results = SortedDict()
-        norm_words = norm_term.split()
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
-
-            # Get out of order matches
-            keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
-            pipe.zinterstore("oooresults", keys, aggregate='MIN')
-            pipe.zrange("oooresults", 0, settings.MAX_RESULTS - 1)
+            result_keys = []
+            for norm_term in norm_terms:
+                norm_words = norm_term.split()
+                result_key = "djac.results.%s" % (norm_term,)
+                result_keys.append(result_key)
+                keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
+                pipe.zinterstore(result_key, keys, aggregate='MIN')
+            pipe.zunionstore("djac.results", result_keys, aggregate='MIN')
+            pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
-                key = EXACT_BASE_NAME % (provider_name, norm_term,)
-                pipe.zrange(key, 0, settings.MAX_RESULTS - 1)
+                keys = []
+                for norm_term in norm_terms:
+                    keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+                pipe.zunionstore("djac.results", keys, aggregate='MIN')
+                pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
@@ -387,23 +404,28 @@ class Autocompleter(AutocompleterBase):
         if providers == None:
             return []
 
-        norm_term = utils.get_normalized_term(term)
-        cache_key = EXACT_CACHE_BASE_NAME % (self.name, norm_term,)
-
         # If we have a cached version of the search results available, return it!
+        cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
 
         num_providers = len(providers)
         provider_results = SortedDict()
 
+        # Get the normalized we need to search for each term... A single term
+        # could turn into multiple terms we need to search.
+        norm_terms = utils.get_norm_term_variations(term)
+
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
-            key = EXACT_BASE_NAME % (provider_name, norm_term,)
-            pipe.zrevrange(key, 0, settings.MAX_RESULTS - 1)
-        results = pipe.execute()
+            keys = []
+            for norm_term in norm_terms:
+                keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+            pipe.zunionstore("djac.results", keys, aggregate='MIN')
+            pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
+        results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs
         for i in range(0, num_providers):

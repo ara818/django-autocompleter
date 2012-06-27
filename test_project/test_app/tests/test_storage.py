@@ -89,7 +89,6 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.mixed*')
         self.assertEqual(len(keys), 0)
 
-
 class SignalBasedStoringTestCase(AutocompleterTestCase):
     def test_signal_based_add_and_remove(self):
         """
@@ -122,18 +121,18 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         aapl.save()
 
         autocomp = Autocompleter("stock")
-        results = autocomp.suggest('aapl')
+        matches = autocomp.suggest('aapl')
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(matches), 1)
 
         aapl.symbol = 'XYZ'
         aapl.name = 'XYZ & Co.'
         aapl.save()
 
-        results = autocomp.suggest('aapl')
-        self.assertEqual(len(results), 0)
-        results = autocomp.suggest('xyz')
-        self.assertEqual(len(results), 1)
+        matches = autocomp.suggest('aapl')
+        self.assertEqual(len(matches), 0)
+        matches = autocomp.suggest('xyz')
+        self.assertEqual(len(matches), 1)
 
         aapl.delete()
         keys = self.redis.keys('djac.stock*')

@@ -165,6 +165,25 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         self.assertEqual(matches[9]['display_name'], 'Trade Weighted US Dollar Index: Major Currencies')
         return matches
 
+    def test_dashes(self):
+        """
+        Dashes are handled correctly
+        """
+        # Testing that both '3-month' and '3 month' match
+        matches = self.autocomp.suggest('3-month')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('3 month')
+        self.assertNotEqual(len(matches), 0)
+
+        matches = self.autocomp.suggest('mortgage-backed')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('mortgagebacked')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('mortgage backed')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('backed mortgage')
+        self.assertNotEqual(len(matches), 0)
+
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
