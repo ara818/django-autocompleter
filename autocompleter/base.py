@@ -311,6 +311,12 @@ class Autocompleter(AutocompleterBase):
 
         # Just to be extra super clean, let's delete all cached results
         # for this autocompleter
+        self.clear_cache()
+
+    def clear_cache(self):
+        """
+        Clear cache
+        """
         cache_key = CACHE_BASE_NAME % (self.name, '*',)
         exact_cache_key = EXACT_CACHE_BASE_NAME % (self.name, '*',)
 

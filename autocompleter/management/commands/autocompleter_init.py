@@ -21,6 +21,10 @@ class Command(BaseCommand):
         make_option("--store", dest="store",
             help="Store all autocompleter data. Default to false.",
             action="store_true", default=False),
+        make_option("--clear_cache", dest="clear_cache",
+            help="Clear cache for autocompleter. Default to false.",
+            action="store_true", default=False),
+
     )
 
     help = "Store and/or remove autocompleter data"
@@ -42,3 +46,7 @@ class Command(BaseCommand):
         if options['store']:
             self.log.info("Storing all objects for autocompleter: %s" % (options['name']))
             autocomp.store_all()
+        if options['clear_cache']:
+            self.log.info("Clearing cache for autocompleter: %s" % (options['name']))
+            autocomp.clear_cache()
+
