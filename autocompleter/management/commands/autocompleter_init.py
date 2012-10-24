@@ -4,7 +4,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 import autocompleter
-from autocompleter import Autocompleter, settings
+from autocompleter import Autocompleter
 
 # Must autodiscover existing autocompleter providers before can initialize
 autocompleter.autodiscover()
@@ -14,7 +14,7 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option("--name", dest="name",
             help="Name of autocompleter to initialize. Defaults to default autocompleter name.",
-            action="store", type="string", default=settings.DEFAULT_NAME),
+            action="store", type="string"),
         make_option("--remove", dest="remove",
             help="Remove all autocompleter data. Default to false.",
             action="store_true", default=False),

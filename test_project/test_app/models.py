@@ -1,6 +1,6 @@
 from django.db import models
 
-from autocompleter import AutocompleterProvider, registry, signal_registry
+from autocompleter import AutocompleterProvider, registry
 
 
 class Stock(models.Model):
@@ -13,9 +13,6 @@ class StockAutocompleteProvider(AutocompleterProvider):
     model = Stock
 
     provider_name = "stock"
-
-    def get_provider_id(self):
-        return "stock"
 
     def get_terms(self):
         """
@@ -53,9 +50,6 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
 
     provider_name = "ind"
 
-    def get_provider_id(self):
-        return "indicator"
-
     def get_obj_id(self):
         return self.obj.name
 
@@ -79,9 +73,6 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
     model = Indicator
 
     provider_name = "indal"
-
-    def get_provider_id(self):
-        return "indicator_aliased"
 
     def get_term(self):
         return self.obj.name

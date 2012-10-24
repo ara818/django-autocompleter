@@ -5,7 +5,7 @@ from autocompleter import settings
 from autocompleter import Autocompleter
 
 
-def suggest(request, name=settings.DEFAULT_NAME):
+def suggest(request, name):
     if settings.SUGGEST_PARAMETER_NAME in request.GET:
         term = request.GET[settings.SUGGEST_PARAMETER_NAME]
         ac = Autocompleter(name)
@@ -16,7 +16,7 @@ def suggest(request, name=settings.DEFAULT_NAME):
     return HttpResponseServerError("Search paramater not found.")
 
 
-def exact_suggest(request, name=settings.DEFAULT_NAME):
+def exact_suggest(request, name):
     if settings.SUGGEST_PARAMETER_NAME in request.GET:
         term = request.GET[settings.SUGGEST_PARAMETER_NAME]
         ac = Autocompleter(name)

@@ -13,11 +13,9 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
     def setUp(self):
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
-        super(MultiMatchingPerfTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()
-        pass
 
     def test_repeated_matches(self):
         """

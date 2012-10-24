@@ -1,6 +1,5 @@
 import redis
 import json
-import copy
 import itertools
 
 from django.utils.datastructures import SortedDict
@@ -27,19 +26,18 @@ class AutocompleterBase(object):
     def _deserialize_data(self, raw):
         return json.loads(raw)
 
-    def _get_provider(self, name, obj):
-        provider_class = registry.get(name, type(obj))
-        if provider_class == None:
-            return None
-        return provider_class(obj)
-
 
 class AutocompleterProvider(AutocompleterBase):
+    # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
+
     _phrase_aliases = None
 
     def __init__(self, obj):
         self.obj = obj
+
+    def __str__(self):
+        return self.provider_name
 
     def get_obj_id(self):
         """
@@ -147,6 +145,7 @@ class AutocompleterProvider(AutocompleterBase):
     def store(self):
         """
         Add an object to the autocompleter
+        DO NOT override this.
         """
         # Init data
         provider_name = self.get_provider_name()
@@ -207,6 +206,7 @@ class AutocompleterProvider(AutocompleterBase):
     def remove(self):
         """
         Remove an object from the autocompleter
+        DO NOT override this.
         """
         # Init data
         provider_name = self.get_provider_name()
@@ -250,7 +250,7 @@ class Autocompleter(AutocompleterBase):
     """
     Autocompleter class
     """
-    def __init__(self, name=settings.DEFAULT_NAME):
+    def __init__(self, name):
         self.name = name
 
     def store_all(self):
@@ -334,7 +334,7 @@ class Autocompleter(AutocompleterBase):
 
         # If we have a cached version of the search results available, return it!
         cache_key = CACHE_BASE_NAME % \
-            (self.name, utils.get_normalized_term(term, dash_replacement=''),)
+            (self.name, utils.get_normalized_term(term),)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
 
@@ -342,12 +342,12 @@ class Autocompleter(AutocompleterBase):
         # could turn into multiple terms we need to search.
         norm_terms = utils.get_norm_term_variations(term)
 
-        num_providers = len(providers)
         provider_results = SortedDict()
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
             result_keys = []
             for norm_term in norm_terms:
@@ -357,7 +357,7 @@ class Autocompleter(AutocompleterBase):
                 keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
                 pipe.zinterstore(result_key, keys, aggregate='MIN')
             pipe.zunionstore("djac.results", result_keys, aggregate='MIN')
-            pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
+            pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
@@ -365,16 +365,17 @@ class Autocompleter(AutocompleterBase):
                 for norm_term in norm_terms:
                     keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
                 pipe.zunionstore("djac.results", keys, aggregate='MIN')
-                pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
+                pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs
         # We combine the 2 different kinds of results into 1 result ID list per provider.
-        for i in range(0, num_providers):
-            provider_name = providers[i].provider_name
-            ids = results.pop(0)
+        for provider in providers:
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+            provider_name = provider.provider_name
 
+            ids = results.pop(0)
             # We merge exact matches with base matches by moving them to
             # the head of the results
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
@@ -391,7 +392,7 @@ class Autocompleter(AutocompleterBase):
                         ids.remove(j)
                     ids.insert(0, j)
 
-            provider_results[provider_name] = ids[:settings.MAX_RESULTS]
+            provider_results[provider_name] = ids[:MAX_RESULTS]
 
         results = self._get_results_from_ids(provider_results)
 
@@ -415,7 +416,6 @@ class Autocompleter(AutocompleterBase):
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
 
-        num_providers = len(providers)
         provider_results = SortedDict()
 
         # Get the normalized we need to search for each term... A single term
@@ -425,19 +425,21 @@ class Autocompleter(AutocompleterBase):
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
             keys = []
             for norm_term in norm_terms:
                 keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
             pipe.zunionstore("djac.results", keys, aggregate='MIN')
-            pipe.zrange("djac.results", 0, settings.MAX_RESULTS - 1)
+            pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
         results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs
-        for i in range(0, num_providers):
-            provider_name = providers[i].provider_name
+        for provider in providers:
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+            provider_name = provider.provider_name
             exact_ids = results.pop(0)
-            provider_results[provider_name] = exact_ids[:settings.MAX_RESULTS]
+            provider_results[provider_name] = exact_ids[:MAX_RESULTS]
 
         results = self._get_results_from_ids(provider_results)
 

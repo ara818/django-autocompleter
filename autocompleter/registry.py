@@ -2,51 +2,54 @@ from django.db.models.signals import post_save, pre_save, post_delete
 
 from autocompleter import settings
 
+
 class AutocompleterRegistry(object):
     def __init__(self):
         self._providers_by_ac = {}
         self._providers_by_model = {}
+        self._ac_provider_settings = {}
 
-    def register(self, name=settings.DEFAULT_NAME, provider=None):
+    def register(self, ac_name, provider, local_settings={}):
         """
         Register an autocompleter wit ha  provider.
         Each autocompleter can have multiple providers.
         """
         if provider == None:
             return
-        if name not in self._providers_by_ac:
-            self._providers_by_ac[name] = {}
-        if  provider.model not in self._providers_by_model:
+
+        if ac_name not in self._providers_by_ac:
+            self._providers_by_ac[ac_name] = []
+        if provider.model not in self._providers_by_model:
             self._providers_by_model[provider.model] = []
 
-        self._providers_by_ac[name][provider.model] = provider
+        if provider not in self._providers_by_ac[ac_name]:
+            self._providers_by_ac[ac_name].append(provider)
         if provider not in self._providers_by_model[provider.model]:
             self._providers_by_model[provider.model].append(provider)
 
-    def unregister(self, name=settings.DEFAULT_NAME, provider=None):
+        combined_name = "%s%s" % (ac_name, provider,)
+        self._ac_provider_settings[combined_name] = local_settings
+
+    def unregister(self, ac_name, provider):
         """
         Unregister a provider from the autocompleter.
         """
         if provider == None:
             return
-        if name in self._providers_by_ac and \
-            provider.model in self._providers_by_ac[name]:
-            del self._providers_by_ac[name][provider.model]
+        if ac_name in self._providers_by_ac and \
+            provider in self._providers_by_ac[ac_name]:
+            self._providers_by_ac[ac_name].remove(provider)
         if provider.model in self._providers_by_model and \
             provider in self._providers_by_model[provider.model]:
             self._providers_by_model[provider.model].remove(provider)
 
-    def get(self, name=settings.DEFAULT_NAME, model=None):
-        if name not in self._providers_by_ac:
-            return None
-        if model not in self._providers_by_ac[name]:
-            return None
-        return self._providers_by_ac[name][model]
+        combined_name = "%s%s" % (ac_name, provider,)
+        del self._ac_provider_settings[combined_name]
 
-    def get_all_by_autocompleter(self, name=settings.DEFAULT_NAME):
-        if name not in self._providers_by_ac:
+    def get_all_by_autocompleter(self, ac_name):
+        if ac_name not in self._providers_by_ac:
             return None
-        return self._providers_by_ac[name].values()
+        return self._providers_by_ac[ac_name]
 
     def get_all_by_model(self, model=None):
         if model == None:
@@ -54,6 +57,35 @@ class AutocompleterRegistry(object):
         if model not in self._providers_by_model:
             return None
         return self._providers_by_model[model]
+
+    def get_ac_provider_setting(self, ac_name, provider, setting_name):
+        """
+        Get an autocompleter/provider specific setting.
+        If it doesn't exist, fallback to the global version of the setting
+        """
+        combined_name = "%s%s" % (ac_name, provider,)
+        if setting_name in self._ac_provider_settings[combined_name]:
+            return self._ac_provider_settings[combined_name][setting_name]
+        return getattr(settings, setting_name)
+
+    def set_ac_provider_setting(self, ac_name, provider, setting_name, setting_value):
+        """
+        Set an autocompleter/provider specific setting.
+        Note: This is probably only be used by the test suite to test override settings
+        post registration so we can assure setting overriding works
+        """
+        combined_name = "%s%s" % (ac_name, provider,)
+        self._ac_provider_settings[combined_name][setting_name] = setting_value
+
+    def del_ac_provider_setting(self, ac_name, provider, setting_name):
+        """
+        Delete an autocompleter/provider specific setting.
+        Note: This is probably only be used by the test suite to test override settings
+        post registration so we can assure setting overriding works
+        """
+        combined_name = "%s%s" % (ac_name, provider,)
+        if setting_name in self._ac_provider_settings[combined_name]:
+            del self._ac_provider_settings[combined_name][setting_name]
 
 
 registry = AutocompleterRegistry()

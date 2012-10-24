@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from autocompleter import Autocompleter
+from test_app.models import Stock
+from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
 
@@ -16,7 +17,6 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
     def tearDown(self):
         self.autocomp.remove_all()
-        pass
 
     def test_basic_match(self):
         """
@@ -111,6 +111,22 @@ class StockMatchTestCase(AutocompleterTestCase):
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MAX_RESULTS', 10)
+
+    def test_ac_provider_specific_max_results_setting(self):
+        """
+        Autocompleter / Provider specific max_results is respected
+        """
+        provider_class = self._get_provider_class("stock", Stock)
+
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 10)
+
+        registry.set_ac_provider_setting("stock", provider_class, 'MAX_RESULTS', 5)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 5)
+
+        # Must set the setting back to where it was as it will persist
+        registry.del_ac_provider_setting("stock", provider_class, 'MAX_RESULTS')
 
     def test_caching(self):
         """

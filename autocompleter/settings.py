@@ -1,7 +1,5 @@
 from django.conf import settings
 
-DEFAULT_NAME = "main"
-
 # Basic set up
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
@@ -12,9 +10,7 @@ CACHE_TIMEOUT = getattr(settings, 'AUTOCOMPLETER_CACHE_TIMEOUT', 0)
 # Storing / Matching
 CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-9_ ]')
 
-DASH_CAN_SEPARATE_WORDS = getattr(settings, 'AUTOCOMPLETER_DASH_CAN_SEPARATE_WORDS', True)
-
-MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
+MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)  # AC/Provider override possible
 
 MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
 

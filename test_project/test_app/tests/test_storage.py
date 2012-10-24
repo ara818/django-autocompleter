@@ -3,7 +3,7 @@
 
 from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock, StockAutocompleteProvider
-from autocompleter import AutocompleterBase, Autocompleter, registry, signal_registry
+from autocompleter import Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
 
 
@@ -14,10 +14,9 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         """
         Storing and removing an item works
         """
-        autocomp = AutocompleterBase()
-
         aapl = Stock.objects.get(symbol='AAPL')
-        provider = autocomp._get_provider("stock", aapl)
+        provider_class = self._get_provider_class("stock", type(aapl))
+        provider = provider_class(aapl)
 
         provider.store()
         keys = self.redis.hkeys('djac.stock')

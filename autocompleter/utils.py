@@ -4,7 +4,7 @@ import unicodedata
 from autocompleter import settings
 
 
-def get_normalized_term(term, dash_replacement):
+def get_normalized_term(term, dash_replacement=''):
     """
     Convert the term into a basic form that's easier to search.
     1) Force convert from text to unicode if necessary
