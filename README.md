@@ -1,7 +1,3 @@
-django-completer
+django-autocompleter
 ================
-Django completer is redis-backed autocompleter for Django. It provides, fast, seamless autocompletion for Django
-models with a minimum of effort.
-
-
-NOTE: Django autocompleter is undergoing a heavy rewrite. Stay tuned for full documentation and examples.
+django-autocompleter is a redis-backed autocompleter for Django. It provides, fast, seamless autocompletion for Django models with a minimum of effort.

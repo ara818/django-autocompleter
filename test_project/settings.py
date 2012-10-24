@@ -1,7 +1,7 @@
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'autocompleter_test.db', 
+        'NAME': 'autocompleter_test.db',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -9,9 +9,9 @@ DATABASES = {
     }
 }
 
-SITE_ID=1
+SITE_ID = 1
 
-INSTALLED_APPS=[
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',

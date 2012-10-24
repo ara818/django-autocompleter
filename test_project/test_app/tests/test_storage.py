@@ -89,6 +89,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.mixed*')
         self.assertEqual(len(keys), 0)
 
+
 class SignalBasedStoringTestCase(AutocompleterTestCase):
     def test_signal_based_add_and_remove(self):
         """
