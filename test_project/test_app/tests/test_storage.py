@@ -15,8 +15,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         Storing and removing an item works
         """
         aapl = Stock.objects.get(symbol='AAPL')
-        provider_class = self._get_provider_class("stock", type(aapl))
-        provider = provider_class(aapl)
+        provider = StockAutocompleteProvider(aapl)
 
         provider.store()
         keys = self.redis.hkeys('djac.stock')

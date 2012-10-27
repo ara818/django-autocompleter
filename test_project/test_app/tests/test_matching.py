@@ -2,35 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock
+from test_app.models import StockAutocompleteProvider, IndicatorAutocompleteProvider
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
-
-
-class MultiMatchingTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
-
-    def setUp(self):
-        self.autocomp = Autocompleter("mixed")
-        self.autocomp.store_all()
-        super(MultiMatchingTestCase, self).setUp()
-
-    def tearDown(self):
-        self.autocomp.remove_all()
-
-    def test_basic_match(self):
-        """
-        A single autocompleter can return results from multiple models.
-        """
-        matches = self.autocomp.suggest('Aapl')
-        self.assertEqual(len(matches['stock']), 1)
-
-        matches = self.autocomp.suggest('US Initial Claims')
-        self.assertEqual(len(matches['ind']), 1)
-
-        matches = self.autocomp.suggest('a')
-        self.assertEqual(len(matches['stock']), auto_settings.MAX_RESULTS)
-        self.assertEqual(len(matches['ind']), auto_settings.MAX_RESULTS)
 
 
 class StockMatchTestCase(AutocompleterTestCase):
@@ -49,7 +23,7 @@ class StockMatchTestCase(AutocompleterTestCase):
         Basic matching works
         """
         matches_symbol = self.autocomp.suggest('a')
-        self.assertEqual(len(matches_symbol), auto_settings.MAX_RESULTS)
+        self.assertEqual(len(matches_symbol), 10)
 
     def test_exact_match(self):
         """
@@ -114,19 +88,17 @@ class StockMatchTestCase(AutocompleterTestCase):
 
     def test_ac_provider_specific_max_results_setting(self):
         """
-        Autocompleter / Provider specific max_results is respected
+        Autocompleter/Provider specific MAX_RESULTS is respected
         """
-        provider_class = self._get_provider_class("stock", Stock)
-
         matches = self.autocomp.suggest('a')
         self.assertEqual(len(matches), 10)
 
-        registry.set_ac_provider_setting("stock", provider_class, 'MAX_RESULTS', 5)
+        registry.set_ac_provider_setting("stock", StockAutocompleteProvider, 'MAX_RESULTS', 5)
         matches = self.autocomp.suggest('a')
         self.assertEqual(len(matches), 5)
 
         # Must set the setting back to where it was as it will persist
-        registry.del_ac_provider_setting("stock", provider_class, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("stock", StockAutocompleteProvider, 'MAX_RESULTS')
 
     def test_caching(self):
         """
@@ -200,6 +172,32 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('backed mortgage')
         self.assertNotEqual(len(matches), 0)
 
+    def test_min_letters_setting(self):
+        """
+        MIN_LETTERS is respected.
+        """
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 10)
+        setattr(auto_settings, 'MIN_LETTERS', 2)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 0)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MIN_LETTERS', 1)
+
+    def test_ac_provider_specific_min_letters_setting(self):
+        """
+        Autocompleter/Provider specific MIN_LETTERS is respected.
+        """
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 10)
+        setattr(auto_settings, 'MIN_LETTERS', 2)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 0)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MIN_LETTERS', 1)
+
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
@@ -227,3 +225,58 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
 
         matches = self.autocomp.suggest('united states consumer price index')
         self.assertNotEqual(len(matches), 0)
+
+
+class MultiMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        self.autocomp = Autocompleter("mixed")
+        self.autocomp.store_all()
+        super(MultiMatchingTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_basic_match(self):
+        """
+        A single autocompleter can return results from multiple models.
+        """
+        matches = self.autocomp.suggest('Aapl')
+        self.assertEqual(len(matches['stock']), 1)
+
+        matches = self.autocomp.suggest('US Initial Claims')
+        self.assertEqual(len(matches['ind']), 1)
+
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches['stock']), 10)
+        self.assertEqual(len(matches['ind']), 10)
+
+    def test_min_letters_setting(self):
+        """
+        MIN_LETTERS is respected in multi-type search case.
+        """
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches['stock']), 10)
+        self.assertEqual(len(matches['ind']), 10)
+
+        setattr(auto_settings, 'MIN_LETTERS', 2)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(matches, {})
+
+        setattr(auto_settings, 'MIN_LETTERS', 1)
+
+    def test_ac_provider_specific_min_letters_setting(self):
+        """
+        Autocompleter/Provider specific MIN_LETTERS is respected in multi-type search case.
+        """
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches['stock']), 10)
+        self.assertEqual(len(matches['ind']), 10)
+
+        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS', 2)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(len(matches), 10)
+        self.assertEqual('ind' not in matches, True)
+
+        registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')

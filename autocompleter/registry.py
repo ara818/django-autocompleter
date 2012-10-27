@@ -9,7 +9,7 @@ class AutocompleterRegistry(object):
         self._providers_by_model = {}
         self._ac_provider_settings = {}
 
-    def register(self, ac_name, provider, local_settings={}):
+    def register(self, ac_name, provider, local_settings=None):
         """
         Register an autocompleter wit ha  provider.
         Each autocompleter can have multiple providers.
@@ -28,6 +28,11 @@ class AutocompleterRegistry(object):
             self._providers_by_model[provider.model].append(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
+        # Note: the reason we default local_settings to None, then set to a dict is when we had
+        # local_settings default to {} it was a reference to the same dict so when a setting
+        # for one AC/provider was set, it was set for all AC/provider pairs.
+        if local_settings == None:
+            local_settings = {}
         self._ac_provider_settings[combined_name] = local_settings
 
     def unregister(self, ac_name, provider):

@@ -347,8 +347,15 @@ class Autocompleter(AutocompleterBase):
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
+
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+            # If the total length of the term is less than MIN_LETTERS allowed, then don't search
+            # the provider for this term
+            MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
+            if len(term) < MIN_LETTERS:
+                continue
+
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
@@ -372,8 +379,14 @@ class Autocompleter(AutocompleterBase):
         # Create a dict mapping provider to result IDs
         # We combine the 2 different kinds of results into 1 result ID list per provider.
         for provider in providers:
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
+
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+            # If the total length of the term is less than MIN_LETTERS allowed, then don't search
+            # the provider for this term
+            MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
+            if len(term) < MIN_LETTERS:
+                continue
 
             ids = results.pop(0)
             # We merge exact matches with base matches by moving them to
@@ -425,8 +438,9 @@ class Autocompleter(AutocompleterBase):
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
+
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             keys = []
             for norm_term in norm_terms:
                 keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
@@ -436,8 +450,9 @@ class Autocompleter(AutocompleterBase):
 
         # Create a dict mapping provider to result IDs
         for provider in providers:
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             provider_name = provider.provider_name
+
+            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             exact_ids = results.pop(0)
             provider_results[provider_name] = exact_ids[:MAX_RESULTS]
 
