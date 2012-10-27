@@ -18,7 +18,7 @@ MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
 # Minimum number of letters required to start returning results
 # Note: AC/Provider override possible
-MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 1)
+MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
 
 # Whether to detect exact matches and move them to top of the results set (ignoring score)
 MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
