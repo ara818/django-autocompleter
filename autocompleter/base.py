@@ -309,6 +309,22 @@ class Autocompleter(AutocompleterBase):
             # End pipeline
             pipe.execute()
 
+            # There is a possibility that some straggling keys have not been
+            # cleaned up if their ID changed but for some reason we did not
+            # delete the old ID... Here we delete what's left, just to be safe
+            key = AUTO_BASE_NAME % (provider_name,)
+            key += '*'
+            leftovers = REDIS.keys(key)
+
+            # Start pipeline
+            pipe = REDIS.pipeline()
+
+            for i in leftovers:
+                pipe.delete(i)
+
+            # End pipeline
+            pipe.execute()
+
         # Just to be extra super clean, let's delete all cached results
         # for this autocompleter
         self.clear_cache()
