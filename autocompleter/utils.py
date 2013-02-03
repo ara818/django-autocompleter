@@ -51,9 +51,7 @@ def get_all_variations(term, phrase_aliases):
         for phrase in phrase_map.keys():
             if phrase in phrase_aliases:
                 phrase_alias = phrase_aliases[phrase]
-                start_end = phrase_map[phrase]
-                phrase_start = start_end[0]
-                phrase_end = start_end[1]
+                (phrase_start, phrase_end,) = phrase_map[phrase]
                 term_words = term.split()
                 term_words[phrase_start:phrase_end] = [phrase_alias]
                 term_alias = ' '.join(term_words)
