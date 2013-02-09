@@ -787,15 +787,15 @@
     "model": "test_app.indicator",
     "fields": {
         "score": 0,
-        "name": "US Industrial Production Index",
-        "internal_name": "industrial_production_index"
+        "name": "California Unemployment Rate",
+        "internal_name": "california_unemployment_rate"
     }
 }, {
     "pk": 100,
     "model": "test_app.indicator",
     "fields": {
         "score": 0,
-        "name": "US Existing Home Sales",
-        "internal_name": "existing_home_sales"
+        "name": "Canada Unemployment Rate",
+        "internal_name": "canada_unemployment_rate"
     }
 }]

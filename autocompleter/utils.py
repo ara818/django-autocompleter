@@ -1,3 +1,4 @@
+
 import re
 import unicodedata
 
@@ -44,10 +45,11 @@ def get_all_variations(term, phrase_aliases):
     return all perumations of term with possible alias phrases substituted
     """
     term_stack = [term]
-    term_aliases = {term: 1}
+    term_aliases = {term: []}
     while len(term_stack) != 0:
         term = term_stack.pop()
-        phrase_map = get_phrase_index_for_term(term)
+        aliased_phrase_ranges = term_aliases[term]
+        phrase_map = get_phrase_indices_for_term(term)
         for phrase in phrase_map.keys():
             if phrase in phrase_aliases:
                 phrase_alias = phrase_aliases[phrase]
@@ -56,12 +58,12 @@ def get_all_variations(term, phrase_aliases):
                 term_words[phrase_start:phrase_end] = [phrase_alias]
                 term_alias = ' '.join(term_words)
                 if term_alias not in term_aliases:
-                    term_aliases[term_alias] = 1
+                    term_aliases[term_alias] = []
                     term_stack.append(term_alias)
     return term_aliases.keys()
 
 
-def get_phrase_index_for_term(term):
+def get_phrase_indices_for_term(term):
     """
     For an term, return of index of every phrase in the term to it's
     word position (start word number, end word number,) within the term.
@@ -80,3 +82,18 @@ def get_phrase_index_for_term(term):
             phrase = ' '.join(words[i:j])
             phrase_map[phrase] = (i, j,)
     return phrase_map
+
+
+def term_phrase_already_aliased(alias_phrase_range, aliased_phrase_ranges):
+    """
+    For the phrase range (start/end word index) that we want to alias, tell us if
+    some part of the phrase has already been aliased.
+    """
+    (alias_phrase_start, alias_phrase_end,) = alias_phrase_range
+    for aliased_phrase_range in aliased_phrase_ranges:
+        (aliased_phrase_start, aliased_phrase_end,) = aliased_phrase_range
+        if alias_phrase_start >= aliased_phrase_start:
+            return True
+        elif alias_phrase_end <= aliased_phrase_end:
+            return True
+    return False

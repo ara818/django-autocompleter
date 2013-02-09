@@ -95,6 +95,8 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
             'US': 'United States',
             'Consumer Price Index': 'CPI',
             'Gross Domestic Product': 'GDP',
+            'California': 'CA',
+            'Canada': 'CA',
         }
 
 registry.register("indicator", IndicatorAutocompleteProvider)

@@ -226,6 +226,15 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('united states consumer price index')
         self.assertNotEqual(len(matches), 0)
 
+    def test_double_aliasing(self):
+        """
+        Double aliasing does not happen.
+        California -> CA -> Canada
+        """
+        matches = self.autocomp.suggest('california')
+        print matches
+        self.assertEqual(len(matches), 1)
+
 
 class MultiMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
