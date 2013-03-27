@@ -1,4 +1,4 @@
-
+import copy
 import re
 import unicodedata
 
@@ -44,22 +44,53 @@ def get_all_variations(term, phrase_aliases):
     Given the term and dict of phrase to phrase alias mappings,
     return all perumations of term with possible alias phrases substituted
     """
+    # We form a stack of different terms we come up with and put each new alias in
+    #then keep popping from it until the stack is empty. The stack allows us to
+    # alias different parts of already aliased terms
+    # ie. US CPI -> United Stats CPI -> United States Consumer Price Index
     term_stack = [term]
+
+    # Term aliases serves to functions:
+    # 1) The keys represent each successful term we have.
+    # 2) The values are each list of parts of the term that have been aliased to prevent
+    # double aliasing... i.e. California -> CA -> Canada.
     term_aliases = {term: []}
+
     while len(term_stack) != 0:
+        # Grab the term
         term = term_stack.pop()
+        # Get the ranges that have already been aliased for the term
         aliased_phrase_ranges = term_aliases[term]
+        # Get indices of all the phrases in that term
         phrase_map = get_phrase_indices_for_term(term)
         for phrase in phrase_map.keys():
+            # If the phrase has defined aliases, we try to replace with it's aliaes
             if phrase in phrase_aliases:
+                # Grab alias, and grab the range of words alias wants to replace
                 phrase_alias = phrase_aliases[phrase]
-                (phrase_start, phrase_end,) = phrase_map[phrase]
+                alias_phrase_range = phrase_map[phrase]
+                # If any part of the phrase meant to be replaced is itself an alias, then nevermind.
+                if term_phrase_already_aliased(alias_phrase_range, aliased_phrase_ranges):
+                    continue
+                # Otherwise grab the range of words we're about to replace and do the replacing!
+                (phrase_start, phrase_end,) = alias_phrase_range
                 term_words = term.split()
                 term_words[phrase_start:phrase_end] = [phrase_alias]
                 term_alias = ' '.join(term_words)
-                if term_alias not in term_aliases:
-                    term_aliases[term_alias] = []
-                    term_stack.append(term_alias)
+                # If newly aliased term is not a new term, then nevermind...Else can get in endless aliasing loop
+                if term_alias in term_aliases:
+                    continue
+                # Otherwise add new term to stack for further possible aliasing
+                term_stack.append(term_alias)
+                # And add to dict of aliased terms
+                # Aliased phrase ranges of this new term equals the already aliased phrase ranges
+                # of the parent term + this newly aliased phrase range
+                term_alias_phrase_ranges = copy.copy(aliased_phrase_ranges)
+                term_alias_phrase_ranges.append(alias_phrase_range)
+                term_aliases[term_alias] = term_alias_phrase_ranges
+
+    if term == 'us consumer price index':
+        print term_aliases
     return term_aliases.keys()
 
 

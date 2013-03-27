@@ -27,7 +27,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
     def test_store_and_remove_all_basic(self):
         """
-        Storing and removing items all the once works for a single-model autocompleter.
+        Storing and removing items all at once works for a single-model autocompleter.
         """
         autocomp = Autocompleter("stock")
 
@@ -41,7 +41,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
     def test_store_and_remove_all_basic_with_caching(self):
         """
-        Storing and removing items all the once works with caching turned on
+        Storing and removing items all at once works with caching turned on
         """
         # Let's turn on caching because that will store things in Redis and we want to make
         # sure we clean them up.
@@ -69,7 +69,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
     def test_store_and_remove_all_multi(self):
         """
-        Storing and removing items all the once works for a multi-model autocompleter.
+        Storing and removing items all at once works for a multi-model autocompleter.
         """
         autocomp = Autocompleter("mixed")
 

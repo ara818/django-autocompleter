@@ -231,7 +231,7 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
         Double aliasing does not happen.
         California -> CA -> Canada
         """
-        matches = self.autocomp.suggest('california')
+        matches = self.autocomp.suggest('california unemployment')
         print matches
         self.assertEqual(len(matches), 1)
 
