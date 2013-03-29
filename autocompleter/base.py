@@ -121,17 +121,28 @@ class AutocompleterProvider(AutocompleterBase):
         actual usage.
         DO NOT override this.
         """
-        if cls._phrase_aliases == None:
-            norm_phrase_aliases = {}
+        if cls._phrase_aliases is not None:
+            return cls._phrase_aliases
 
-            for key, value in cls.get_phrase_aliases().items():
-                norm_keys = utils.get_norm_term_variations(key)
+        norm_phrase_aliases = {}
+
+        # Here we build the dict where 1 phrase can map to 1 or more aliased phrases
+        for key, value in cls.get_phrase_aliases().items():
+            norm_keys = utils.get_norm_term_variations(key)
+            if type(value) == list:
+                norm_values = []
+                for v in value:
+                    norm_values += utils.get_norm_term_variations(v)
+            else:
                 norm_values = utils.get_norm_term_variations(value)
-                for norm_key in norm_keys:
-                    for norm_value in norm_values:
-                        norm_phrase_aliases[norm_key] = norm_value
-                        norm_phrase_aliases[norm_value] = norm_key
-            cls._phrase_aliases = norm_phrase_aliases
+
+            for norm_key in norm_keys:
+                for norm_value in norm_values:
+                    norm_phrase_alias = norm_phrase_aliases.setdefault(norm_key, [])
+                    norm_phrase_alias.append(norm_value)
+                    norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
+                    norm_phrase_alias.append(norm_key)
+        cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
 
     @classmethod

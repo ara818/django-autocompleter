@@ -199,43 +199,6 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MIN_LETTERS', 1)
 
 
-class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
-    fixtures = ['indicator_test_data_small.json']
-
-    def setUp(self):
-        self.autocomp = Autocompleter("indicator_aliased")
-        self.autocomp.store_all()
-        super(IndicatorAliasedMatchTestCase, self).setUp()
-
-    def tearDown(self):
-        self.autocomp.remove_all()
-
-    def test_aliasing(self):
-        """
-        Various permutations of aliased matching work
-        """
-        matches = self.autocomp.suggest('us consumer price index')
-        self.assertNotEqual(len(matches), 0)
-
-        matches = self.autocomp.suggest('united states consumer price index')
-        self.assertNotEqual(len(matches), 0)
-
-        matches = self.autocomp.suggest('us cpi')
-        self.assertNotEqual(len(matches), 0)
-
-        matches = self.autocomp.suggest('united states consumer price index')
-        self.assertNotEqual(len(matches), 0)
-
-    def test_double_aliasing(self):
-        """
-        Double aliasing does not happen.
-        California -> CA -> Canada
-        """
-        matches = self.autocomp.suggest('california unemployment')
-        print matches
-        self.assertEqual(len(matches), 1)
-
-
 class MultiMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
