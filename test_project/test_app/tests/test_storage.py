@@ -48,8 +48,8 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'CACHE_TIMEOUT', 3600)
 
         autocomp = Autocompleter("stock")
-
         autocomp.store_all()
+
         keys = self.redis.hkeys('djac.stock')
         self.assertEqual(len(keys), 101)
 

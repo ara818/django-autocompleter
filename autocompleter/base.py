@@ -28,9 +28,14 @@ class AutocompleterBase(object):
 
 
 class AutocompleterProvider(AutocompleterBase):
+    # Model this provider is related to
+    model = None
     # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
+    # Settings we want to override at the provider level
+    settings = {}
 
+    # Cache of all aliases for this provider, including all possible variations
     _phrase_aliases = None
 
     def __init__(self, obj):
@@ -63,6 +68,27 @@ class AutocompleterProvider(AutocompleterBase):
         """
         return [self.get_term()]
 
+    def _get_norm_terms(self):
+        """
+        Normalize each term in list of terms. Also, look to see if there are any aliases
+        for any words in the term and use them to create alternate normalized terms
+        DO NOT override this
+        """
+        terms = self.get_terms()
+
+        norm_terms = [utils.get_norm_term_variations(term) for term in terms]
+        norm_terms = itertools.chain(*norm_terms)
+
+        norm_terms_with_variations = []
+        # Now we get alternate norm terms by looking for alias phrases in any of the terms
+        phrase_aliases = self.__class__.get_norm_phrase_aliases()
+        if phrase_aliases is not None:
+            for norm_term in norm_terms:
+                norm_terms_with_variations = norm_terms_with_variations + \
+                    utils.get_all_variations(norm_term, phrase_aliases)
+
+        return norm_terms_with_variations
+
     def get_score(self):
         """
         The score for the object, that will dictate the order of autocompletion.
@@ -92,27 +118,6 @@ class AutocompleterProvider(AutocompleterBase):
         Will normally not have to override this.
         """
         return cls.model._default_manager.all()
-
-    def get_norm_terms(self):
-        """
-        Normalize each term in list of terms. Also, look to see if there are any aliases
-        for any words in the term and use them to create alternate normalized terms
-        DO NOT override this
-        """
-        terms = self.get_terms()
-
-        norm_terms = [utils.get_norm_term_variations(term) for term in terms]
-        norm_terms = itertools.chain(*norm_terms)
-
-        norm_terms_with_variations = []
-        # Now we get alternate norm terms by looking for alias phrases in any of the terms
-        phrase_aliases = self.__class__.get_norm_phrase_aliases()
-        if phrase_aliases != None:
-            for norm_term in norm_terms:
-                norm_terms_with_variations = norm_terms_with_variations + \
-                    utils.get_all_variations(norm_term, phrase_aliases)
-
-        return norm_terms_with_variations
 
     @classmethod
     def get_norm_phrase_aliases(cls):
@@ -161,7 +166,7 @@ class AutocompleterProvider(AutocompleterBase):
         # Init data
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
-        norm_terms = self.get_norm_terms()
+        norm_terms = self._get_norm_terms()
         score = self.get_score()
         data = self.get_data()
 
@@ -222,7 +227,7 @@ class AutocompleterProvider(AutocompleterBase):
         # Init data
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
-        norm_terms = self.get_norm_terms()
+        norm_terms = self._get_norm_terms()
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -269,7 +274,7 @@ class Autocompleter(AutocompleterBase):
         Store all objects of all providers register with this autocompleter.
         """
         provider_classes = self._get_all_providers_by_autocompleter()
-        if provider_classes == None:
+        if provider_classes is None:
             return
 
         for provider_class in provider_classes:
@@ -282,7 +287,7 @@ class Autocompleter(AutocompleterBase):
         This will clear the autocompleter even when the underlying objects don't exist.
         """
         provider_classes = self._get_all_providers_by_autocompleter()
-        if provider_classes == None:
+        if provider_classes is None:
             return
 
         for provider_class in provider_classes:
@@ -356,7 +361,7 @@ class Autocompleter(AutocompleterBase):
         Suggest matching objects, given a term
         """
         providers = self._get_all_providers_by_autocompleter()
-        if providers == None:
+        if providers is None:
             return []
 
         # If we have a cached version of the search results available, return it!
@@ -448,7 +453,7 @@ class Autocompleter(AutocompleterBase):
         Suggest matching objects exacting matching term given, given a term
         """
         providers = self._get_all_providers_by_autocompleter()
-        if providers == None:
+        if providers is None:
             return []
 
         # If we have a cached version of the search results available, return it!
@@ -508,7 +513,7 @@ class Autocompleter(AutocompleterBase):
         for provider_name, ids in provider_results.items():
             if len(ids) > 0:
                 provider_results[provider_name] = \
-                    [self._deserialize_data(i) for i in results.pop(0) if i != None]
+                    [self._deserialize_data(i) for i in results.pop(0) if i is not None]
 
         if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results.keys()) == 1:
             provider_results = provider_results.values()[0]

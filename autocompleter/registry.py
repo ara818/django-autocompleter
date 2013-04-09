@@ -14,7 +14,7 @@ class AutocompleterRegistry(object):
         Register an autocompleter wit ha  provider.
         Each autocompleter can have multiple providers.
         """
-        if provider == None:
+        if provider is None:
             return
 
         if ac_name not in self._providers_by_ac:
@@ -31,7 +31,7 @@ class AutocompleterRegistry(object):
         # Note: the reason we default local_settings to None, then set to a dict is when we had
         # local_settings default to {} it was a reference to the same dict so when a setting
         # for one AC/provider was set, it was set for all AC/provider pairs.
-        if local_settings == None:
+        if local_settings is None:
             local_settings = {}
         self._ac_provider_settings[combined_name] = local_settings
 
@@ -39,13 +39,13 @@ class AutocompleterRegistry(object):
         """
         Unregister a provider from the autocompleter.
         """
-        if provider == None:
+        if provider is None:
             return
         if ac_name in self._providers_by_ac and \
-            provider in self._providers_by_ac[ac_name]:
+                provider in self._providers_by_ac[ac_name]:
             self._providers_by_ac[ac_name].remove(provider)
         if provider.model in self._providers_by_model and \
-            provider in self._providers_by_model[provider.model]:
+                provider in self._providers_by_model[provider.model]:
             self._providers_by_model[provider.model].remove(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
@@ -57,20 +57,54 @@ class AutocompleterRegistry(object):
         return self._providers_by_ac[ac_name]
 
     def get_all_by_model(self, model=None):
-        if model == None:
+        if model is None:
             return None
         if model not in self._providers_by_model:
             return None
         return self._providers_by_model[model]
 
+    def get_provider_setting(self, provider, setting_name):
+        """
+        Get a provider specific setting.
+        If that doesn't eixst, fall back to the global version of the setting.
+        """
+        # Provider specific version
+        if setting_name in provider.settings:
+            return provider.settings['']
+        # Global version
+        return getattr(settings, setting_name)
+
+    def set_provider_setting(self, provider, setting_name, setting_value):
+        """
+        Set a provider specific setting.
+        Note: This is probably only be used by the test suite to test override settings
+        post registration so we can assure setting overriding works
+        """
+        provider.settings[setting_name] = setting_value
+
+    def del_provider_setting(self, provider, setting_name):
+        """
+        Delete an provider specific setting.
+        Note: This is probably only be used by the test suite to test override settings
+        post registration so we can assure setting overriding works
+        """
+        if setting_name in provider.settings:
+            del provider.settings[setting_name]
+
     def get_ac_provider_setting(self, ac_name, provider, setting_name):
         """
         Get an autocompleter/provider specific setting.
-        If it doesn't exist, fallback to the global version of the setting
+        If that doesn't exist, fallback to the provider specific setting.
+        If that doesn't eixst, fall back to the global version of the setting.
         """
+        # AC/Provider specific version
         combined_name = "%s%s" % (ac_name, provider,)
         if setting_name in self._ac_provider_settings[combined_name]:
             return self._ac_provider_settings[combined_name][setting_name]
+        # Provider specific version
+        if setting_name in provider.settings:
+            return provider.settings['']
+        # Global version
         return getattr(settings, setting_name)
 
     def set_ac_provider_setting(self, ac_name, provider, setting_name, setting_value):
@@ -97,7 +131,7 @@ registry = AutocompleterRegistry()
 
 
 def add_obj_to_autocompleter(sender, instance, created, **kwargs):
-    if instance == None:
+    if instance is None:
         return
 
     providers = registry.get_all_by_model(sender)
@@ -117,7 +151,7 @@ def remove_old_obj_from_autocompleter(sender, instance, **kwargs):
 
 
 def remove_obj_from_autocompleter(sender, instance, **kwargs):
-    if instance == None:
+    if instance is None:
         return
 
     providers = registry.get_all_by_model(sender)
