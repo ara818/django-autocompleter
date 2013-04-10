@@ -101,6 +101,13 @@ class AutocompleterProvider(AutocompleterBase):
         """
         return {}
 
+    def include_object(self):
+        """
+        Whether this object should be included in the autocompleter at all. By default, all objects
+        in the model are included.
+        """
+        return True
+
     @classmethod
     def get_phrase_aliases(cls):
         """

@@ -35,9 +35,6 @@ class StockAutocompleteProvider(AutocompleterProvider):
             'search_name': self.obj.symbol,
         }
 
-registry.register("stock", StockAutocompleteProvider)
-registry.register("mixed", StockAutocompleteProvider)
-
 
 class Indicator(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -99,6 +96,35 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
             'Canada': 'CA',
         }
 
+
+class IndicatorSelectiveAutocompleteProvider(AutocompleterProvider):
+    model = Indicator
+
+    provider_name = "indsel"
+
+    def get_term(self):
+        return self.obj.name
+
+    def get_score(self):
+        return self.obj.score
+
+    def get_data(self):
+        return {
+            'type': 'indicator',
+            'id': self.obj.id,
+            'score': self.get_score(),
+            'display_name': u'%s' % (self.obj.name,),
+            'search_name': u'%s' % (self.obj.internal_name,),
+        }
+
+    def include_object(self):
+        if self.obj.name == 'US Unemployment Rate':
+            return False
+        return True
+
+registry.register("stock", StockAutocompleteProvider)
+registry.register("mixed", StockAutocompleteProvider)
+registry.register("mixed", IndicatorAutocompleteProvider)
 registry.register("indicator", IndicatorAutocompleteProvider)
 registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
-registry.register("mixed", IndicatorAutocompleteProvider)
+registry.register("indicator_selective", IndicatorSelectiveAutocompleteProvider)

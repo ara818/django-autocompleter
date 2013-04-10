@@ -3,7 +3,6 @@
 
 from test_app.tests.base import AutocompleterTestCase
 from autocompleter import Autocompleter
-from autocompleter import settings as auto_settings
 
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):

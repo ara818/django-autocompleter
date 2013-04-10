@@ -23,9 +23,9 @@ class StockExactStorageTestCase(AutocompleterTestCase):
 
     def test_exact_matches_stored_when_turned_on(self):
         """
-        We store exact matches when SUPPORT_EXACT_MATCHING is turned on
+        We store exact matches when MAX_EXACT_MATCH_WORDS is turned on
         """
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', True)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         autocomp = Autocompleter("stock")
         autocomp.store_all()
@@ -35,7 +35,28 @@ class StockExactStorageTestCase(AutocompleterTestCase):
         autocomp.remove_all()
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', False)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
+
+    def test_exact_matches_respect_max_words(self):
+        """
+        We don't store exact matches greater than the number of words in MAX_EXACT_MATCH_WORDS
+        """
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
+        autocomp = Autocompleter("stock")
+        autocomp.store_all()
+        matches = autocomp.exact_suggest('International Business Machines Corporation')
+        self.assertEqual(len(matches), 1)
+        autocomp.remove_all()
+
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 2)
+        autocomp = Autocompleter("stock")
+        autocomp.store_all()
+        matches = autocomp.exact_suggest('International Business Machines Corporation')
+        self.assertEqual(len(matches), 0)
+        autocomp.remove_all()
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
 
 
 class MultiExactStorageTestCase(AutocompleterTestCase):
@@ -57,9 +78,9 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
 
     def test_exact_matches_stored_when_turned_on(self):
         """
-        We store exact matches when SUPPORT_EXACT_MATCHING is turned on, in the multi-provider case
+        We store exact matches when MAX_EXACT_MATCH_WORDS is turned on, in the multi-provider case
         """
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', True)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
@@ -72,14 +93,14 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         autocomp.remove_all()
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', False)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
 
-    def test_provider_specific_support_exact_matching_setting(self):
+    def test_provider_specific_max_exact_match_words_setting(self):
         """
         We can store exact matches for 1 individual provider, and not others
         """
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', True)
-        registry.set_provider_setting(IndicatorAutocompleteProvider, 'SUPPORT_EXACT_MATCHING', False)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
+        registry.set_provider_setting(IndicatorAutocompleteProvider, 'MAX_EXACT_MATCH_WORDS', 0)
 
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
@@ -91,22 +112,22 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         self.assertTrue(self.redis.exists('djac.ind.es'))
         autocomp.remove_all()
 
-        registry.del_provider_setting(IndicatorAutocompleteProvider, 'SUPPORT_EXACT_MATCHING')
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', False)
+        registry.del_provider_setting(IndicatorAutocompleteProvider, 'MAX_EXACT_MATCH_WORDS')
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
 
 
 class StockExactMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', True)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         self.autocomp = Autocompleter("stock")
         self.autocomp.store_all()
         super(StockExactMatchTestCase, self).setUp()
 
     def tearDown(self):
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', False)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
         self.autocomp.remove_all()
 
     def test_exact_suggest(self):
@@ -149,14 +170,14 @@ class MultiExactMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
     def setUp(self):
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', True)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
         super(MultiExactMatchTestCase, self).setUp()
 
     def tearDown(self):
-        setattr(auto_settings, 'SUPPORT_EXACT_MATCHING', False)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
         self.autocomp.remove_all()
 
     def test_exact_suggest(self):

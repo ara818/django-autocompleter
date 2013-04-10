@@ -88,6 +88,26 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 0)
 
 
+class SelectiveStoringTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
+    def test_selective_add_and_remove(self):
+        """
+        We can exclude certain objects from the autocompleter selectively.
+        """
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+        matches = autocomp.suggest('us unemployment rate')
+        self.assertEqual(len(matches), 1)
+        autocomp.remove_all()
+
+        autocomp = Autocompleter("indicator_selective")
+        autocomp.store_all()
+        matches = autocomp.suggest('us unemployment rate')
+        self.assertEqual(len(matches), 0)
+        autocomp.remove_all()
+
+
 class SignalBasedStoringTestCase(AutocompleterTestCase):
     def test_signal_based_add_and_remove(self):
         """

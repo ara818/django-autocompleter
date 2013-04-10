@@ -20,13 +20,13 @@ MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 # Note: AC/Provider and Provider override possible
 MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
 
-# Whether we should have concept of exact matches. Mainly to move exact matches to top of
-# result (see below). Also to provide exact match autocompleting instead of prefix autocompleting
+# Maximum number of words in term we should be able to match as exact match. Default is 0,
+# which means there is no exact matching at all.
 # Note: Provider override possible
-SUPPORT_EXACT_MATCHING = getattr(settings, 'AUTOCOMPLETER_SUPPORT_EXACT_MATCHING', False)
+MAX_EXACT_MATCH_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_EXACT_MATCH_WORDS', False)
 
 # Whether to detect exact matches and move them to top of the results set (ignoring score)
-# This will obviously not work if SUPPORT_EXACT_MATCHING if False for your install or your provider.
+# This will obviously not work if MAX_EXACT_MATCH_WORDS == 0 for your install or your provider.
 # Note: AC/Provider and Provider override possible
 MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
 
