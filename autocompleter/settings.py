@@ -23,7 +23,7 @@ MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
 # Maximum number of words in term we should be able to match as exact match. Default is 0,
 # which means there is no exact matching at all.
 # Note: Provider override possible
-MAX_EXACT_MATCH_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_EXACT_MATCH_WORDS', False)
+MAX_EXACT_MATCH_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_EXACT_MATCH_WORDS', 0)
 
 # Whether to detect exact matches and move them to top of the results set (ignoring score)
 # This will obviously not work if MAX_EXACT_MATCH_WORDS == 0 for your install or your provider.
