@@ -171,6 +171,8 @@ class AutocompleterProvider(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
+        if not self.include_object():
+            return
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
         norm_terms = self._get_norm_terms()

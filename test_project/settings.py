@@ -36,3 +36,5 @@ NOSE_ARGS = [
     #'--with-coverage',
     #'--cover-package=autocompleter'
 ]
+
+SECRET_KEY = 'asdvdfbdgbrf076'
