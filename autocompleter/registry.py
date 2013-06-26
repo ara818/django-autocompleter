@@ -36,12 +36,11 @@ class AutocompleterRegistry(object):
             local_settings = {}
         self._ac_provider_settings[combined_name] = local_settings
 
+        # Do this b/c similar issue with local_settings
         if provider.provider_name not in self._provider_settings:
-            if provider.settings != None:
-                provider_settings = provider.settings
-            else:
-                provider_settings = {}
-            self._provider_settings[provider.provider_name] = provider_settings
+            if provider.settings is None:
+                provider.settings = {}
+            self._provider_settings[provider.provider_name] = provider.settings
 
     def unregister(self, ac_name, provider):
         """

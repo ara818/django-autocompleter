@@ -98,7 +98,6 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         """
         We can store exact matches for 1 individual provider, and not others
         """
-        # Ara!!! Pretty sure 109 and 112 were  swapped!  109 was assertFalse, 112 was assertTrue.  
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
         registry.set_provider_setting(IndicatorAutocompleteProvider, 'MAX_EXACT_MATCH_WORDS', 0)
         autocomp = Autocompleter("mixed")
