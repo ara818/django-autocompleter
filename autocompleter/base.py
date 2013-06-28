@@ -153,6 +153,8 @@ class AutocompleterProvider(AutocompleterBase):
                     norm_phrase_alias.append(norm_value)
                     norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
                     norm_phrase_alias.append(norm_key)
+                    norm_phrase_alias += [i for i in norm_values if i is not norm_value]
+
         cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
 
