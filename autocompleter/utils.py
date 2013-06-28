@@ -33,9 +33,14 @@ def get_norm_term_variations(term):
     """
     Get variations of a term in formalized form
     """
-    norm_terms = [get_normalized_term(term, dash_replacement='')]
+    norm_terms = []
+    norm_term = get_normalized_term(term, dash_replacement='')
+    if norm_term.strip() != '':
+        norm_terms.append(norm_term)
     if '-' in term:
-        norm_terms.append(get_normalized_term(term, dash_replacement=' '))
+        norm_term = get_normalized_term(term, dash_replacement=' ')
+        if norm_term.strip() != '':
+            norm_terms.append(norm_term)
     return norm_terms
 
 

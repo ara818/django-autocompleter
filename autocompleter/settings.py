@@ -16,6 +16,7 @@ CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-
 # Note: AC/Provider and Provider override possible
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
+
 # Minimum number of letters required to start returning results
 # Note: AC/Provider and Provider override possible
 MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)

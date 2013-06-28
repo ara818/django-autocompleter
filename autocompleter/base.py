@@ -380,7 +380,6 @@ class Autocompleter(AutocompleterBase):
         # Get the normalized we need to search for each term... A single term
         # could turn into multiple terms we need to search.
         norm_terms = utils.get_norm_term_variations(term)
-
         provider_results = SortedDict()
 
         # Get the matched result IDs
@@ -398,6 +397,8 @@ class Autocompleter(AutocompleterBase):
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
+                if len(norm_words) == 0:
+                    continue
                 result_key = "djac.results.%s" % (norm_term,)
                 result_keys.append(result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
@@ -410,6 +411,7 @@ class Autocompleter(AutocompleterBase):
                 keys = []
                 for norm_term in norm_terms:
                     keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+
                 pipe.zunionstore("djac.results", keys, aggregate='MIN')
                 pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
 
@@ -467,7 +469,6 @@ class Autocompleter(AutocompleterBase):
         cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
-
         provider_results = SortedDict()
 
         # Get the normalized we need to search for each term... A single term
