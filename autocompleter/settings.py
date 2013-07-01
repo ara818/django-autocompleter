@@ -1,3 +1,5 @@
+import itertools
+
 from django.conf import settings
 
 # Redis connection parameters
@@ -34,3 +36,7 @@ MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_
 # whether the results set is "flattened" so that it no longer uses the data structure needed
 # to return multi-type results
 FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TYPE_RESULTS', True)
+
+JOIN_CHARS = getattr(settings, 'JOIN_CHARS', ['-', '/'])
+
+JOIN_CHARS_COMBINATIONS = [''.join(i) for i in list(itertools.chain.from_iterable(list(itertools.chain([list(itertools.combinations(JOIN_CHARS, num_items)) for num_items in range(len(JOIN_CHARS))]))))]

@@ -380,7 +380,7 @@ class Autocompleter(AutocompleterBase):
 
         # If we have a cached version of the search results available, return it!
         cache_key = CACHE_BASE_NAME % \
-            (self.name, utils.get_normalized_term(term),)
+            (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS))
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
 

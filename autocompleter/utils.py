@@ -4,8 +4,16 @@ import unicodedata
 
 from autocompleter import settings
 
+def replace_all(string, replace=[], with_this=''):
+    '''
+    replace all items in replace with with
+    '''
+    for i in replace:
+        string = string.replace(i, with_this)
+    return string
 
-def get_normalized_term(term, dash_replacement=''):
+
+def get_normalized_term(term, replaced_chars=[]):
     """
     Convert the term into a basic form that's easier to search.
     1) Force convert from text to unicode if necessary
@@ -23,7 +31,8 @@ def get_normalized_term(term, dash_replacement=''):
     term = unicodedata.normalize('NFKD', unicode(term)).encode('ASCII', 'ignore')
     term = term.replace('&', 'and')
     term = term.strip()
-    term = term.replace('-', dash_replacement)
+    term = replace_all(term, replace=replaced_chars, with_this=' ')
+    term = replace_all(term, replace=settings.JOIN_CHARS, with_this='')
     term = re.sub(r'[\s]+', ' ', term)
     term = re.sub(settings.CHARACTER_FILTER, '', term)
     return term
@@ -33,9 +42,12 @@ def get_norm_term_variations(term):
     """
     Get variations of a term in formalized form
     """
-    norm_terms = [get_normalized_term(term, dash_replacement='')]
-    if '-' in term:
-        norm_terms.append(get_normalized_term(term, dash_replacement=' '))
+    norm_terms = []
+    combinations = settings.JOIN_CHARS_COMBINATIONS
+    for i in combinations:
+        norm_term = get_normalized_term(term, i)
+        if i not in norm_terms:
+            norm_terms.append(norm_term)
     return norm_terms
 
 
