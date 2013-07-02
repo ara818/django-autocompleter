@@ -18,6 +18,7 @@ CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-
 # Note: AC/Provider and Provider override possible
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
+
 # Minimum number of letters required to start returning results
 # Note: AC/Provider and Provider override possible
 MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
@@ -37,6 +38,10 @@ MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_
 # to return multi-type results
 FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TYPE_RESULTS', True)
 
+# Characters we want the autocompleter to interpret as both a space and a blank string.
+# Meaning by defualt, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
 JOIN_CHARS = getattr(settings, 'JOIN_CHARS', ['-', '/'])
-
-JOIN_CHARS_COMBINATIONS = [''.join(i) for i in list(itertools.chain.from_iterable(list(itertools.chain([list(itertools.combinations(JOIN_CHARS, num_items)) for num_items in range(len(JOIN_CHARS))]))))]
+# Create all possible combinations of JOIN_CHARS here because it is a bit too cumbersome to do repeatedly in normalization functions.
+JOIN_CHARS_COMBINATIONS = [''.join(i) for i in \
+	list(itertools.chain.from_iterable(list(itertools.chain([list(itertools.combinations(JOIN_CHARS, num_items)) \
+	for num_items in range(len(JOIN_CHARS))]))))]

@@ -44,14 +44,14 @@ def get_norm_term_variations(term):
     """
     norm_terms = []
     combinations = settings.JOIN_CHARS_COMBINATIONS
-    for i in combinations:
-        norm_term = get_normalized_term(term, i)
-        if i not in norm_terms:
+    for combo in combinations:
+        norm_term = get_normalized_term(term, combo)
+        if norm_term.strip() != '' and norm_term not in norm_terms:
             norm_terms.append(norm_term)
     return norm_terms
 
 
-def get_all_variations(term, phrase_aliases):
+def get_aliased_variations(term, phrase_aliases):
     """
     Given the term and dict of phrase to phrase alias mappings,
     return all perumations of term with possible alias phrases substituted

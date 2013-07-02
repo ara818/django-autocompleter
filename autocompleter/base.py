@@ -32,8 +32,6 @@ class AutocompleterProvider(AutocompleterBase):
     model = None
     # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
-    # Settings we want to override at the provider level
-    settings = None
     # Cache of all aliases for this provider, including all possible variations
     _phrase_aliases = None
 
@@ -84,7 +82,7 @@ class AutocompleterProvider(AutocompleterBase):
         if phrase_aliases is not None:
             for norm_term in norm_terms:
                 norm_terms_with_variations = norm_terms_with_variations + \
-                    utils.get_all_variations(norm_term, phrase_aliases)
+                    utils.get_aliased_variations(norm_term, phrase_aliases)
 
         return norm_terms_with_variations
 
@@ -153,7 +151,9 @@ class AutocompleterProvider(AutocompleterBase):
                     norm_phrase_alias.append(norm_value)
                     norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
                     norm_phrase_alias.append(norm_key)
-                    norm_phrase_alias += [i for i in norm_values if i is not norm_value]
+                    for i in norm_values:
+                        if i not in norm_phrase_alias and i is not norm_value:
+                            norm_phrase_alias.append(i)
 
         cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
@@ -387,7 +387,6 @@ class Autocompleter(AutocompleterBase):
         # Get the normalized we need to search for each term... A single term
         # could turn into multiple terms we need to search.
         norm_terms = utils.get_norm_term_variations(term)
-
         provider_results = SortedDict()
 
         # Get the matched result IDs
@@ -405,6 +404,8 @@ class Autocompleter(AutocompleterBase):
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
+                if len(norm_words) == 0:
+                    continue
                 result_key = "djac.results.%s" % (norm_term,)
                 result_keys.append(result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
@@ -417,6 +418,7 @@ class Autocompleter(AutocompleterBase):
                 keys = []
                 for norm_term in norm_terms:
                     keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+
                 pipe.zunionstore("djac.results", keys, aggregate='MIN')
                 pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
 
@@ -474,7 +476,6 @@ class Autocompleter(AutocompleterBase):
         cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self._deserialize_data(REDIS.get(cache_key))
-
         provider_results = SortedDict()
 
         # Get the normalized we need to search for each term... A single term
