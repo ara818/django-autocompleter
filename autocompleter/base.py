@@ -32,8 +32,6 @@ class AutocompleterProvider(AutocompleterBase):
     model = None
     # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
-    # Settings we want to override at the provider level
-    settings = None
     # Cache of all aliases for this provider, including all possible variations
     _phrase_aliases = None
 
@@ -153,7 +151,9 @@ class AutocompleterProvider(AutocompleterBase):
                     norm_phrase_alias.append(norm_value)
                     norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
                     norm_phrase_alias.append(norm_key)
-                    norm_phrase_alias += [i for i in norm_values if i is not norm_value]
+                    for i in norm_values:
+                        if i not in norm_phrase_alias and i is not norm_value:
+                            norm_phrase_alias.append(i)
 
         cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases

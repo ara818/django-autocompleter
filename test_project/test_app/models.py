@@ -11,7 +11,6 @@ class Stock(models.Model):
 
 class StockAutocompleteProvider(AutocompleterProvider):
     model = Stock
-
     provider_name = "stock"
 
     def get_terms(self):
@@ -89,7 +88,7 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
     @classmethod
     def get_phrase_aliases(self):
         return {
-            'United States': ['US', 'USA', 'America'],
+            'United States': ['US', 'USA', 'America', 'U-S-A'],
             'Consumer Price Index': 'CPI',
             'Gross Domestic Product': 'GDP',
             'California': 'CA',
@@ -101,6 +100,7 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterProvider):
     model = Indicator
 
     provider_name = "indsel"
+    settings = {}
 
     def get_term(self):
         return self.obj.name

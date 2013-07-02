@@ -8,7 +8,6 @@ class AutocompleterRegistry(object):
         self._providers_by_ac = {}
         self._providers_by_model = {}
         self._ac_provider_settings = {}
-        self._provider_settings = {}
 
     def register(self, ac_name, provider, local_settings=None):
         """
@@ -35,12 +34,6 @@ class AutocompleterRegistry(object):
         if local_settings is None:
             local_settings = {}
         self._ac_provider_settings[combined_name] = local_settings
-
-        # Do this b/c similar issue with local_settings
-        if provider.provider_name not in self._provider_settings:
-            if provider.settings is None:
-                provider.settings = {}
-            self._provider_settings[provider.provider_name] = provider.settings
 
     def unregister(self, ac_name, provider):
         """
@@ -76,10 +69,11 @@ class AutocompleterRegistry(object):
         If that doesn't eixst, fall back to the global version of the setting.
         """
         # Provider specific version
-        if setting_name in self._provider_settings[provider.provider_name]:
-            return self._provider_settings[provider.provider_name][setting_name]
-        # Global version
-        return getattr(settings, setting_name)
+        try:
+            provider_settings = getattr(provider, 'settings')
+            return provider_settings[setting_name]
+        except (AttributeError, KeyError):
+            return getattr(settings, setting_name)
 
     def set_provider_setting(self, provider, setting_name, setting_value):
         """
@@ -87,7 +81,11 @@ class AutocompleterRegistry(object):
         Note: This is probably only be used by the test suite to test override settings
         post registration so we can assure setting overriding works
         """
-        self._provider_settings[provider.provider_name][setting_name] = setting_value
+        try:
+            provider_settings = getattr(provider, 'settings')
+        except AttributeError:
+            setattr(provider, 'settings', {})
+            provider.settings[setting_name] = setting_value
 
     def del_provider_setting(self, provider, setting_name):
         """
@@ -95,8 +93,11 @@ class AutocompleterRegistry(object):
         Note: This is probably only be used by the test suite to test override settings
         post registration so we can assure setting overriding works
         """
-        if setting_name in self._provider_settings[provider.provider_name]:
-            del self._provider_settings[provider.provider_name][setting_name]
+        try:
+            provider_settings = getattr(provider, 'settings')
+            del(provider_settings[setting_name])
+        except (AttributeError, KeyError):
+            return
 
     def get_ac_provider_setting(self, ac_name, provider, setting_name):
         """
@@ -109,10 +110,13 @@ class AutocompleterRegistry(object):
         if setting_name in self._ac_provider_settings[combined_name]:
             return self._ac_provider_settings[combined_name][setting_name]
         # Provider specific version
-        if setting_name in self._provider_settings[provider.provider_name]:
-            return self._provider_settings[provider.provider_name][setting_name]
-        # Global version
-        return getattr(settings, setting_name)
+        try:
+            provider_settings = getattr(provider, 'settings')
+            setting_value = provider_settings['setting_name']
+            return setting_value
+        except (KeyError, AttributeError):
+            # Global version
+            return getattr(settings, setting_name)
 
     def set_ac_provider_setting(self, ac_name, provider, setting_name, setting_value):
         """
