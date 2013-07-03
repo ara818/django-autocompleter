@@ -76,7 +76,7 @@ def get_aliased_variations(term, phrase_aliases):
         # Get indices of all the phrases in that term and iterate through all phrases in term
         phrase_map = get_phrase_indices_for_term(term)
         for phrase in phrase_map.keys():
-            # If the phrase has defined aliases, we try to replace with it's aliae
+            # If the phrase has defined aliases, we try to replace with it's aliases
             if phrase in phrase_aliases:
                 # First we get the index of the start/end words of the phrasein the term
                 # the alias is meant to replace
