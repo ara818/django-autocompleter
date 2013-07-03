@@ -41,7 +41,7 @@ FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TY
 # Characters we want the autocompleter to interpret as both a space and a blank string.
 # Meaning by defualt, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
 JOIN_CHARS = getattr(settings, 'JOIN_CHARS', ['-', '/'])
+
 # Create all possible combinations of JOIN_CHARS here because it is a bit too cumbersome to do repeatedly in normalization functions.
-JOIN_CHARS_COMBINATIONS = [''.join(i) for i in \
-	list(itertools.chain.from_iterable(list(itertools.chain([list(itertools.combinations(JOIN_CHARS, num_items)) \
-	for num_items in range(len(JOIN_CHARS))]))))]
+JOIN_CHAR_COMBINATIONS = [list(subset) for n in range(len(JOIN_CHARS) + 1) \
+                            for subset in itertools.combinations(JOIN_CHARS, n)]

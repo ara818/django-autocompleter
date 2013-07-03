@@ -88,7 +88,7 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
     @classmethod
     def get_phrase_aliases(self):
         return {
-            'United States': ['US', 'USA', 'America', 'U-S-A'],
+            'United States': ['US', 'USA', 'America', 'U-S-A', 'U/S-A'],
             'Consumer Price Index': 'CPI',
             'Gross Domestic Product': 'GDP',
             'California': 'CA',

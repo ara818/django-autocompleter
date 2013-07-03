@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from autocompleter import Autocompleter
+from autocompleter import Autocompleter, registry
 
 
 class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
@@ -31,6 +31,22 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
 
         matches = self.autocomp.suggest('united states consumer price index')
         self.assertNotEqual(len(matches), 0)
+
+        matches = self.autocomp.suggest('u s a consumer price index')
+        self.assertNotEqual(len(matches), 0)
+
+    def test_alias_list_creation(self):
+        """
+        Alias lists do not contain doubles
+        """
+        provider = registry._providers_by_ac["indicator_aliased"][0]
+        aliases = provider.get_norm_phrase_aliases()
+        usa_aliases = aliases['usa']
+        self.assertTrue('u sa' in usa_aliases)
+        self.assertTrue('us a' in usa_aliases)
+        self.assertTrue('u s a' in usa_aliases)
+        self.assertFalse('usa' in usa_aliases)
+
 
     def test_multi_term_aliasing(self):
         matches = self.autocomp.suggest('us consumer price index')

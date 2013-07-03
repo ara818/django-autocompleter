@@ -144,15 +144,19 @@ class AutocompleterProvider(AutocompleterBase):
                     norm_values += utils.get_norm_term_variations(v)
             else:
                 norm_values = utils.get_norm_term_variations(value)
-
+            norm_values = set(norm_values)
+            norm_keys = set(norm_keys)
             for norm_key in norm_keys:
                 for norm_value in norm_values:
+                    if norm_value == norm_key:
+                        continue
                     norm_phrase_alias = norm_phrase_aliases.setdefault(norm_key, [])
                     norm_phrase_alias.append(norm_value)
                     norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
-                    norm_phrase_alias.append(norm_key)
+                    if norm_key not in norm_phrase_alias:
+                        norm_phrase_alias.append(norm_key)
                     for i in norm_values:
-                        if i not in norm_phrase_alias and i is not norm_value:
+                        if i not in norm_phrase_alias and i != norm_value:
                             norm_phrase_alias.append(i)
 
         cls._phrase_aliases = norm_phrase_aliases

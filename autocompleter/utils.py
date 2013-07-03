@@ -43,11 +43,12 @@ def get_norm_term_variations(term):
     Get variations of a term in formalized form
     """
     norm_terms = []
-    combinations = settings.JOIN_CHARS_COMBINATIONS
+    combinations = settings.JOIN_CHAR_COMBINATIONS
     for combo in combinations:
         norm_term = get_normalized_term(term, combo)
         if norm_term.strip() != '' and norm_term not in norm_terms:
             norm_terms.append(norm_term)
+
     return norm_terms
 
 
