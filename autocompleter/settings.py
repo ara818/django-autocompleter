@@ -38,4 +38,4 @@ FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TY
 
 # Characters we want the autocompleter to interpret as both a space and a blank string.
 # Meaning by defualt, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
-JOIN_CHARS = getattr(settings, 'JOIN_CHARS', '-/')
+JOIN_CHARS = getattr(settings, 'AUTOCOMPLETER_JOIN_CHARS', ['-', '/'])

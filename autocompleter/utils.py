@@ -5,17 +5,16 @@ import itertools
 
 from autocompleter import settings
 
-def replace_all(string, replace='', with_this=''):
+def replace_all(string, replace=[], with_this=''):
     '''
     replace all items in replace with with
     '''
-    if replace != '':
-        replace_regex = r'[%s]' % replace
-        string = re.sub(replace_regex, with_this, string)
+    for i in replace:
+        string = string.replace(i, with_this)
     return string
 
 
-def get_normalized_term(term, replaced_chars=''):
+def get_normalized_term(term, replaced_chars=[]):
     """
     Convert the term into a basic form that's easier to search.
     1) Force convert from text to unicode if necessary
@@ -33,7 +32,7 @@ def get_normalized_term(term, replaced_chars=''):
     term = unicodedata.normalize('NFKD', unicode(term)).encode('ASCII', 'ignore')
     term = term.replace('&', 'and')
     term = term.strip()
-    if replaced_chars != '':
+    if replaced_chars != []:
         term = replace_all(term, replace=replaced_chars, with_this=' ')
     term = re.sub(r'[\s]+', ' ', term)
     term = re.sub(settings.CHARACTER_FILTER, '', term)
@@ -61,7 +60,7 @@ def get_norm_term_variations(term):
             if norm_term.strip() != '' and norm_term not in norm_terms:
                 norm_terms.append(norm_term)
     else:
-        norm_terms = [get_normalized_term(term, '')]
+        norm_terms.append(get_normalized_term(term, []))
     return norm_terms
 
 
