@@ -1,29 +1,31 @@
 import copy
 import re
 import unicodedata
+import itertools
 
 from autocompleter import settings
 
-def replace_all(string, replace=[], with_this=''):
+def replace_all(string, replace='', with_this=''):
     '''
     replace all items in replace with with
     '''
-    for i in replace:
-        string = string.replace(i, with_this)
+    if replace != '':
+        replace_regex = r'[%s]' % replace
+        string = re.sub(replace_regex, with_this, string)
     return string
 
 
-def get_normalized_term(term, replaced_chars=[]):
+def get_normalized_term(term, replaced_chars=''):
     """
     Convert the term into a basic form that's easier to search.
     1) Force convert from text to unicode if necessary
     2) Make lowercase
     3) Convert to ASCII, switching characters with accents to their non-accented form
     4) Replace & with and
-    5) (Optionally) remove dashes
     5) Trim white space off end and beginning
-    6) Remove extra spaces
-    7) Remove all characters that are not alphanumeric
+    6) (Optionally) remove dashes
+    7) Remove extra spaces
+    8) Remove all characters that are not alphanumeric
     """
     if type(term) == str:
         term = term.decode('utf-8')
@@ -31,8 +33,8 @@ def get_normalized_term(term, replaced_chars=[]):
     term = unicodedata.normalize('NFKD', unicode(term)).encode('ASCII', 'ignore')
     term = term.replace('&', 'and')
     term = term.strip()
-    term = replace_all(term, replace=replaced_chars, with_this=' ')
-    term = replace_all(term, replace=settings.JOIN_CHARS, with_this='')
+    if replaced_chars != '':
+        term = replace_all(term, replace=replaced_chars, with_this=' ')
     term = re.sub(r'[\s]+', ' ', term)
     term = re.sub(settings.CHARACTER_FILTER, '', term)
     return term
@@ -43,12 +45,23 @@ def get_norm_term_variations(term):
     Get variations of a term in formalized form
     """
     norm_terms = []
-    combinations = settings.JOIN_CHAR_COMBINATIONS
-    for combo in combinations:
-        norm_term = get_normalized_term(term, combo)
-        if norm_term.strip() != '' and norm_term not in norm_terms:
-            norm_terms.append(norm_term)
-
+    # create list of what join chars we care about that are in the term
+    present_join_chars = [i for i in settings.JOIN_CHARS if i in term]
+    # If none are present, we can just normalize without replacing anything, otherwise...
+    if present_join_chars != []:
+        join_char_combinations = [''.join(subset) for n in range(len(present_join_chars) + 1)
+                                for subset in itertools.combinations(present_join_chars, n)]
+        # Iterate through all combinations of present join characters and normalize/replace
+        # with a space.
+        for combo in join_char_combinations:
+            norm_term = get_normalized_term(term, combo)
+            # Now get rid of ALL present join characters and replace with empty string
+            # So that every combination of replace x with '', y with '', x with ' ' y with '' etc is created.
+            norm_term = replace_all(norm_term, replace=present_join_chars, with_this='')
+            if norm_term.strip() != '' and norm_term not in norm_terms:
+                norm_terms.append(norm_term)
+    else:
+        norm_terms = [get_normalized_term(term, '')]
     return norm_terms
 
 

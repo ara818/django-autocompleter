@@ -37,7 +37,7 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
 
     def test_alias_list_creation(self):
         """
-        Alias lists do not contain doubles
+        Alias lists have replacement char variations
         """
         provider = registry._providers_by_ac["indicator_aliased"][0]
         aliases = provider.get_norm_phrase_aliases()
@@ -46,7 +46,6 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
         self.assertTrue('us a' in usa_aliases)
         self.assertTrue('u s a' in usa_aliases)
         self.assertFalse('usa' in usa_aliases)
-
 
     def test_multi_term_aliasing(self):
         matches = self.autocomp.suggest('us consumer price index')
