@@ -283,7 +283,7 @@
     "model": "test_app.indicator",
     "fields": {
         "score": 0,
-        "name": "Mortgage-Backed Securities: All Maturities",
+        "name": "U-S/A Mortgage-Backed Securities: All Maturities",
         "internal_name": "mortgage_backed_securities_all_maturities"
     }
 }, {

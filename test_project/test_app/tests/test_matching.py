@@ -118,7 +118,7 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         self.assertEqual(matches[9]['display_name'], 'Trade Weighted US Dollar Index: Major Currencies')
         return matches
 
-    def test_dashes(self):
+    def test_join_char_replacement(self):
         """
         Dashes are handled correctly
         """
@@ -135,6 +135,19 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('mortgage backed')
         self.assertNotEqual(len(matches), 0)
         matches = self.autocomp.suggest('backed mortgage')
+        self.assertNotEqual(len(matches), 0)
+
+        matches = self.autocomp.suggest('U S A')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('U SA')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('USA')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('U-S-A')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('U/S/A')
+        self.assertNotEqual(len(matches), 0)
+        matches = self.autocomp.suggest('U-S/A')
         self.assertNotEqual(len(matches), 0)
 
     def test_min_letters_setting(self):

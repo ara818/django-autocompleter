@@ -35,3 +35,7 @@ MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_
 # whether the results set is "flattened" so that it no longer uses the data structure needed
 # to return multi-type results
 FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TYPE_RESULTS', True)
+
+# Characters we want the autocompleter to interpret as both a space and a blank string.
+# Meaning by defualt, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
+JOIN_CHARS = getattr(settings, 'AUTOCOMPLETER_JOIN_CHARS', ['-', '/'])
