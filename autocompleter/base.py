@@ -416,6 +416,8 @@ class Autocompleter(AutocompleterBase):
                 keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
                 pipe.zinterstore(result_key, keys, aggregate='MIN')
             pipe.zunionstore("djac.results", result_keys, aggregate='MIN')
+            for result_key in result_keys:
+                pipe.delete(result_key)
             pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
 
             # Get exact matches
@@ -426,6 +428,7 @@ class Autocompleter(AutocompleterBase):
 
                 pipe.zunionstore("djac.results", keys, aggregate='MIN')
                 pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
+            pipe.delete("djac.results")
 
         results = [i for i in pipe.execute() if type(i) == list]
 
