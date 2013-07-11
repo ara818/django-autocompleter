@@ -425,6 +425,9 @@ class Autocompleter(AutocompleterBase):
                 keys = []
                 for norm_term in norm_terms:
                     keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+                # Do not attempt zunionstore on empty list because redis errors out.
+                if len(keys) == 0:
+                    continue
 
                 pipe.zunionstore("djac.results", keys, aggregate='MIN')
                 pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
@@ -501,6 +504,9 @@ class Autocompleter(AutocompleterBase):
             keys = []
             for norm_term in norm_terms:
                 keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+            # Do not attempt zunionstore on empty list because redis errors out.
+            if len(keys) == 0:
+                continue
             pipe.zunionstore("djac.results", keys, aggregate='MIN')
             pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
         results = [i for i in pipe.execute() if type(i) == list]
