@@ -57,10 +57,12 @@ def get_norm_term_variations(term):
             # Now get rid of ALL present join characters and replace with empty string
             # So that every combination of replace x with '', y with '', x with ' ' y with '' etc is created.
             norm_term = replace_all(norm_term, replace=present_join_chars, with_this='')
-            if norm_term.strip() != '' and norm_term not in norm_terms:
+            if norm_term not in norm_terms and norm_term != '':
                 norm_terms.append(norm_term)
     else:
-        norm_terms.append(get_normalized_term(term, []))
+        norm_term = get_normalized_term(term, [])
+        if norm_term != '':
+            norm_terms.append(norm_term)
     return norm_terms
 
 
