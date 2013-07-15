@@ -97,6 +97,15 @@ class StockMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'CACHE_TIMEOUT', 0)
 
+    def test_dropped_character_matching(self):
+        """
+        Searching for things that would be normalized to ' ' do not
+        result in redis errors.
+        """
+        matches = self.autocomp.suggest('+')
+        self.assertEqual(len(matches), 0)
+        matches = self.autocomp.suggest('NBBC vs Regional - Mid-Atlantic Banks vs Financial')
+        self.assertEqual(len(matches), 0)
 
 class IndicatorMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
