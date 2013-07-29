@@ -1,0 +1,15 @@
+autocompleter/__init__.py
+autocompleter/base.py
+autocompleter/registry.py
+autocompleter/settings.py
+autocompleter/urls.py
+autocompleter/utils.py
+autocompleter/views.py
+autocompleter/management/__init__.py
+autocompleter/management/commands/__init__.py
+autocompleter/management/commands/autocompleter_init.py
+django_autocompleter.egg-info/PKG-INFO
+django_autocompleter.egg-info/SOURCES.txt
+django_autocompleter.egg-info/dependency_links.txt
+django_autocompleter.egg-info/requires.txt
+django_autocompleter.egg-info/top_level.txt

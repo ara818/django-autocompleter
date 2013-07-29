@@ -185,6 +185,18 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MIN_LETTERS', 1)
 
+class DictProviderMatchingTestCase(AutocompleterTestCase):
+    def setUp(self):
+        self.autocomp = Autocompleter("metric")
+        self.autocomp.store_all()
+        super(DictProviderMatchingTestCase, self).setUp()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_basic_match(self):
+        matches = self.autocomp.suggest('m')
+        self.assertEqual(len(matches), 1)
 
 class MultiMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
@@ -206,6 +218,9 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
         matches = self.autocomp.suggest('US Initial Claims')
         self.assertEqual(len(matches['ind']), 1)
+
+        matches = self.autocomp.suggest('m')
+        self.assertEqual(len(matches), 1)
 
         matches = self.autocomp.suggest('a')
         self.assertEqual(len(matches['stock']), 10)

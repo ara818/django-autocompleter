@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock, StockAutocompleteProvider
+from test_app.models import Stock, StockAutocompleteProvider, MetricAutoCompleteProvider
+from test_app import calc_info
 from autocompleter import Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
 
@@ -25,9 +26,23 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
 
+    def test_dict_store_and_remove(self):
+        """
+        Storing and removing an dictionary item works
+        """
+        item = calc_info.calc_dicts[0]
+        provider = MetricAutoCompleteProvider(item)
+        provider.store()
+        keys = self.redis.hkeys('djac.compmet')
+        self.assertEqual(len(keys), 1)
+
+        provider.remove()
+        keys = self.redis.keys('djac.compmet*')
+        self.assertEqual(len(keys), 0)
+
     def test_store_and_remove_all_basic(self):
         """
-        Storing and removing items all at once works for a single-model autocompleter.
+        Storing and removing items all at once works for a dictionary obj autocompleter.
         """
         autocomp = Autocompleter("stock")
 
@@ -37,6 +52,20 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.remove_all()
         keys = self.redis.keys('djac.stock*')
+        self.assertEqual(len(keys), 0)
+
+    def test_dict_store_and_remove_all_basic(self):
+        """
+        Storing and removing items all at once works for a single-model autocompleter.
+        """
+        autocomp = Autocompleter("metric")
+
+        autocomp.store_all()
+        keys = self.redis.hkeys('djac.metric')
+        self.assertEqual(len(keys), 6)
+
+        autocomp.remove_all()
+        keys = self.redis.keys('djac.metric')
         self.assertEqual(len(keys), 0)
 
     def test_store_and_remove_all_basic_with_caching(self):
@@ -67,6 +96,35 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'CACHE_TIMEOUT', 0)
 
+    def test_dict_store_and_remove_all_basic_with_caching(self):
+        """
+        Storing and removing items all at once works with caching turned on on dict ac
+        """
+        # Let's turn on caching because that will store things in Redis and we want to make
+        # sure we clean them up.
+        setattr(auto_settings, 'CACHE_TIMEOUT', 3600)
+
+        autocomp = Autocompleter("metric")
+        autocomp.store_all()
+
+        keys = self.redis.hkeys("djac.metric")
+        self.assertEqual(len(keys), 6)
+
+        autocomp = Autocompleter("metric")
+        for i in range(0, 3):
+            autocomp.suggest('m')
+            autocomp.suggest('e')
+            autocomp.exact_suggest('PE Ratio TTM')
+            autocomp.exact_suggest('Market Cap')
+
+        autocomp.remove_all()
+
+        keys = self.redis.keys('djac.metric*')
+        self.assertEqual(len(keys), 0)
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'CACHE_TIMEOUT', 0)
+
     def test_store_and_remove_all_multi(self):
         """
         Storing and removing items all at once works for a multi-model autocompleter.
@@ -78,6 +136,8 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 101)
         keys = self.redis.hkeys('djac.ind')
         self.assertEqual(len(keys), 100)
+        keys = self.redis.hkeys("djac.metric")
+        self.assertEqual(len(keys), 6)
 
         autocomp.remove_all()
         keys = self.redis.keys('djac.stock*')
@@ -85,6 +145,8 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.ind*')
         self.assertEqual(len(keys), 0)
         keys = self.redis.keys('djac.mixed*')
+        self.assertEqual(len(keys), 0)
+        keys = self.redis.keys('djac.metric*')
         self.assertEqual(len(keys), 0)
 
 

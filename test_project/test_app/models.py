@@ -1,7 +1,7 @@
 from django.db import models
 
-from autocompleter import AutocompleterProvider, registry
-
+from autocompleter import AutocompleterModelProvider, AutocompleterDictProvider, registry
+from test_app import calc_info
 
 class Stock(models.Model):
     symbol = models.CharField(max_length=10, unique=True)
@@ -9,7 +9,7 @@ class Stock(models.Model):
     market_cap = models.FloatField(null=True, blank=True)
 
 
-class StockAutocompleteProvider(AutocompleterProvider):
+class StockAutocompleteProvider(AutocompleterModelProvider):
     model = Stock
     provider_name = "stock"
 
@@ -41,7 +41,7 @@ class Indicator(models.Model):
     score = models.FloatField(null=True, blank=True)
 
 
-class IndicatorAutocompleteProvider(AutocompleterProvider):
+class IndicatorAutocompleteProvider(AutocompleterModelProvider):
     model = Indicator
 
     provider_name = "ind"
@@ -65,7 +65,7 @@ class IndicatorAutocompleteProvider(AutocompleterProvider):
         }
 
 
-class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
+class IndicatorAliasedAutocompleteProvider(AutocompleterModelProvider):
     model = Indicator
 
     provider_name = "indal"
@@ -96,7 +96,7 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterProvider):
         }
 
 
-class IndicatorSelectiveAutocompleteProvider(AutocompleterProvider):
+class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
     model = Indicator
 
     provider_name = "indsel"
@@ -117,14 +117,46 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterProvider):
             'search_name': u'%s' % (self.obj.internal_name,),
         }
 
-    def include_object(self):
+    def include_item(self):
         if self.obj.name == 'US Unemployment Rate':
             return False
         return True
 
+
+class MetricAutoCompleteProvider(AutocompleterDictProvider):
+    obj_dict = calc_info.calc_dicts
+    model = 'metric'
+
+    provider_name = "metric"
+    settings = {}
+
+    def get_obj_id(self):
+        return self.obj['label']
+
+    def get_term(self):
+        return self.obj['label']
+
+    def get_score(self):
+        return self.obj.get('score', 1)
+
+    def get_data(self):
+        return {
+            'type': 'metric',
+            'id': self.obj['label'],
+            'score': self.obj.get('score', 1),
+            'display_name': u'%s' % (self.obj['label'],),
+            'search_name': u'%s' % (self.obj['label'],),
+        }
+
+    @classmethod
+    def get_iterator(cls):
+        return calc_info.calc_dicts
+
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
 registry.register("mixed", IndicatorAutocompleteProvider)
+registry.register("mixed", MetricAutoCompleteProvider)
 registry.register("indicator", IndicatorAutocompleteProvider)
 registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register("indicator_selective", IndicatorSelectiveAutocompleteProvider)
+registry.register("metric", MetricAutoCompleteProvider)

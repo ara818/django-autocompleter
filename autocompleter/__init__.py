@@ -1,7 +1,7 @@
 VERSION = (0, 3, 0)
 
 from autocompleter.registry import registry, signal_registry
-from autocompleter.base import AutocompleterBase, AutocompleterProvider, Autocompleter
+from autocompleter.base import AutocompleterBase, AutocompleterModelProvider, AutocompleterDictProvider, Autocompleter
 
 LOADING_AUTOCOMPELTER = False
 

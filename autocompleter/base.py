@@ -27,9 +27,8 @@ class AutocompleterBase(object):
         return json.loads(raw)
 
 
-class AutocompleterProvider(AutocompleterBase):
-    # Model this provider is related to
-    model = None
+class AutocompleterProviderBase(AutocompleterBase):
+
     # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
     # Cache of all aliases for this provider, including all possible variations
@@ -40,30 +39,6 @@ class AutocompleterProvider(AutocompleterBase):
 
     def __str__(self):
         return self.provider_name
-
-    def get_obj_id(self):
-        """
-        The ID for the object, should be unique for each model.
-        Will normally not have to override this. However if model is such that
-        lots of objects have the same score, autcompleter sorts lexographically by ID
-        so it then helps to have this be a unique textual name representing the object instance
-        to help make the sorting of the results make sense.
-        i.e. for stock it might be company name (assuming unique).
-        """
-        return str(self.obj.pk)
-
-    def get_term(self):
-        """
-        The term for the object, which will support autocompletion.
-        """
-        return str(self.obj)
-
-    def get_terms(self):
-        """
-        Terms of the objects, which will suport autocompletion.
-        Define this if an object can be searched for using more than one term.
-        """
-        return [self.get_term()]
 
     def _get_norm_terms(self):
         """
@@ -92,13 +67,34 @@ class AutocompleterProvider(AutocompleterBase):
         """
         return 0
 
+    def _get_score(self):
+        # Redis orders low to high, with equal scores being sorted lexographically by obj ID,
+        # so here we convert high to low score to low to high. Note that we can not use
+        # ZREVRANGE instead because that sorts obj IDs lexograpahically ascending. Using
+        # low to high scores allows for people to have autocompleters with lots of objects
+        # with the same score and a word based object ID (say, a unique name) and have these
+        # objects returned in alphabetical order when they have the same score.try:
+        score = self.get_score()
+        try:
+            score = 1 / float(score)
+        except ZeroDivisionError:
+            score = float('inf')
+        return score
+
+    def get_terms(self):
+        """
+        Terms of the objects, which will support autocompletion.
+        Define this if an object can be searched for using more than one term.
+        """
+        return [self.get_term()]
+
     def get_data(self):
         """
         The data you want to send along on a successful match.
         """
         return {}
 
-    def include_object(self):
+    def include_item(self):
         """
         Whether this object should be included in the autocompleter at all. By default, all objects
         in the model are included.
@@ -114,14 +110,6 @@ class AutocompleterProvider(AutocompleterBase):
         So if 'US' maps to 'United States' then 'United States' will map to 'US'
         """
         return {}
-
-    @classmethod
-    def get_queryset(cls):
-        """
-        Get queryset representing all objects represented by this provider.
-        Will normally not have to override this.
-        """
-        return cls.model._default_manager.all()
 
     @classmethod
     def get_norm_phrase_aliases(cls):
@@ -176,24 +164,13 @@ class AutocompleterProvider(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
-        if not self.include_object():
+        if not self.include_item():
             return
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
         norm_terms = self._get_norm_terms()
-        score = self.get_score()
+        score = self._get_score()
         data = self.get_data()
-
-        # Redis orders low to high, with equal scores being sorted lexographically by obj ID,
-        # so here we convert high to low score to low to high. Note that we can not use
-        # ZREVRANGE instead because that sorts obj IDs lexograpahically ascending. Using
-        # low to high scores allows for people to have autocompleters with lots of objects
-        # with the same score and a word based object ID (say, a unique name) and have these
-        # objects returned in alphabetical order when they have the same score.
-        try:
-            score = 1 / float(score)
-        except ZeroDivisionError:
-            score = float('inf')
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -208,7 +185,6 @@ class AutocompleterProvider(AutocompleterBase):
                     # Store prefix to obj ID mapping, with score
                     key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
                     pipe.zadd(key, obj_id, score)
-
                     # Store autocompleter to prefix mapping so we know all prefixes
                     # of an autocompleter
                     key = PREFIX_SET_BASE_NAME % (provider_name,)
@@ -280,6 +256,64 @@ class AutocompleterProvider(AutocompleterBase):
         pipe.execute()
 
 
+class AutocompleterModelProvider(AutocompleterProviderBase):
+    # Model this provider is related to
+    model = None
+
+    def get_obj_id(self):
+        """
+        The ID for the object, should be unique for each model.
+        Will normally not have to override this. However if model is such that
+        lots of objects have the same score, autcompleter sorts lexographically by ID
+        so it then helps to have this be a unique textual name representing the object instance
+        to help make the sorting of the results make sense.
+        i.e. for stock it might be company name (assuming unique).
+        """
+        return str(self.obj.pk)
+
+    def get_term(self):
+        """
+        The term for the object, which will support autocompletion.
+        """
+        return str(self.obj)
+
+    @classmethod
+    def get_iterator(cls):
+        """
+        Get queryset representing all objects represented by this provider.
+        Will normally not have to override this.
+        """
+        return cls.model._default_manager.iterator()
+
+
+class AutocompleterDictProvider(AutocompleterProviderBase):
+    # Model this provider is related to
+    model = None
+
+    def get_obj_id(self):
+        """
+        Select a field which is unique for use in the autocompleter.
+        Unlike the model provider, there is no sensible default so this MUST be overridden
+        """
+        raise NotImplementedError
+
+
+    def get_term(self):
+        """
+        The term for the item, which will support autocompletion.
+        Unlike the model provider, there is no sensible default so this MUST be overridden
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_iterator(cls):
+        """
+        For the dict provider, the items specified on the attr should be good to go,
+        but it can be overridden here.
+        """
+        raise NotImplementedError
+
+
 class Autocompleter(AutocompleterBase):
     """
     Autocompleter class
@@ -296,7 +330,7 @@ class Autocompleter(AutocompleterBase):
             return
 
         for provider_class in provider_classes:
-            for obj in provider_class.get_queryset().iterator():
+            for obj in provider_class.get_iterator():
                 provider_class(obj).store()
 
     def remove_all(self):
