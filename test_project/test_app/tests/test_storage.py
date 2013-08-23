@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock, StockAutocompleteProvider, MetricAutoCompleteProvider
+from test_app.models import Stock, StockAutocompleteProvider, MetricAutocompleteProvider
 from test_app import calc_info
 from autocompleter import Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
@@ -31,13 +31,14 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         Storing and removing an dictionary item works
         """
         item = calc_info.calc_dicts[0]
-        provider = MetricAutoCompleteProvider(item)
+        provider = MetricAutocompleteProvider(item)
         provider.store()
-        keys = self.redis.hkeys('djac.compmet')
+
+        keys = self.redis.hkeys('djac.metric')
         self.assertEqual(len(keys), 1)
 
         provider.remove()
-        keys = self.redis.keys('djac.compmet*')
+        keys = self.redis.keys('djac.metric*')
         self.assertEqual(len(keys), 0)
 
     def test_store_and_remove_all_basic(self):

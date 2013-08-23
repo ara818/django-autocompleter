@@ -123,7 +123,7 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
         return True
 
 
-class MetricAutoCompleteProvider(AutocompleterDictProvider):
+class MetricAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
     model = 'metric'
 
@@ -155,8 +155,8 @@ class MetricAutoCompleteProvider(AutocompleterDictProvider):
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
 registry.register("mixed", IndicatorAutocompleteProvider)
-registry.register("mixed", MetricAutoCompleteProvider)
+registry.register("mixed", MetricAutocompleteProvider)
 registry.register("indicator", IndicatorAutocompleteProvider)
 registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register("indicator_selective", IndicatorSelectiveAutocompleteProvider)
-registry.register("metric", MetricAutoCompleteProvider)
+registry.register("metric", MetricAutocompleteProvider)
