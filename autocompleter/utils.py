@@ -63,7 +63,6 @@ def get_norm_term_variations(term):
         norm_term = get_normalized_term(term, [])
         if norm_term.strip() != '':
             norm_terms.append(norm_term)
-
     return norm_terms
 
 

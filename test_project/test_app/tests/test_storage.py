@@ -206,7 +206,6 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         matches = autocomp.suggest('aapl')
 
         self.assertEqual(len(matches), 1)
-
         aapl.symbol = 'XYZ'
         aapl.name = 'XYZ & Co.'
         aapl.save()

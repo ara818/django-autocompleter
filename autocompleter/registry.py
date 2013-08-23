@@ -150,17 +150,6 @@ def add_obj_to_autocompleter(sender, instance, created, **kwargs):
         provider(instance).store()
 
 
-def remove_old_obj_from_autocompleter(sender, instance, **kwargs):
-    try:
-        old_instance = sender.objects.get(pk=instance.pk)
-
-        providers = registry.get_all_by_model(sender)
-        for provider in providers:
-            provider(old_instance).remove()
-    except sender.DoesNotExist:
-        return
-
-
 def remove_obj_from_autocompleter(sender, instance, **kwargs):
     if instance is None:
         return
@@ -174,16 +163,12 @@ class AutocompleterSignalRegistry(object):
     def register(self, model):
         post_save.connect(add_obj_to_autocompleter, sender=model,
             dispatch_uid='autocompleter.%s.add' % (model))
-        pre_save.connect(remove_old_obj_from_autocompleter, sender=model,
-            dispatch_uid='autocompleter.%s.remove_old' % (model))
         post_delete.connect(remove_obj_from_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 
     def unregister(self, model):
         post_save.disconnect(add_obj_to_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.add' % (model))
-        pre_save.disconnect(remove_old_obj_from_autocompleter, sender=model,
-            dispatch_uid='autocompleter.%s.remove_old' % (model))
         post_delete.disconnect(remove_obj_from_autocompleter,
             sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
 

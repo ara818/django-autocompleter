@@ -17,6 +17,7 @@ PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
 PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
 EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
 EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
+TERM_SET_BASE_NAME = AUTO_BASE_NAME + '.ts'
 
 
 class AutocompleterBase(object):
@@ -40,14 +41,12 @@ class AutocompleterProviderBase(AutocompleterBase):
     def __str__(self):
         return self.provider_name
 
-    def _get_norm_terms(self):
+    def _get_norm_terms(self, terms):
         """
         Normalize each term in list of terms. Also, look to see if there are any aliases
         for any words in the term and use them to create alternate normalized terms
         DO NOT override this
         """
-        terms = self.get_terms()
-
         norm_terms = [utils.get_norm_term_variations(term) for term in terms]
         norm_terms = itertools.chain(*norm_terms)
 
@@ -168,9 +167,19 @@ class AutocompleterProviderBase(AutocompleterBase):
             return
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
-        norm_terms = self._get_norm_terms()
+        terms = self.get_terms()
+        norm_terms = self._get_norm_terms(terms)
         score = self._get_score()
         data = self.get_data()
+
+        # Clear out the obj_id's old data
+        key = TERM_SET_BASE_NAME % (provider_name,)
+        old_terms = REDIS.hget(key, obj_id)
+
+        if old_terms is not None:
+            old_terms = self._deserialize_data(old_terms)
+            old_terms = self._get_norm_terms(old_terms)
+            self.clear_keys(old_terms)
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -210,6 +219,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         key = AUTO_BASE_NAME % (provider_name,)
         pipe.hset(key, obj_id, self._serialize_data(data))
 
+        # set provider's obj_id - terms hash.
+        key = TERM_SET_BASE_NAME % (provider_name,)
+        serialized_terms = self._serialize_data(terms)
+        pipe.hset(key, obj_id, serialized_terms)
         # End pipeline
         pipe.execute()
 
@@ -219,13 +232,15 @@ class AutocompleterProviderBase(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
+        norm_terms = self._get_norm_terms(self.get_terms())
+        self.clear_keys(norm_terms)
+
+    def clear_keys(self, norm_terms):
         provider_name = self.get_provider_name()
         obj_id = self.get_obj_id()
-        norm_terms = self._get_norm_terms()
 
         # Start pipeline
         pipe = REDIS.pipeline()
-
         # Processes prefixes of object, removing object ID from sorted sets
         for norm_term in norm_terms:
             norm_words = norm_term.split(' ')
@@ -247,9 +262,12 @@ class AutocompleterProviderBase(AutocompleterBase):
 
             key = EXACT_SET_BASE_NAME % (provider_name,)
             pipe.srem(key, norm_term)
-
         # Remove model ID to data mapping
         key = AUTO_BASE_NAME % (provider_name,)
+        pipe.hdel(key, obj_id)
+
+        # Remove obj_id to terms mapping
+        key = TERM_SET_BASE_NAME % (provider_name,)
         pipe.hdel(key, obj_id)
 
         # End pipeline
