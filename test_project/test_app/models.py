@@ -46,7 +46,7 @@ class IndicatorAutocompleteProvider(AutocompleterModelProvider):
 
     provider_name = "ind"
 
-    def get_obj_id(self):
+    def get_item_id(self):
         return self.obj.name
 
     def get_term(self):
@@ -130,7 +130,7 @@ class MetricAutocompleteProvider(AutocompleterDictProvider):
     provider_name = "metric"
     settings = {}
 
-    def get_obj_id(self):
+    def get_item_id(self):
         return self.obj['label']
 
     def get_term(self):

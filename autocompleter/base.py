@@ -41,25 +41,6 @@ class AutocompleterProviderBase(AutocompleterBase):
     def __str__(self):
         return self.provider_name
 
-    def _get_norm_terms(self, terms):
-        """
-        Normalize each term in list of terms. Also, look to see if there are any aliases
-        for any words in the term and use them to create alternate normalized terms
-        DO NOT override this
-        """
-        norm_terms = [utils.get_norm_term_variations(term) for term in terms]
-        norm_terms = itertools.chain(*norm_terms)
-
-        norm_terms_with_variations = []
-        # Now we get alternate norm terms by looking for alias phrases in any of the terms
-        phrase_aliases = self.__class__.get_norm_phrase_aliases()
-        if phrase_aliases is not None:
-            for norm_term in norm_terms:
-                norm_terms_with_variations = norm_terms_with_variations + \
-                    utils.get_aliased_variations(norm_term, phrase_aliases)
-
-        return norm_terms_with_variations
-
     def get_score(self):
         """
         The score for the object, that will dictate the order of autocompletion.
@@ -86,6 +67,25 @@ class AutocompleterProviderBase(AutocompleterBase):
         Define this if an object can be searched for using more than one term.
         """
         return [self.get_term()]
+
+    def _get_norm_terms(self, terms):
+        """
+        Normalize each term in list of terms. Also, look to see if there are any aliases
+        for any words in the term and use them to create alternate normalized terms
+        DO NOT override this
+        """
+        norm_terms = [utils.get_norm_term_variations(term) for term in terms]
+        norm_terms = itertools.chain(*norm_terms)
+
+        norm_terms_with_variations = []
+        # Now we get alternate norm terms by looking for alias phrases in any of the terms
+        phrase_aliases = self.__class__.get_norm_phrase_aliases()
+        if phrase_aliases is not None:
+            for norm_term in norm_terms:
+                norm_terms_with_variations = norm_terms_with_variations + \
+                    utils.get_aliased_variations(norm_term, phrase_aliases)
+
+        return norm_terms_with_variations
 
     def get_data(self):
         """
@@ -157,7 +157,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         """
         return cls.provider_name
 
-    def store(self):
+    def store(self, delete_old=True):
         """
         Add an object to the autocompleter
         DO NOT override this.
@@ -166,20 +166,21 @@ class AutocompleterProviderBase(AutocompleterBase):
         if not self.include_item():
             return
         provider_name = self.get_provider_name()
-        obj_id = self.get_obj_id()
+        obj_id = self.get_item_id()
         terms = self.get_terms()
         norm_terms = self._get_norm_terms(terms)
         score = self._get_score()
         data = self.get_data()
 
-        # Clear out the obj_id's old data
-        key = TERM_SET_BASE_NAME % (provider_name,)
-        old_terms = REDIS.hget(key, obj_id)
+        # Clear out the obj_id's old data if told to
+        if delete_old is True:
+            key = TERM_SET_BASE_NAME % (provider_name,)
+            old_terms = REDIS.hget(key, obj_id)
 
-        if old_terms is not None:
-            old_terms = self._deserialize_data(old_terms)
-            old_terms = self._get_norm_terms(old_terms)
-            self.clear_keys(old_terms)
+            if old_terms is not None:
+                old_terms = self._deserialize_data(old_terms)
+                old_terms = self._get_norm_terms(old_terms)
+                self.clear_keys(old_terms)
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -237,7 +238,7 @@ class AutocompleterProviderBase(AutocompleterBase):
 
     def clear_keys(self, norm_terms):
         provider_name = self.get_provider_name()
-        obj_id = self.get_obj_id()
+        obj_id = self.get_item_id()
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -278,7 +279,7 @@ class AutocompleterModelProvider(AutocompleterProviderBase):
     # Model this provider is related to
     model = None
 
-    def get_obj_id(self):
+    def get_item_id(self):
         """
         The ID for the object, should be unique for each model.
         Will normally not have to override this. However if model is such that
@@ -308,7 +309,7 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
     # Model this provider is related to
     model = None
 
-    def get_obj_id(self):
+    def get_item_id(self):
         """
         Select a field which is unique for use in the autocompleter.
         Unlike the model provider, there is no sensible default so this MUST be overridden
@@ -329,7 +330,7 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
         For the dict provider, the items specified on the attr should be good to go,
         but it can be overridden here.
         """
-        raise NotImplementedError
+        raise cls.model.iterator()
 
 
 class Autocompleter(AutocompleterBase):
@@ -339,7 +340,7 @@ class Autocompleter(AutocompleterBase):
     def __init__(self, name):
         self.name = name
 
-    def store_all(self):
+    def store_all(self, delete_old=True):
         """
         Store all objects of all providers register with this autocompleter.
         """
@@ -349,7 +350,7 @@ class Autocompleter(AutocompleterBase):
 
         for provider_class in provider_classes:
             for obj in provider_class.get_iterator():
-                provider_class(obj).store()
+                provider_class(obj).store(delete_old=delete_old)
 
     def remove_all(self):
         """

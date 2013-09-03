@@ -24,7 +24,11 @@ class Command(BaseCommand):
         make_option("--clear_cache", dest="clear_cache",
             help="Clear cache for autocompleter. Default to false.",
             action="store_true", default=False),
-
+        make_option("--skip_delete_old", dest="delete_old",
+            help="Clear old terms from autocompleter.\
+            Recommended only to be used with store all after remove_all otherwise \
+            orphan keys will remain.",
+            action="store_false", default=True),
     )
 
     help = "Store and/or remove autocompleter data"
@@ -44,8 +48,9 @@ class Command(BaseCommand):
             self.log.info("Removing all objects for autocompleter: %s" % (options['name']))
             autocomp.remove_all()
         if options['store']:
+            delete_old = options['delete_old']
             self.log.info("Storing all objects for autocompleter: %s" % (options['name']))
-            autocomp.store_all()
+            autocomp.store_all(delete_old=delete_old)
         if options['clear_cache']:
             self.log.info("Clearing cache for autocompleter: %s" % (options['name']))
             autocomp.clear_cache()
