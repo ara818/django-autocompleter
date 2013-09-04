@@ -21,15 +21,16 @@ TERM_SET_BASE_NAME = AUTO_BASE_NAME + '.ts'
 
 
 class AutocompleterBase(object):
-    def _serialize_data(self, data):
+    @classmethod
+    def _serialize_data(cls, data):
         return json.dumps(data)
 
-    def _deserialize_data(self, raw):
+    @classmethod
+    def _deserialize_data(cls, raw):
         return json.loads(raw)
 
 
 class AutocompleterProviderBase(AutocompleterBase):
-
     # Name in redis that data for this provider will be stored. To preserve memory, keep this short.
     provider_name = None
     # Cache of all aliases for this provider, including all possible variations
@@ -68,7 +69,8 @@ class AutocompleterProviderBase(AutocompleterBase):
         """
         return [self.get_term()]
 
-    def _get_norm_terms(self, terms):
+    @classmethod
+    def _get_norm_terms(cls, terms):
         """
         Normalize each term in list of terms. Also, look to see if there are any aliases
         for any words in the term and use them to create alternate normalized terms
@@ -79,7 +81,7 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         norm_terms_with_variations = []
         # Now we get alternate norm terms by looking for alias phrases in any of the terms
-        phrase_aliases = self.__class__.get_norm_phrase_aliases()
+        phrase_aliases = cls.get_norm_phrase_aliases()
         if phrase_aliases is not None:
             for norm_term in norm_terms:
                 norm_terms_with_variations = norm_terms_with_variations + \
@@ -87,18 +89,6 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         return norm_terms_with_variations
 
-    def get_data(self):
-        """
-        The data you want to send along on a successful match.
-        """
-        return {}
-
-    def include_item(self):
-        """
-        Whether this object should be included in the autocompleter at all. By default, all objects
-        in the model are included.
-        """
-        return True
 
     @classmethod
     def get_phrase_aliases(cls):
@@ -149,6 +139,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
 
+
     @classmethod
     def get_provider_name(cls):
         """
@@ -156,6 +147,72 @@ class AutocompleterProviderBase(AutocompleterBase):
         DO NOT override this.
         """
         return cls.provider_name
+
+    @classmethod
+    def delete_old_terms(cls, obj_id):
+        """
+        Gets rid of old terms based on terms listed in the id-terms mapping.
+        """
+        key = TERM_SET_BASE_NAME % (cls.get_provider_name(),)
+        old_terms = REDIS.hget(key, obj_id)
+
+        if old_terms is not None:
+            old_terms = cls._deserialize_data(old_terms)
+            old_terms = cls._get_norm_terms(old_terms)
+            cls.clear_keys(obj_id, old_terms)
+
+    @classmethod
+    def clear_keys(cls, obj_id, norm_terms):
+        provider_name = cls.get_provider_name()
+        # Start pipeline
+        pipe = REDIS.pipeline()
+        # Processes prefixes of object, removing object ID from sorted sets
+        for norm_term in norm_terms:
+            norm_words = norm_term.split(' ')
+            for norm_word in norm_words:
+                word_prefix = ''
+                for char in norm_word:
+                    word_prefix += char
+                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
+                    pipe.zrem(key, obj_id)
+
+                    key = PREFIX_SET_BASE_NAME % (provider_name,)
+                    pipe.srem(key, word_prefix)
+
+        # Process normalized terms of object, removing object ID from a sorted set
+        # representing exact matches
+        for norm_term in norm_terms:
+            key = EXACT_BASE_NAME % (provider_name, norm_term,)
+            pipe.zrem(key, obj_id)
+
+            key = EXACT_SET_BASE_NAME % (provider_name,)
+            pipe.srem(key, norm_term)
+        # Remove model ID to data mapping
+        key = AUTO_BASE_NAME % (provider_name,)
+        pipe.hdel(key, obj_id)
+
+        # Remove obj_id to terms mapping
+        key = TERM_SET_BASE_NAME % (provider_name,)
+        pipe.hdel(key, obj_id)
+
+        # End pipeline
+        pipe.execute()
+
+
+
+    def get_data(self):
+        """
+        The data you want to send along on a successful match.
+        """
+        return {}
+
+    def include_item(self):
+        """
+        Whether this object should be included in the autocompleter at all. By default, all objects
+        in the model are included.
+        """
+        return True
+
 
     def store(self, delete_old=True):
         """
@@ -168,19 +225,13 @@ class AutocompleterProviderBase(AutocompleterBase):
         provider_name = self.get_provider_name()
         obj_id = self.get_item_id()
         terms = self.get_terms()
-        norm_terms = self._get_norm_terms(terms)
+        norm_terms = self.__class__._get_norm_terms(terms)
         score = self._get_score()
         data = self.get_data()
 
         # Clear out the obj_id's old data if told to
         if delete_old is True:
-            key = TERM_SET_BASE_NAME % (provider_name,)
-            old_terms = REDIS.hget(key, obj_id)
-
-            if old_terms is not None:
-                old_terms = self._deserialize_data(old_terms)
-                old_terms = self._get_norm_terms(old_terms)
-                self.clear_keys(old_terms)
+            self.__class__.delete_old_terms(obj_id)
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -218,11 +269,12 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         # Store obj ID to data mapping
         key = AUTO_BASE_NAME % (provider_name,)
-        pipe.hset(key, obj_id, self._serialize_data(data))
+        pipe.hset(key, obj_id, self.__class__._serialize_data(data))
 
         # set provider's obj_id - terms hash.
         key = TERM_SET_BASE_NAME % (provider_name,)
-        serialized_terms = self._serialize_data(terms)
+
+        serialized_terms = self.__class__._serialize_data(terms)
         pipe.hset(key, obj_id, serialized_terms)
         # End pipeline
         pipe.execute()
@@ -233,46 +285,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
-        norm_terms = self._get_norm_terms(self.get_terms())
-        self.clear_keys(norm_terms)
-
-    def clear_keys(self, norm_terms):
-        provider_name = self.get_provider_name()
+        terms = self.get_terms()
         obj_id = self.get_item_id()
-
-        # Start pipeline
-        pipe = REDIS.pipeline()
-        # Processes prefixes of object, removing object ID from sorted sets
-        for norm_term in norm_terms:
-            norm_words = norm_term.split(' ')
-            for norm_word in norm_words:
-                word_prefix = ''
-                for char in norm_word:
-                    word_prefix += char
-                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
-                    pipe.zrem(key, obj_id)
-
-                    key = PREFIX_SET_BASE_NAME % (provider_name,)
-                    pipe.srem(key, word_prefix)
-
-        # Process normalized terms of object, removing object ID from a sorted set
-        # representing exact matches
-        for norm_term in norm_terms:
-            key = EXACT_BASE_NAME % (provider_name, norm_term,)
-            pipe.zrem(key, obj_id)
-
-            key = EXACT_SET_BASE_NAME % (provider_name,)
-            pipe.srem(key, norm_term)
-        # Remove model ID to data mapping
-        key = AUTO_BASE_NAME % (provider_name,)
-        pipe.hdel(key, obj_id)
-
-        # Remove obj_id to terms mapping
-        key = TERM_SET_BASE_NAME % (provider_name,)
-        pipe.hdel(key, obj_id)
-
-        # End pipeline
-        pipe.execute()
+        norm_terms = self.__class__._get_norm_terms(terms)
+        self.__class__.clear_keys(obj_id, norm_terms)
 
 
 class AutocompleterModelProvider(AutocompleterProviderBase):
@@ -439,7 +455,7 @@ class Autocompleter(AutocompleterBase):
         cache_key = CACHE_BASE_NAME % \
             (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS))
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
-            return self._deserialize_data(REDIS.get(cache_key))
+            return self.__class__._deserialize_data(REDIS.get(cache_key))
 
         # Get the normalized we need to search for each term... A single term
         # could turn into multiple terms we need to search.
@@ -523,7 +539,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.set(cache_key, self._serialize_data(results))
+            REDIS.set(cache_key, self.__class__._serialize_data(results))
             REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
 
         return results
@@ -539,7 +555,7 @@ class Autocompleter(AutocompleterBase):
         # If we have a cached version of the search results available, return it!
         cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
-            return self._deserialize_data(REDIS.get(cache_key))
+            return self.__class__._deserialize_data(REDIS.get(cache_key))
         provider_results = SortedDict()
 
         # Get the normalized we need to search for each term... A single term
@@ -576,7 +592,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.set(cache_key, self._serialize_data(results))
+            REDIS.set(cache_key, self.__class__._serialize_data(results))
             REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
         return results
 
@@ -597,7 +613,7 @@ class Autocompleter(AutocompleterBase):
         for provider_name, ids in provider_results.items():
             if len(ids) > 0:
                 provider_results[provider_name] = \
-                    [self._deserialize_data(i) for i in results.pop(0) if i is not None]
+                    [self.__class__._deserialize_data(i) for i in results.pop(0) if i is not None]
 
         if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results.keys()) == 1:
             provider_results = provider_results.values()[0]
