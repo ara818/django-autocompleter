@@ -124,11 +124,12 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
 
 
 class MetricAutocompleteProvider(AutocompleterDictProvider):
-    obj_dict = calc_info.calc_dicts
     model = 'metric'
-
     provider_name = "metric"
+
     settings = {}
+
+    obj_dict = calc_info.calc_dicts
 
     def get_item_id(self):
         return self.obj['label']
@@ -148,9 +149,6 @@ class MetricAutocompleteProvider(AutocompleterDictProvider):
             'search_name': u'%s' % (self.obj['label'],),
         }
 
-    @classmethod
-    def get_iterator(cls):
-        return calc_info.calc_dicts
 
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
