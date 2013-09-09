@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock, StockAutocompleteProvider, MetricAutocompleteProvider
+from test_app.models import Stock, Indicator, StockAutocompleteProvider, MetricAutocompleteProvider, IndicatorAutocompleteProvider
 from test_app import calc_info
 from autocompleter import Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
@@ -54,6 +54,31 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.remove_all()
         keys = self.redis.keys('djac.stock*')
         self.assertEqual(len(keys), 0)
+
+    def test_oprhan_removal(self):
+        """
+        test orphan removal
+        """
+        signal_registry.register(Indicator)
+
+        autocomp = Autocompleter("indicator")
+        autocomp.store_all()
+
+        unemployment = Indicator.objects.get(internal_name='unemployment_rate')
+
+        unemployment.name = 'free parking'
+        unemployment.save()
+
+
+        self.assertTrue(autocomp.suggest('free parking')[0]['id'] == 1)
+        self.assertTrue(autocomp.suggest('US Unemployment Rate')[0]['id'] == 1)
+
+        IndicatorAutocompleteProvider.delete_old_terms('US Unemployment Rate')
+        self.assertTrue(autocomp.suggest('free parking')[0]['id'] == 1)
+        self.assertTrue(len(autocomp.suggest('US Unemployment Rate')) == 0)
+
+        signal_registry.unregister(Indicator)
+        autocomp.remove_all()
 
     def test_dict_store_and_remove_all_basic(self):
         """
