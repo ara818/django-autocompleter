@@ -539,8 +539,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.set(cache_key, self.__class__._serialize_data(results))
-            REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
 
         return results
 
