@@ -101,6 +101,16 @@ class AutocompleterProviderBase(AutocompleterBase):
         return {}
 
     @classmethod
+    def get_one_way_phrase_aliases(cls):
+        """
+        If you have aliases (i.e. 'US' = 'United States'), for phrases within
+        terms of a particular model, override this function to return a dict of
+        key value pairs. Autocompleter will also reverse these aliases.
+        So if 'US' maps to 'United States' then 'United States' will map to 'US'
+        """
+        return {}
+
+    @classmethod
     def get_norm_phrase_aliases(cls):
         """
         Take the dict from get_aliases() and normalize / reverse to get ready for
@@ -110,35 +120,12 @@ class AutocompleterProviderBase(AutocompleterBase):
         if cls._phrase_aliases is not None:
             return cls._phrase_aliases
 
-        norm_phrase_aliases = {}
+        norm_phrase_aliases = utils.build_norm_phrase_alias_dict(cls.get_phrase_aliases())
+        one_way_norm_phrase_aliases = utils.build_norm_phrase_alias_dict(cls.get_one_way_phrase_aliases(), two_way=False)
 
-        # Here we build the dict where 1 phrase can map to 1 or more aliased phrases
-        for key, value in cls.get_phrase_aliases().items():
-            norm_keys = utils.get_norm_term_variations(key)
-            if type(value) == list:
-                norm_values = []
-                for v in value:
-                    norm_values += utils.get_norm_term_variations(v)
-            else:
-                norm_values = utils.get_norm_term_variations(value)
-            norm_values = set(norm_values)
-            norm_keys = set(norm_keys)
-            for norm_key in norm_keys:
-                for norm_value in norm_values:
-                    if norm_value == norm_key:
-                        continue
-                    norm_phrase_alias = norm_phrase_aliases.setdefault(norm_key, [])
-                    norm_phrase_alias.append(norm_value)
-                    norm_phrase_alias = norm_phrase_aliases.setdefault(norm_value, [])
-                    if norm_key not in norm_phrase_alias:
-                        norm_phrase_alias.append(norm_key)
-                    for i in norm_values:
-                        if i not in norm_phrase_alias and i != norm_value:
-                            norm_phrase_alias.append(i)
-
+        norm_phrase_aliases.update(one_way_norm_phrase_aliases)
         cls._phrase_aliases = norm_phrase_aliases
         return cls._phrase_aliases
-
 
     @classmethod
     def get_provider_name(cls):
