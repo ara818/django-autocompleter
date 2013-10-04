@@ -82,7 +82,6 @@ def get_aliased_variations(term, phrase_aliases):
     # 2) The values are each list of parts of the term that have already been aliased
     # This is to prevent double aliasing... i.e. California -> CA -> Canada.
     term_aliases = {term: []}
-
     while len(term_stack) != 0:
         # Grab the term
         term = term_stack.pop()

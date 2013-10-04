@@ -1,4 +1,12 @@
 calc_dicts = [
+    {'label': 'Revenue TTM',
+        'menu_label': 'Revenue TTM',
+        'short_label': 'TURTTM',
+    },
+    {'label': 'Inventory Turnover',
+        'menu_label': 'Inventory Turnover',
+        'short_label': 'INVTTM',
+    },
     {'label': 'Market Cap',
         'menu_label': 'Market Cap',
         'short_label': 'M Cap',

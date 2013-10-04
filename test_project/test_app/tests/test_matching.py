@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import StockAutocompleteProvider, IndicatorAutocompleteProvider, MetricAutocompleteProvider
+from test_app.models import StockAutocompleteProvider, IndicatorAutocompleteProvider, CalcAutocompleteProvider
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
@@ -249,10 +249,10 @@ class MultiMatchingTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches['ind']), 10)
 
         registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS', 2)
-        registry.set_ac_provider_setting("mixed", MetricAutocompleteProvider, 'MIN_LETTERS', 2)
+        registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS', 2)
         matches = self.autocomp.suggest('a')
         self.assertEqual(len(matches), 10)
         self.assertEqual('ind' not in matches, True)
 
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')
-        registry.del_ac_provider_setting("mixed", MetricAutocompleteProvider, 'MIN_LETTERS')
+        registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS')

@@ -97,6 +97,8 @@ class AutocompleterProviderBase(AutocompleterBase):
         terms of a particular model, override this function to return a dict of
         key value pairs. Autocompleter will also reverse these aliases.
         So if 'US' maps to 'United States' then 'United States' will map to 'US'
+
+        {x: y} means to the AC that x is also y, and y is also x
         """
         return {}
 
@@ -105,8 +107,9 @@ class AutocompleterProviderBase(AutocompleterBase):
         """
         If you have aliases (i.e. 'US' = 'United States'), for phrases within
         terms of a particular model, override this function to return a dict of
-        key value pairs. Autocompleter will also reverse these aliases.
-        So if 'US' maps to 'United States' then 'United States' will map to 'US'
+        key value pairs. Autocompleter will NOT reverse these.
+
+        {x: y} means to the AC that x is also y, but y is not x
         """
         return {}
 

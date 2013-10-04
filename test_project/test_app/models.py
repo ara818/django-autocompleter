@@ -95,7 +95,6 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterModelProvider):
             'Canada': 'CA',
         }
 
-
 class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
     model = Indicator
 
@@ -123,7 +122,7 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
         return True
 
 
-class MetricAutocompleteProvider(AutocompleterDictProvider):
+class CalcAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
     model = 'metric'
 
@@ -152,11 +151,54 @@ class MetricAutocompleteProvider(AutocompleterDictProvider):
     def get_iterator(cls):
         return calc_info.calc_dicts
 
+
+class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
+    obj_dict = calc_info.calc_dicts
+    model = 'metric_aliased'
+
+    provider_name = "metric_aliased"
+    settings = {}
+
+    def get_item_id(self):
+        return self.obj['label']
+
+    def get_term(self):
+        return self.obj['label']
+
+    def get_score(self):
+        return self.obj.get('score', 1)
+
+    def get_data(self):
+        return {
+            'type': 'metric',
+            'id': self.obj['label'],
+            'score': self.obj.get('score', 1),
+            'display_name': u'%s' % (self.obj['label'],),
+            'search_name': u'%s' % (self.obj['label'],),
+        }
+
+    @classmethod
+    def get_phrase_aliases(self):
+        return {
+        'EV': 'Enterprise Value',
+        }
+
+    @classmethod
+    def get_one_way_phrase_aliases(self):
+        return {
+            'Revenue': 'Turnover',
+        }
+
+    @classmethod
+    def get_iterator(cls):
+        return calc_info.calc_dicts
+
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
 registry.register("mixed", IndicatorAutocompleteProvider)
-registry.register("mixed", MetricAutocompleteProvider)
+registry.register("mixed", CalcAutocompleteProvider)
 registry.register("indicator", IndicatorAutocompleteProvider)
 registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register("indicator_selective", IndicatorSelectiveAutocompleteProvider)
-registry.register("metric", MetricAutocompleteProvider)
+registry.register("metric", CalcAutocompleteProvider)
+registry.register("metric_aliased", CalcAliasedAutocompleteProvider)
