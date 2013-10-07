@@ -47,7 +47,7 @@ class IndicatorAutocompleteProvider(AutocompleterModelProvider):
     provider_name = "ind"
 
     def get_item_id(self):
-        return self.obj.name
+        return self.obj.internal_name
 
     def get_term(self):
         return self.obj.name

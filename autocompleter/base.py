@@ -10,7 +10,10 @@ REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
     port=settings.REDIS_CONNECTION['port'],
     db=settings.REDIS_CONNECTION['db'])
 
-AUTO_BASE_NAME = 'djac.%s'
+if settings.TEST_DATA:
+    AUTO_BASE_NAME = 'djac.test.%s'
+else:
+    AUTO_BASE_NAME = 'djac.%s'
 CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s'
 EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
 PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
@@ -139,17 +142,21 @@ class AutocompleterProviderBase(AutocompleterBase):
         return cls.provider_name
 
     @classmethod
-    def delete_old_terms(cls, obj_id):
+    def delete_old_terms(cls, obj_id, old_terms):
         """
         Gets rid of old terms based on terms listed in the id-terms mapping.
         """
-        key = TERM_SET_BASE_NAME % (cls.get_provider_name(),)
-        old_terms = REDIS.hget(key, obj_id)
-
         if old_terms is not None:
-            old_terms = cls._deserialize_data(old_terms)
             old_terms = cls._get_norm_terms(old_terms)
             cls.clear_keys(obj_id, old_terms)
+
+    @classmethod
+    def get_old_terms(cls, obj_id):
+        key = TERM_SET_BASE_NAME % (cls.get_provider_name(),)
+        old_terms = REDIS.hget(key, obj_id)
+        if old_terms is not None:
+            old_terms = cls._deserialize_data(old_terms)
+        return old_terms
 
     @classmethod
     def clear_keys(cls, obj_id, norm_terms):
@@ -219,9 +226,20 @@ class AutocompleterProviderBase(AutocompleterBase):
         score = self._get_score()
         data = self.get_data()
 
+        old_terms = self.__class__.get_old_terms(obj_id)
+        # if old terms are the same as the new, shortcircuit and just
+        # update the data payload in case anything there is different.
+        if terms == old_terms:
+            # Store obj ID to data mapping
+            key = AUTO_BASE_NAME % (provider_name,)
+            REDIS.hset(key, obj_id, self.__class__._serialize_data(data))
+            return
+
         # Clear out the obj_id's old data if told to
         if delete_old is True:
-            self.__class__.delete_old_terms(obj_id)
+            # TODO: memoize get_old_terms? Otherwise have to pass old_terms down the line to avoid
+            # doing 2 extra redis queries.
+            self.__class__.delete_old_terms(obj_id, old_terms)
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -265,6 +283,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         key = TERM_SET_BASE_NAME % (provider_name,)
 
         serialized_terms = self.__class__._serialize_data(terms)
+
         pipe.hset(key, obj_id, serialized_terms)
         # End pipeline
         pipe.execute()
@@ -530,7 +549,6 @@ class Autocompleter(AutocompleterBase):
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
             REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
-
         return results
 
     def exact_suggest(self, term):
@@ -581,8 +599,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.set(cache_key, self.__class__._serialize_data(results))
-            REDIS.expire(cache_key, settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
         return results
 
     def _get_results_from_ids(self, provider_results):

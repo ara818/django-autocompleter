@@ -100,7 +100,7 @@
     "fields": {
         "score": 0,
         "name": "US 30 Year Mortgage Rate",
-        "internal_name": "30_year_mortgage_rate"
+        "internal_name": "us_30_year_mortgage_rate"
     }
 }, {
     "pk": 14,
@@ -108,7 +108,7 @@
     "fields": {
         "score": 0,
         "name": "US 5/1 Adjustable Rate Mortgage Rate",
-        "internal_name": "5_1_adjustable_rate_mortgage_rate"
+        "internal_name": "us_5_1_adjustable_rate_mortgage_rate"
     }
 }, {
     "pk": 15,
@@ -124,7 +124,7 @@
     "fields": {
         "score": 0,
         "name": "30 Year Treasury Rate",
-        "internal_name": "30_year_treasury_rate"
+        "internal_name": "us_30_year_treasury_rate"
     }
 }, {
     "pk": 17,
@@ -132,7 +132,7 @@
     "fields": {
         "score": 0,
         "name": "10 Year Treasury Rate",
-        "internal_name": "10_year_treasury_rate"
+        "internal_name": "us_10_year_treasury_rate"
     }
 }, {
     "pk": 18,
@@ -140,7 +140,7 @@
     "fields": {
         "score": 0,
         "name": "1 Month Treasury Rate",
-        "internal_name": "1_month_treasury_rate"
+        "internal_name": "us_1_month_treasury_rate"
     }
 }, {
     "pk": 19,
@@ -148,7 +148,7 @@
     "fields": {
         "score": 0,
         "name": "1 Year Treasury Rate",
-        "internal_name": "1_year_treasury_rate"
+        "internal_name": "us_1_year_treasury_rate"
     }
 }, {
     "pk": 20,
@@ -156,7 +156,7 @@
     "fields": {
         "score": 0,
         "name": "3 Year Treasury Rate",
-        "internal_name": "3_year_treasury_rate"
+        "internal_name": "us_3_year_treasury_rate"
     }
 }, {
     "pk": 21,
@@ -164,7 +164,7 @@
     "fields": {
         "score": 0,
         "name": "5 Year Treasury Rate",
-        "internal_name": "5_year_treasury_rate"
+        "internal_name": "us_5_year_treasury_rate"
     }
 }, {
     "pk": 22,
@@ -172,7 +172,7 @@
     "fields": {
         "score": 0,
         "name": "7 Year Treasury Rate",
-        "internal_name": "7_year_treasury_rate"
+        "internal_name": "us_7_year_treasury_rate"
     }
 }, {
     "pk": 23,
@@ -187,7 +187,7 @@
     "model": "test_app.indicator",
     "fields": {
         "score": 0,
-        "name": "US Aggregate Weekly Hours Index",
+        "name": "Aggregate Weekly Hours Index",
         "internal_name": "aggregate_weekly_hours_index"
     }
 }, {

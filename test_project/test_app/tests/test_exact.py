@@ -16,9 +16,9 @@ class StockExactStorageTestCase(AutocompleterTestCase):
         """
         autocomp = Autocompleter("stock")
         autocomp.store_all()
-        keys = self.redis.keys('djac.stock.e.*')
+        keys = self.redis.keys('djac.test.stock.e.*')
         self.assertEqual(len(keys), 0)
-        self.assertFalse(self.redis.exists('djac.stock.es'))
+        self.assertFalse(self.redis.exists('djac.test.stock.es'))
         autocomp.remove_all()
 
     def test_exact_matches_stored_when_turned_on(self):
@@ -29,9 +29,9 @@ class StockExactStorageTestCase(AutocompleterTestCase):
 
         autocomp = Autocompleter("stock")
         autocomp.store_all()
-        keys = self.redis.keys('djac.stock.e.*')
+        keys = self.redis.keys('djac.test.stock.e.*')
         self.assertNotEqual(len(keys), 0)
-        self.assertTrue(self.redis.exists('djac.stock.es'))
+        self.assertTrue(self.redis.exists('djac.test.stock.es'))
         autocomp.remove_all()
 
         # Must set the setting back to where it was as it will persist
@@ -68,12 +68,12 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         """
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
-        keys = self.redis.keys('djac.stock.e.*')
+        keys = self.redis.keys('djac.test.stock.e.*')
         self.assertEqual(len(keys), 0)
-        self.assertFalse(self.redis.exists('djac.stock.es'))
-        keys = self.redis.keys('djac.ind.e.*')
+        self.assertFalse(self.redis.exists('djac.test.stock.es'))
+        keys = self.redis.keys('djac.test.ind.e.*')
         self.assertEqual(len(keys), 0)
-        self.assertFalse(self.redis.exists('djac.ind.es'))
+        self.assertFalse(self.redis.exists('djac.test.ind.es'))
         autocomp.remove_all()
 
     def test_exact_matches_stored_when_turned_on(self):
@@ -83,12 +83,12 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
         autocomp = Autocompleter("mixed")
         autocomp.store_all()
-        keys = self.redis.keys('djac.stock.e.*')
+        keys = self.redis.keys('djac.test.stock.e.*')
         self.assertNotEqual(len(keys), 0)
-        self.assertTrue(self.redis.exists('djac.stock.es'))
-        keys = self.redis.keys('djac.ind.e.*')
+        self.assertTrue(self.redis.exists('djac.test.stock.es'))
+        keys = self.redis.keys('djac.test.ind.e.*')
         self.assertNotEqual(len(keys), 0)
-        self.assertTrue(self.redis.exists('djac.ind.es'))
+        self.assertTrue(self.redis.exists('djac.test.ind.es'))
         autocomp.remove_all()
 
         # Must set the setting back to where it was as it will persist
@@ -103,12 +103,12 @@ class MultiExactStorageTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("mixed")
 
         autocomp.store_all()
-        keys = self.redis.keys('djac.stock.e.*')
+        keys = self.redis.keys('djac.test.stock.e.*')
         self.assertNotEqual(len(keys), 0)
-        self.assertTrue(self.redis.exists('djac.stock.es'))
-        keys = self.redis.keys('djac.ind.e.*')
+        self.assertTrue(self.redis.exists('djac.test.stock.es'))
+        keys = self.redis.keys('djac.test.ind.e.*')
         self.assertEqual(len(keys), 0)
-        self.assertFalse(self.redis.exists('djac.ind.es'))
+        self.assertFalse(self.redis.exists('djac.test.ind.es'))
         autocomp.remove_all()
         registry.del_provider_setting(IndicatorAutocompleteProvider, 'MAX_EXACT_MATCH_WORDS')
 
@@ -119,11 +119,12 @@ class StockExactMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
+        super(StockExactMatchTestCase, self).setUp()
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         self.autocomp = Autocompleter("stock")
         self.autocomp.store_all()
-        super(StockExactMatchTestCase, self).setUp()
+        
 
     def tearDown(self):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
@@ -169,11 +170,12 @@ class MultiExactMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
     def setUp(self):
+        super(MultiExactMatchTestCase, self).setUp()
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
 
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
-        super(MultiExactMatchTestCase, self).setUp()
+        
 
     def tearDown(self):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)

@@ -28,6 +28,8 @@ AUTOCOMPLETER_REDIS_CONNECTION = {
     'db': 0,
 }
 
+AUTOCOMPLETER_TEST_DATA = True
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 NOSE_ARGS = [

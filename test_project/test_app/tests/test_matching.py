@@ -11,9 +11,9 @@ class StockMatchTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
+        super(StockMatchTestCase, self).setUp()
         self.autocomp = Autocompleter("stock")
         self.autocomp.store_all()
-        super(StockMatchTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -111,9 +111,10 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
     def setUp(self):
+        super(IndicatorMatchTestCase, self).setUp()
         self.autocomp = Autocompleter("indicator")
         self.autocomp.store_all()
-        super(IndicatorMatchTestCase, self).setUp()
+        
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -122,9 +123,10 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         """
         Two results with the same score are returned in lexographic order of object ID
         """
+
         matches = self.autocomp.suggest('us')
-        self.assertEqual(matches[1]['display_name'], 'Bank Credit of All US Commercial Banks')
-        self.assertEqual(matches[9]['display_name'], 'Trade Weighted US Dollar Index: Major Currencies')
+        self.assertEqual(matches[1]['display_name'], 'US Dollar to Australian Dollar Exchange Rate')
+        self.assertEqual(matches[9]['display_name'], 'US Dollar to Chinese Yuan Exchange Rate')
         return matches
 
     def test_join_char_replacement(self):
@@ -187,9 +189,9 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
 
 class DictProviderMatchingTestCase(AutocompleterTestCase):
     def setUp(self):
+        super(DictProviderMatchingTestCase, self).setUp()
         self.autocomp = Autocompleter("metric")
         self.autocomp.store_all()
-        super(DictProviderMatchingTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -202,9 +204,9 @@ class MultiMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
 
     def setUp(self):
+        super(MultiMatchingTestCase, self).setUp()
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
-        super(MultiMatchingTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()

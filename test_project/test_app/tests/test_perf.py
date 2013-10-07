@@ -11,6 +11,7 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
     num_iterations = 1000
 
     def setUp(self):
+        super(MultiMatchingPerfTestCase, self).setUp()
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
 

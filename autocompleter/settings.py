@@ -3,6 +3,9 @@ from django.conf import settings
 # Redis connection parameters
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
+# Test data for debugging/runnign tests
+TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
+
 # Name of variable autcompleter will look for to grab what term to search on.
 SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
 

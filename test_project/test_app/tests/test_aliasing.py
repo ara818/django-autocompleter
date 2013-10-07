@@ -9,9 +9,9 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
     def setUp(self):
+        super(IndicatorAliasedMatchTestCase, self).setUp()
         self.autocomp = Autocompleter("indicator_aliased")
         self.autocomp.store_all()
-        super(IndicatorAliasedMatchTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -67,9 +67,9 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
 
 class CalcAutocompleteProviderTestCase(AutocompleterTestCase):
     def setUp(self):
+        super(CalcAutocompleteProviderTestCase, self).setUp()
         self.autocomp = Autocompleter("metric_aliased")
         self.autocomp.store_all()
-        super(CalcAutocompleteProviderTestCase, self).setUp()
 
     def tearDown(self):
         self.autocomp.remove_all()

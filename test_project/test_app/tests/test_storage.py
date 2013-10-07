@@ -19,11 +19,11 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         provider = StockAutocompleteProvider(aapl)
 
         provider.store()
-        keys = self.redis.hkeys('djac.stock')
+        keys = self.redis.hkeys('djac.test.stock')
         self.assertEqual(len(keys), 1)
 
         provider.remove()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
     def test_dict_store_and_remove(self):
@@ -34,11 +34,11 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         provider = CalcAutocompleteProvider(item)
         provider.store()
 
-        keys = self.redis.hkeys('djac.metric')
+        keys = self.redis.hkeys('djac.test.metric')
         self.assertEqual(len(keys), 1)
 
         provider.remove()
-        keys = self.redis.keys('djac.metric*')
+        keys = self.redis.keys('djac.test.metric*')
         self.assertEqual(len(keys), 0)
 
     def test_store_and_remove_all_basic(self):
@@ -48,14 +48,14 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("stock")
 
         autocomp.store_all()
-        keys = self.redis.hkeys('djac.stock')
+        keys = self.redis.hkeys('djac.test.stock')
         self.assertEqual(len(keys), 101)
 
         autocomp.remove_all()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
-    def test_oprhan_removal(self):
+    def test_orphan_removal(self):
         """
         test orphan removal
         """
@@ -69,16 +69,12 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         unemployment.name = 'free parking'
         unemployment.save()
 
-
-        self.assertTrue(autocomp.suggest('free parking')[0]['id'] == 1)
-        self.assertTrue(autocomp.suggest('US Unemployment Rate')[0]['id'] == 1)
-
-        IndicatorAutocompleteProvider.delete_old_terms('US Unemployment Rate')
         self.assertTrue(autocomp.suggest('free parking')[0]['id'] == 1)
         self.assertTrue(len(autocomp.suggest('US Unemployment Rate')) == 0)
 
-        signal_registry.unregister(Indicator)
         autocomp.remove_all()
+        signal_registry.unregister(Indicator)
+
 
     def test_dict_store_and_remove_all_basic(self):
         """
@@ -87,11 +83,11 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("metric")
 
         autocomp.store_all()
-        keys = self.redis.hkeys('djac.metric')
-        self.assertEqual(len(keys), 6)
+        keys = self.redis.hkeys('djac.test.metric')
+        self.assertEqual(len(keys), 8)
 
         autocomp.remove_all()
-        keys = self.redis.keys('djac.metric')
+        keys = self.redis.keys('djac.test.metric')
         self.assertEqual(len(keys), 0)
 
     def test_store_and_remove_all_basic_with_caching(self):
@@ -105,7 +101,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("stock")
         autocomp.store_all()
 
-        keys = self.redis.hkeys('djac.stock')
+        keys = self.redis.hkeys('djac.test.stock')
         self.assertEqual(len(keys), 101)
 
         autocomp = Autocompleter("stock")
@@ -116,7 +112,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
             autocomp.exact_suggest('xyz')
 
         autocomp.remove_all()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
         # Must set the setting back to where it was as it will persist
@@ -133,8 +129,8 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("metric")
         autocomp.store_all()
 
-        keys = self.redis.hkeys("djac.metric")
-        self.assertEqual(len(keys), 6)
+        keys = self.redis.hkeys('djac.test.metric')
+        self.assertEqual(len(keys), 8)
 
         autocomp = Autocompleter("metric")
         for i in range(0, 3):
@@ -145,7 +141,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.remove_all()
 
-        keys = self.redis.keys('djac.metric*')
+        keys = self.redis.keys('djac.test.metric*')
         self.assertEqual(len(keys), 0)
 
         # Must set the setting back to where it was as it will persist
@@ -158,21 +154,21 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp = Autocompleter("mixed")
 
         autocomp.store_all()
-        keys = self.redis.hkeys('djac.stock')
+        keys = self.redis.hkeys('djac.test.stock')
         self.assertEqual(len(keys), 101)
-        keys = self.redis.hkeys('djac.ind')
+        keys = self.redis.hkeys('djac.test.ind')
         self.assertEqual(len(keys), 100)
-        keys = self.redis.hkeys("djac.metric")
-        self.assertEqual(len(keys), 6)
+        keys = self.redis.hkeys('djac.test.metric')
+        self.assertEqual(len(keys), 8)
 
         autocomp.remove_all()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
-        keys = self.redis.keys('djac.ind*')
+        keys = self.redis.keys('djac.test.ind*')
         self.assertEqual(len(keys), 0)
-        keys = self.redis.keys('djac.mixed*')
+        keys = self.redis.keys('djac.test.mixed*')
         self.assertEqual(len(keys), 0)
-        keys = self.redis.keys('djac.metric*')
+        keys = self.redis.keys('djac.test.metric*')
         self.assertEqual(len(keys), 0)
 
 
@@ -203,17 +199,17 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         """
         aapl = Stock(symbol='AAPL', name='Apple', market_cap=50)
         aapl.save()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
         signal_registry.register(Stock)
 
         aapl.save()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertNotEqual(len(keys), 0)
 
         aapl.delete()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
         signal_registry.unregister(Stock)
@@ -241,7 +237,7 @@ class SignalBasedStoringTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), 1)
 
         aapl.delete()
-        keys = self.redis.keys('djac.stock*')
+        keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
 
         signal_registry.unregister(Stock)
