@@ -334,6 +334,8 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
     # Model this provider is related to
     model = None
 
+    obj_dict = None
+
     def get_item_id(self):
         """
         Select a field which is unique for use in the autocompleter.
@@ -355,8 +357,7 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
         For the dict provider, the items specified on the attr should be good to go,
         but it can be overridden here.
         """
-        raise cls.model.iterator()
-
+        return cls.obj_dict
 
 class Autocompleter(AutocompleterBase):
     """

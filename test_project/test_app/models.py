@@ -125,9 +125,11 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
 class CalcAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
     model = 'metric'
-
     provider_name = "metric"
+
     settings = {}
+
+    obj_dict = calc_info.calc_dicts
 
     def get_item_id(self):
         return self.obj['label']
@@ -147,14 +149,10 @@ class CalcAutocompleteProvider(AutocompleterDictProvider):
             'search_name': u'%s' % (self.obj['label'],),
         }
 
-    @classmethod
-    def get_iterator(cls):
-        return calc_info.calc_dicts
 
 
 class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
-    model = 'metric_aliased'
 
     provider_name = "metric_aliased"
     settings = {}
