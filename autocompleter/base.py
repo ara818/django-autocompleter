@@ -332,8 +332,6 @@ class AutocompleterModelProvider(AutocompleterProviderBase):
 
 class AutocompleterDictProvider(AutocompleterProviderBase):
     # Model this provider is related to
-    model = None
-
     obj_dict = None
 
     def get_item_id(self):
