@@ -147,7 +147,6 @@ class AutocompleterProviderBase(AutocompleterBase):
         Gets rid of old terms based on terms listed in the id-terms mapping.
         """
         if old_terms is not None:
-            old_terms = cls._get_norm_terms(old_terms)
             cls.clear_keys(obj_id, old_terms)
 
     @classmethod
@@ -282,7 +281,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         # set provider's obj_id - terms hash.
         key = TERM_SET_BASE_NAME % (provider_name,)
 
-        serialized_terms = self.__class__._serialize_data(terms)
+        serialized_terms = self.__class__._serialize_data(norm_terms)
 
         pipe.hset(key, obj_id, serialized_terms)
         # End pipeline
@@ -294,8 +293,8 @@ class AutocompleterProviderBase(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
-        terms = self.get_terms()
         obj_id = self.get_item_id()
+        terms = self.__class__.get_old_terms(obj_id)
         norm_terms = self.__class__._get_norm_terms(terms)
         self.__class__.clear_keys(obj_id, norm_terms)
 

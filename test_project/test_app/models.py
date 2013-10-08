@@ -153,7 +153,7 @@ class CalcAutocompleteProvider(AutocompleterDictProvider):
 
 class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
-
+    model = 'metric'
     provider_name = "metric_aliased"
     settings = {}
 
