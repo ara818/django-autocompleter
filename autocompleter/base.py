@@ -146,8 +146,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         """
         Gets rid of old terms based on terms listed in the id-terms mapping.
         """
-        if old_terms is not None:
-            cls.clear_keys(obj_id, old_terms)
+        cls.clear_keys(obj_id, old_terms)
 
     @classmethod
     def get_old_terms(cls, obj_id):
@@ -238,7 +237,8 @@ class AutocompleterProviderBase(AutocompleterBase):
         if delete_old is True:
             # TODO: memoize get_old_terms? Otherwise have to pass old_terms down the line to avoid
             # doing 2 extra redis queries.
-            self.__class__.delete_old_terms(obj_id, old_terms)
+            if old_terms is not None:
+                self.__class__.delete_old_terms(obj_id, old_terms)
 
         # Start pipeline
         pipe = REDIS.pipeline()
