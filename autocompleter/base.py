@@ -127,7 +127,8 @@ class AutocompleterProviderBase(AutocompleterBase):
             return cls._phrase_aliases
 
         norm_phrase_aliases = utils.build_norm_phrase_alias_dict(cls.get_phrase_aliases())
-        one_way_norm_phrase_aliases = utils.build_norm_phrase_alias_dict(cls.get_one_way_phrase_aliases(), two_way=False)
+        one_way_phrase_aliases = cls.get_one_way_phrase_aliases()
+        one_way_norm_phrase_aliases = utils.build_norm_phrase_alias_dict(one_way_phrase_aliases, two_way=False)
 
         norm_phrase_aliases.update(one_way_norm_phrase_aliases)
         cls._phrase_aliases = norm_phrase_aliases
