@@ -19,10 +19,3 @@ class AutocompleterTestCase(FastFixtureTestCase):
         for i in old_data:
             pipe.delete(i)
         pipe.execute()
-
-    def _get_provider_class(self, name, model):
-        provider_classes = registry.get_all_by_autocompleter(name)
-        for provider_class in provider_classes:
-            if provider_class.model == model:
-                return provider_class
-        return None

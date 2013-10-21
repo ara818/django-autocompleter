@@ -19,13 +19,14 @@ class AutocompleterRegistry(object):
 
         if ac_name not in self._providers_by_ac:
             self._providers_by_ac[ac_name] = []
-        if provider.model not in self._providers_by_model:
-            self._providers_by_model[provider.model] = []
+        if getattr(provider, 'model', None) != None:
+            if provider.model not in self._providers_by_model:
+                self._providers_by_model[provider.model] = []
+            if provider not in self._providers_by_model[provider.model]:
+                self._providers_by_model[provider.model].append(provider)
 
         if provider not in self._providers_by_ac[ac_name]:
             self._providers_by_ac[ac_name].append(provider)
-        if provider not in self._providers_by_model[provider.model]:
-            self._providers_by_model[provider.model].append(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
         # Note: the reason we default local_settings to None, then set to a dict is when we had
@@ -44,9 +45,10 @@ class AutocompleterRegistry(object):
         if ac_name in self._providers_by_ac and \
                 provider in self._providers_by_ac[ac_name]:
             self._providers_by_ac[ac_name].remove(provider)
-        if provider.model in self._providers_by_model and \
-                provider in self._providers_by_model[provider.model]:
-            self._providers_by_model[provider.model].remove(provider)
+        if getattr(provider, 'model', None) != None:
+            if provider.model in self._providers_by_model and \
+                    provider in self._providers_by_model[provider.model]:
+                self._providers_by_model[provider.model].remove(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
         del self._ac_provider_settings[combined_name]
