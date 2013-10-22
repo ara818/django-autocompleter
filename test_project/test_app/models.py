@@ -174,13 +174,13 @@ class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
         }
 
     @classmethod
-    def get_phrase_aliases(self):
+    def get_phrase_aliases(cls):
         return {
         'EV': 'Enterprise Value',
         }
 
     @classmethod
-    def get_one_way_phrase_aliases(self):
+    def get_one_way_phrase_aliases(cls):
         return {
             'Revenue': 'Turnover',
         }
