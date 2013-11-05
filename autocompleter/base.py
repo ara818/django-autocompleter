@@ -296,8 +296,9 @@ class AutocompleterProviderBase(AutocompleterBase):
         # Init data
         obj_id = self.get_item_id()
         terms = self.__class__.get_old_terms(obj_id)
-        norm_terms = self.__class__._get_norm_terms(terms)
-        self.__class__.clear_keys(obj_id, norm_terms)
+        if terms != None:
+            norm_terms = self.__class__._get_norm_terms(terms)
+            self.__class__.clear_keys(obj_id, norm_terms)
 
 
 class AutocompleterModelProvider(AutocompleterProviderBase):
