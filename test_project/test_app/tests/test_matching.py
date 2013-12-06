@@ -258,3 +258,87 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')
         registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS')
+
+
+class ElasticMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        super(ElasticMatchingTestCase, self).setUp()
+        self.autocomp = Autocompleter("mixed")
+        self.autocomp.store_all()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_basic_match(self):
+        """
+        Test basic multiple matching works
+        """
+        matches = self.autocomp.suggest('pe')
+        self.assertEqual(len(matches['stock']), 5)
+        self.assertEqual(len(matches['ind']), 10)
+        self.assertEqual(len(matches['metric']), 1)
+
+    def test_matching_with_max_results_cap(self):
+        """
+        Test that basic matching with results limit works
+        """
+        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS', 5)
+        registry.set_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS', 5)
+        registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS', 5)
+
+        matches = self.autocomp.suggest('pe')
+
+        self.assertEqual(len(matches['stock']), 5)
+        self.assertEqual(len(matches['ind']), 5)
+        self.assertEqual(len(matches['metric']), 1)
+
+        registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS')
+
+    def test_matching_with_max_results_cap_and_elasticity(self):
+        """
+        Test that simple elastic results
+        """
+        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS', 5)
+        registry.set_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS', 5)
+        registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS', 5)
+
+        setattr(auto_settings, 'ELASTIC_RESULTS', True)
+
+        matches = self.autocomp.suggest('pe')
+        self.assertEqual(len(matches['stock']), 5)
+        self.assertEqual(len(matches['ind']), 9)
+        self.assertEqual(len(matches['metric']), 1)
+
+        setattr(auto_settings, 'ELASTIC_RESULTS', False)
+        registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS')
+
+    def test_matching_with_uneven_max_results_cap_and_elasticity(self):
+        """
+        Test uneven redistribution of surplus result slots
+        """
+        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS',5)
+        registry.set_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS', 4)
+        registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS', 6)
+
+        setattr(auto_settings, 'ELASTIC_RESULTS', True)
+
+        matches = self.autocomp.suggest('pe')
+        self.assertEqual(len(matches['stock']), 5)
+        self.assertEqual(len(matches['ind']), 9)
+        self.assertEqual(len(matches['metric']), 1)
+
+        setattr(auto_settings, 'ELASTIC_RESULTS', False)
+        registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS')
+        registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS')
+
+
+
+
+

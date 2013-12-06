@@ -3,7 +3,7 @@ from django.conf import settings
 # Redis connection parameters
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
-# Test data for debugging/runnign tests
+# Test data for debugging/running tests
 TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
 
 # Name of variable autcompleter will look for to grab what term to search on.
@@ -15,10 +15,11 @@ CACHE_TIMEOUT = getattr(settings, 'AUTOCOMPLETER_CACHE_TIMEOUT', 0)
 # Regex that filters out characters we ignore for the purposes of autocompleting
 CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-9_ ]')
 
+ELASTIC_RESULTS = getattr(settings, 'AUTOCOMPLETER_ELASTIC_RESULTS', False)
+
 # Maximum number of results returned per result type
 # Note: AC/Provider and Provider override possible
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
-
 
 # Minimum number of letters required to start returning results
 # Note: AC/Provider and Provider override possible

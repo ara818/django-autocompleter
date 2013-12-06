@@ -475,11 +475,19 @@ class Autocompleter(AutocompleterBase):
         provider_results = SortedDict()
 
         # Get the matched result IDs
+        total_results = 0
+        if settings.ELASTIC_RESULTS:
+            for provider in providers:
+                total_results += registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+
         pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
-
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+            # If we have total_results from adding up all MAX_RESULTS from ELASTIC_RESULTS use it.
+            if total_results:
+                MAX_RESULTS = total_results
+            else:
+                MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
@@ -513,6 +521,14 @@ class Autocompleter(AutocompleterBase):
 
         results = [i for i in pipe.execute() if type(i) == list]
 
+        # init mappings and surplus for Elastic Result distribution
+        deficits = {}
+        # Mapping required to store result_ids outside of per provider loop before
+        # fetching items / redistributing availabe result slots in elastic results
+        provider_result_ids = {}
+        max_results_dict = {}
+        # total pool of available result slots
+        total_surplus = 0
         # Create a dict mapping provider to result IDs
         # We combine the 2 different kinds of results into 1 result ID list per provider.
         for provider in providers:
@@ -523,6 +539,9 @@ class Autocompleter(AutocompleterBase):
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
             if len(term) < MIN_LETTERS:
+                # if provider will not be used due to min_letters, put all slots
+                # in surplus pool then continue
+                total_surplus += MAX_RESULTS
                 continue
 
             ids = results.pop(0)
@@ -541,8 +560,50 @@ class Autocompleter(AutocompleterBase):
                     if j in ids:
                         ids.remove(j)
                     ids.insert(0, j)
+            provider_result_ids[provider] = ids
 
-            provider_results[provider_name] = ids[:MAX_RESULTS]
+            if settings.ELASTIC_RESULTS:
+                surplus = MAX_RESULTS - len(ids)
+                if surplus >= 0:
+                    max_results_dict[provider] = len(ids)
+                    total_surplus += surplus
+                else:
+                    # create dict of how many extra each provider actually needs
+                    deficits[provider] = surplus * -1
+                    # create base usage
+                    max_results_dict[provider] = MAX_RESULTS
+            else:
+                max_results_dict[provider] = MAX_RESULTS
+
+        if settings.ELASTIC_RESULTS:
+            while total_surplus > 0:
+                # get a list of providers with deficits for two reasons. First, to know how
+                # to divide the surplus, secondly, to iterate over rather than the deficit dict
+                # as we will be manipulating the dict in the for loop
+                beneficiaries = deficits.keys()
+                len_beneficiaries = len(beneficiaries)
+                # if len_beneficiaries is greater than surplus, surplus_each will be 0 because of int
+                # division in python, but total_surplus will still be > 0, resulting in infinite loop.
+                if len_beneficiaries == 0 or len_beneficiaries > total_surplus:
+                    break
+                else:
+                    surplus_payout = total_surplus / len_beneficiaries
+                    for provider in beneficiaries:
+                        deficit = deficits.pop(provider)
+                        if deficit - surplus_payout <= 0:
+                            total_surplus -= deficit
+                            max_results_dict[provider] += surplus_payout
+                        elif deficit - surplus_payout > 0:
+                            total_surplus -= surplus_payout
+                            max_results_dict[provider] += surplus_payout
+                            deficits[provider] = deficit-surplus_payout
+
+        for provider in providers:
+            try:
+                max_results = max_results_dict[provider]
+                provider_results[provider.provider_name] = provider_result_ids[provider][:max_results]
+            except KeyError:
+                continue
 
         results = self._get_results_from_ids(provider_results)
 
