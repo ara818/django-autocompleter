@@ -539,7 +539,7 @@ class Autocompleter(AutocompleterBase):
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
             if len(term) < MIN_LETTERS:
-                # if provider will not be used due to min_letters, put all slots
+                # if provider will not be used due to min_letters, put all result slots
                 # in surplus pool then continue
                 total_surplus += MAX_RESULTS
                 continue
