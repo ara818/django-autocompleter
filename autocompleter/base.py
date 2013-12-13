@@ -484,7 +484,7 @@ class Autocompleter(AutocompleterBase):
         for provider in providers:
             provider_name = provider.provider_name
             # If we have total_results from adding up all MAX_RESULTS from ELASTIC_RESULTS use it.
-            if total_results:
+            if settings.ELASTIC_RESULTS:
                 MAX_RESULTS = total_results
             else:
                 MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
@@ -568,10 +568,10 @@ class Autocompleter(AutocompleterBase):
                     max_results_dict[provider] = len(ids)
                     total_surplus += surplus
                 else:
-                    # create dict of how many extra each provider actually needs
-                    deficits[provider] = surplus * -1
                     # create base usage
                     max_results_dict[provider] = MAX_RESULTS
+                    # create dict of how many extra each provider actually needs
+                    deficits[provider] = surplus * -1
             else:
                 max_results_dict[provider] = MAX_RESULTS
 
@@ -581,19 +581,19 @@ class Autocompleter(AutocompleterBase):
                 # to divide the surplus, secondly, to iterate over rather than the deficit dict
                 # as we will be manipulating the dict in the for loop
                 beneficiaries = deficits.keys()
-                len_beneficiaries = len(beneficiaries)
-                # if len_beneficiaries is greater than surplus, surplus_each will be 0 because of int
+                num_beneficiaries = len(beneficiaries)
+                # if num_beneficiaries is greater than surplus, surplus_each will be 0 because of int
                 # division in python, but total_surplus will still be > 0, resulting in infinite loop.
-                if len_beneficiaries == 0 or len_beneficiaries > total_surplus:
+                if num_beneficiaries == 0 or num_beneficiaries > total_surplus:
                     break
                 else:
-                    surplus_payout = total_surplus / len_beneficiaries
+                    surplus_payout = total_surplus / num_beneficiaries
                     for provider in beneficiaries:
                         deficit = deficits.pop(provider)
-                        if deficit - surplus_payout <= 0:
+                        if (deficit - surplus_payout) <= 0:
                             total_surplus -= deficit
                             max_results_dict[provider] += surplus_payout
-                        elif deficit - surplus_payout > 0:
+                        else:
                             total_surplus -= surplus_payout
                             max_results_dict[provider] += surplus_payout
                             deficits[provider] = deficit-surplus_payout
