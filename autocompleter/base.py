@@ -30,11 +30,7 @@ class AutocompleterBase(object):
 
     @classmethod
     def _deserialize_data(cls, raw):
-        # Temporary thing to override search_name if it exists
-        data = json.loads(raw)
-        if 'search_name' in data and 'search_name2' in data:
-            data['search_name'] = data['search_name2']
-        return data
+        return json.loads(raw)
 
 
 class AutocompleterProviderBase(AutocompleterBase):
