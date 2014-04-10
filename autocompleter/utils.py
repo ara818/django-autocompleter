@@ -34,8 +34,8 @@ def get_normalized_term(term, replaced_chars=[]):
     term = term.strip()
     if replaced_chars != []:
         term = replace_all(term, replace=replaced_chars, with_this=' ')
-    term = re.sub(r'[\s]+', ' ', term)
     term = re.sub(settings.CHARACTER_FILTER, '', term)
+    term = re.sub(r'[\s]+', ' ', term)
     return term
 
 
