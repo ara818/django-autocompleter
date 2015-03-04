@@ -1,0 +1,12 @@
+language: python
+python:
+    - 2.7
+install:
+    # Install requirements
+    - pip install -r requirements.txt
+    # Install dev requirements for testing
+    - pip install -r dev_requirements.txt
+    # Install autocompleter
+    - pip install -e .
+script:
+    - python test_project/manage.py test
