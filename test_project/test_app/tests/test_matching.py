@@ -188,6 +188,8 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MIN_LETTERS', 1)
 
 class DictProviderMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json']
+
     def setUp(self):
         super(DictProviderMatchingTestCase, self).setUp()
         self.autocomp = Autocompleter("metric")

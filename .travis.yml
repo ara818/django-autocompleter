@@ -6,7 +6,7 @@ services:
 env:
     - DJANGO_VERSION=1.5.12
     - DJANGO_VERSION=1.6.10
-    - DJANGO_VERSION=1.7.6
+    - DJANGO_VERSION=1.7.5
 install:
     # Install requirements
     - pip install -r requirements.txt

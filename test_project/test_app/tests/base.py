@@ -2,6 +2,7 @@ import redis
 
 from django_nose import FastFixtureTestCase
 from django.conf import settings
+from django.core import management
 
 from autocompleter import registry
 
@@ -19,3 +20,8 @@ class AutocompleterTestCase(FastFixtureTestCase):
         for i in old_data:
             pipe.delete(i)
         pipe.execute()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(AutocompleterTestCase, cls).tearDownClass()
+        management.call_command('flush', verbosity=0, interactive=False)

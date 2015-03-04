@@ -193,6 +193,8 @@ class SelectiveStoringTestCase(AutocompleterTestCase):
 
 
 class SignalBasedStoringTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
     def test_signal_based_add_and_remove(self):
         """
         Turning on signals will automatically add and remove and object from the autocompleter

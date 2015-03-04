@@ -66,6 +66,8 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), 1)
 
 class CalcAutocompleteProviderTestCase(AutocompleterTestCase):
+    fixtures = ['indicator_test_data_small.json']
+
     def setUp(self):
         super(CalcAutocompleteProviderTestCase, self).setUp()
         self.autocomp = Autocompleter("metric_aliased")

@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'autocompleter',
 ]
 
+MIDDLEWARE_CLASSES = ()
+
 AUTOCOMPLETER_REDIS_CONNECTION = {
     'host': 'localhost',
     'port': 6379,
