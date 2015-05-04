@@ -1,10 +1,8 @@
+from django_nose import FastFixtureTestCase
 import redis
 
-from django_nose import FastFixtureTestCase
 from django.conf import settings
 from django.core import management
-
-from autocompleter import registry
 
 
 class AutocompleterTestCase(FastFixtureTestCase):

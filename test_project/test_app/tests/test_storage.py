@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import Stock, Indicator, StockAutocompleteProvider, CalcAutocompleteProvider, IndicatorAutocompleteProvider
+from test_app.models import Stock, Indicator
+from test_app.autocompleters import StockAutocompleteProvider, CalcAutocompleteProvider
 from test_app import calc_info
 from autocompleter import Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
@@ -74,7 +75,6 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.remove_all()
         signal_registry.unregister(Indicator)
-
 
     def test_dict_store_and_remove_all_basic(self):
         """

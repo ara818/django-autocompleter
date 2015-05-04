@@ -65,6 +65,7 @@ class IndicatorAliasedMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('california unemployment')
         self.assertEqual(len(matches), 1)
 
+
 class CalcAutocompleteProviderTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
@@ -104,7 +105,6 @@ class CalcAutocompleteProviderTestCase(AutocompleterTestCase):
         self.assertTrue('enterprise value' in aliases)
         self.assertTrue('revenue' in aliases)
         self.assertFalse('turnover' in aliases)
-
 
     def test_one_way_with_two_way_aliasing(self):
         """

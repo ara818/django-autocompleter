@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import StockAutocompleteProvider, IndicatorAutocompleteProvider, CalcAutocompleteProvider
+from test_app.autocompleters import StockAutocompleteProvider, IndicatorAutocompleteProvider, CalcAutocompleteProvider
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
@@ -107,6 +107,7 @@ class StockMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('NBBC vs Regional - Mid-Atlantic Banks vs Financial')
         self.assertEqual(len(matches), 0)
 
+
 class IndicatorMatchTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']
 
@@ -114,7 +115,6 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         super(IndicatorMatchTestCase, self).setUp()
         self.autocomp = Autocompleter("indicator")
         self.autocomp.store_all()
-        
 
     def tearDown(self):
         self.autocomp.remove_all()
@@ -187,6 +187,7 @@ class IndicatorMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MIN_LETTERS', 1)
 
+
 class DictProviderMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
@@ -201,6 +202,7 @@ class DictProviderMatchingTestCase(AutocompleterTestCase):
     def test_basic_match(self):
         matches = self.autocomp.suggest('m')
         self.assertEqual(len(matches), 1)
+
 
 class MultiMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
@@ -324,7 +326,7 @@ class ElasticMatchingTestCase(AutocompleterTestCase):
         """
         Test uneven redistribution of surplus result slots
         """
-        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS',5)
+        registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS', 5)
         registry.set_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS', 4)
         registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS', 6)
 
@@ -339,8 +341,3 @@ class ElasticMatchingTestCase(AutocompleterTestCase):
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MAX_RESULTS')
         registry.del_ac_provider_setting("mixed", StockAutocompleteProvider, 'MAX_RESULTS')
         registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MAX_RESULTS')
-
-
-
-
-
