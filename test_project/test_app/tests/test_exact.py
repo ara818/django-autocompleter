@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from test_app.tests.base import AutocompleterTestCase
-from test_app.models import IndicatorAutocompleteProvider
+from test_app.autocompleters import IndicatorAutocompleteProvider
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
@@ -124,7 +124,6 @@ class StockExactMatchTestCase(AutocompleterTestCase):
 
         self.autocomp = Autocompleter("stock")
         self.autocomp.store_all()
-        
 
     def tearDown(self):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
@@ -175,7 +174,6 @@ class MultiExactMatchTestCase(AutocompleterTestCase):
 
         self.autocomp = Autocompleter("mixed")
         self.autocomp.store_all()
-        
 
     def tearDown(self):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)

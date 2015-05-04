@@ -40,4 +40,3 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
-
