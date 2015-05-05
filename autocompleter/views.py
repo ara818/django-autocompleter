@@ -13,7 +13,7 @@ def suggest(request, name):
         results = ac.suggest(term)
 
         json_response = json.dumps(results)
-        return HttpResponse(json_response, mimetype='application/json')
+        return HttpResponse(json_response, content_type='application/json')
     return HttpResponseServerError("Search parameter not found.")
 
 
@@ -24,5 +24,5 @@ def exact_suggest(request, name):
         results = ac.exact_suggest(term)
 
         json_response = json.dumps(results)
-        return HttpResponse(json_response, mimetype='application/json')
+        return HttpResponse(json_response, content_type='application/json')
     return HttpResponseServerError("Search parameter not found.")
