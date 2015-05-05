@@ -50,4 +50,3 @@ class Command(BaseCommand):
         if options['clear_cache']:
             self.log.info("Clearing cache for autocompleter: %s" % (options['name']))
             autocomp.clear_cache()
-

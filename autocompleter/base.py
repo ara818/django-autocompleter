@@ -91,7 +91,6 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         return norm_terms_with_variations
 
-
     @classmethod
     def get_phrase_aliases(cls):
         """
@@ -193,8 +192,6 @@ class AutocompleterProviderBase(AutocompleterBase):
         # End pipeline
         pipe.execute()
 
-
-
     def get_data(self):
         """
         The data you want to send along on a successful match.
@@ -207,7 +204,6 @@ class AutocompleterProviderBase(AutocompleterBase):
         in the model are included.
         """
         return True
-
 
     def store(self, delete_old=True):
         """
@@ -295,7 +291,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         # Init data
         obj_id = self.get_item_id()
         terms = self.__class__.get_old_terms(obj_id)
-        if terms != None:
+        if terms is not None:
             norm_terms = self.__class__._get_norm_terms(terms)
             self.__class__.clear_keys(obj_id, norm_terms)
 
@@ -341,7 +337,6 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
         """
         raise NotImplementedError
 
-
     def get_term(self):
         """
         The term for the item, which will support autocompletion.
@@ -356,6 +351,7 @@ class AutocompleterDictProvider(AutocompleterProviderBase):
         but it can be overridden here.
         """
         return cls.obj_dict
+
 
 class Autocompleter(AutocompleterBase):
     """
@@ -595,7 +591,7 @@ class Autocompleter(AutocompleterBase):
                         else:
                             total_surplus -= surplus_payout
                             max_results_dict[provider] += surplus_payout
-                            deficits[provider] = deficit-surplus_payout
+                            deficits[provider] = deficit - surplus_payout
 
         for provider in providers:
             try:

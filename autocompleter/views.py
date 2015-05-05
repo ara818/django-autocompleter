@@ -14,7 +14,7 @@ def suggest(request, name):
 
         json_response = json.dumps(results)
         return HttpResponse(json_response, mimetype='application/json')
-    return HttpResponseServerError("Search paramater not found.")
+    return HttpResponseServerError("Search parameter not found.")
 
 
 def exact_suggest(request, name):
@@ -25,4 +25,4 @@ def exact_suggest(request, name):
 
         json_response = json.dumps(results)
         return HttpResponse(json_response, mimetype='application/json')
-    return HttpResponseServerError("Search paramater not found.")
+    return HttpResponseServerError("Search parameter not found.")
