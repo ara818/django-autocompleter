@@ -3,11 +3,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-import autocompleter
 from autocompleter import Autocompleter
-
-# Must autodiscover existing autocompleter providers before can initialize
-autocompleter.autodiscover()
 
 
 class Command(BaseCommand):

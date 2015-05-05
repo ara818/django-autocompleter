@@ -1,8 +1,7 @@
+from collections import OrderedDict
 import redis
 import json
 import itertools
-
-from django.utils.datastructures import SortedDict
 
 from autocompleter import registry, settings, utils
 
@@ -472,7 +471,7 @@ class Autocompleter(AutocompleterBase):
         if len(norm_terms) == 0:
             return []
 
-        provider_results = SortedDict()
+        provider_results = OrderedDict()
 
         # Get the matched result IDs
         total_results = 0
@@ -624,7 +623,7 @@ class Autocompleter(AutocompleterBase):
         cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
-        provider_results = SortedDict()
+        provider_results = OrderedDict()
 
         # Get the normalized we need to search for each term... A single term
         # could turn into multiple terms we need to search.
