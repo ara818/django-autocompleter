@@ -2,6 +2,7 @@ import copy
 import re
 import unicodedata
 import itertools
+import six
 
 from autocompleter import settings
 
@@ -26,10 +27,10 @@ def get_normalized_term(term, replaced_chars=[]):
     7) Remove extra spaces
     8) Remove all characters that are not alphanumeric
     """
-    if type(term) == str:
+    if isinstance(term, six.binary_type):
         term = term.decode('utf-8')
     term = term.lower()
-    term = unicodedata.normalize('NFKD', unicode(term)).encode('ASCII', 'ignore')
+    term = unicodedata.normalize('NFKD', term).encode('ASCII', 'ignore').decode('utf-8')
     term = term.replace('&', 'and')
     term = term.strip()
     if replaced_chars != []:
@@ -118,7 +119,7 @@ def get_aliased_variations(term, phrase_aliases):
                     term_alias_phrase_ranges.append((aliasable_phrase_start, aliasable_phrase_end,))
                     term_aliases[term_alias] = term_alias_phrase_ranges
 
-    return term_aliases.keys()
+    return list(term_aliases.keys())
 
 # Here we build the dict where 1 phrase can map to 1 or more aliased phrases
 def build_norm_phrase_alias_dict(phrase_alias_dict, two_way=True):

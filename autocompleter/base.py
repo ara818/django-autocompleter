@@ -29,7 +29,7 @@ class AutocompleterBase(object):
 
     @classmethod
     def _deserialize_data(cls, raw):
-        return json.loads(raw)
+        return json.loads(raw.decode('utf-8'))
 
 
 class AutocompleterProviderBase(AutocompleterBase):
@@ -575,14 +575,14 @@ class Autocompleter(AutocompleterBase):
                 # get a list of providers with deficits for two reasons. First, to know how
                 # to divide the surplus, secondly, to iterate over rather than the deficit dict
                 # as we will be manipulating the dict in the for loop
-                beneficiaries = deficits.keys()
+                beneficiaries = list(deficits.keys())
                 num_beneficiaries = len(beneficiaries)
                 # if num_beneficiaries is greater than surplus, surplus_each will be 0 because of int
                 # division in python, but total_surplus will still be > 0, resulting in infinite loop.
                 if num_beneficiaries == 0 or num_beneficiaries > total_surplus:
                     break
                 else:
-                    surplus_payout = total_surplus / num_beneficiaries
+                    surplus_payout = int(total_surplus / num_beneficiaries)
                     for provider in beneficiaries:
                         deficit = deficits.pop(provider)
                         if (deficit - surplus_payout) <= 0:
@@ -677,8 +677,8 @@ class Autocompleter(AutocompleterBase):
                 provider_results[provider_name] = \
                     [self.__class__._deserialize_data(i) for i in results.pop(0) if i is not None]
 
-        if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results.keys()) == 1:
-            provider_results = provider_results.values()[0]
+        if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results) == 1:
+            provider_results = list(provider_results.values())[0]
         return provider_results
 
     def _get_all_providers_by_autocompleter(self):

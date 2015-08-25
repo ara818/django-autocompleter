@@ -1,11 +1,11 @@
-from django_nose import FastFixtureTestCase
 import redis
 
 from django.conf import settings
 from django.core import management
+from django.test import TestCase
 
 
-class AutocompleterTestCase(FastFixtureTestCase):
+class AutocompleterTestCase(TestCase):
     def setUp(self):
         self.redis = redis.Redis(host=settings.AUTOCOMPLETER_REDIS_CONNECTION['host'],
             port=settings.AUTOCOMPLETER_REDIS_CONNECTION['port'],
