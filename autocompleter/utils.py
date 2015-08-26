@@ -2,7 +2,6 @@ import copy
 import re
 import unicodedata
 import itertools
-import six
 
 from autocompleter import settings
 
@@ -27,7 +26,7 @@ def get_normalized_term(term, replaced_chars=[]):
     7) Remove extra spaces
     8) Remove all characters that are not alphanumeric
     """
-    if isinstance(term, six.binary_type):
+    if isinstance(term, bytes):
         term = term.decode('utf-8')
     term = term.lower()
     term = unicodedata.normalize('NFKD', term).encode('ASCII', 'ignore').decode('utf-8')
