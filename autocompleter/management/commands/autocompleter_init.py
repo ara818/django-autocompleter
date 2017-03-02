@@ -32,10 +32,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Configure loggingin
         level = {
-            '0': logging.WARN,
-            '1': logging.INFO,
-            '2': logging.DEBUG
-        }[options.get('verbosity', '0')]
+            0: logging.WARN,
+            1: logging.INFO,
+            2: logging.DEBUG
+        }[options.get('verbosity', 0)]
         logging.basicConfig(level=level, format="%(name)s: %(levelname)s: %(message)s")
         self.log = logging.getLogger('commands.autocompleter_init')
 
