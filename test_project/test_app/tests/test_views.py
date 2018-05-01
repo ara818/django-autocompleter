@@ -11,7 +11,7 @@ class TestSuggestView(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
-        super().setUp()
+        super(TestSuggestView, self).setUp()
         self.autocomp = Autocompleter('stock')
         self.autocomp.store_all()
 
@@ -49,7 +49,7 @@ class TestExactSuggestView(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
 
     def setUp(self):
-        super().setUp()
+        super(TestExactSuggestView, self).setUp()
         setattr(settings, 'MAX_EXACT_MATCH_WORDS', 10)
         self.autocomp = Autocompleter('stock')
         self.autocomp.store_all()
