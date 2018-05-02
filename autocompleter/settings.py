@@ -17,14 +17,9 @@ ELASTIC_RESULTS = getattr(settings, 'AUTOCOMPLETER_ELASTIC_RESULTS', False)
 # to return multi-type results
 FLATTEN_SINGLE_TYPE_RESULTS = getattr(settings, 'AUTOCOMPLETER_FLATTEN_SINGLE_TYPE_RESULTS', True)
 
-# Redis connection parameters
-REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
-
-# Name of variable autcompleter will look for to grab what term to search on.
-SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
-
-# Test data for debugging/running tests
-TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
+# Characters we want the autocompleter to interpret as both a space and a blank string.
+# Meaning by default, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
+JOIN_CHARS = getattr(settings, 'AUTOCOMPLETER_JOIN_CHARS', ['-', '/'])
 
 # Maximum number of results returned per result type
 # Note: AC/Provider and Provider override possible
@@ -44,6 +39,11 @@ MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
 # Note: AC/Provider and Provider override possible
 MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
 
-# Characters we want the autocompleter to interpret as both a space and a blank string.
-# Meaning by default, 'U/S-A' will also be stored as 'U SA', 'US A', 'U S A', and 'USA'
-JOIN_CHARS = getattr(settings, 'AUTOCOMPLETER_JOIN_CHARS', ['-', '/'])
+# Redis connection parameters
+REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
+
+# Name of variable autcompleter will look for to grab what term to search on.
+SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
+
+# Test data for debugging/running tests
+TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
