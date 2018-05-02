@@ -10,10 +10,9 @@ env:
     - DJANGO_VERSION=1.9.13
     - DJANGO_VERSION=1.10.8
     - DJANGO_VERSION=1.11.12
-    - DJANGO_VERSION=2.0.4
 matrix:
-    exclude:
-        - python: 2.7
+    include:
+        - python: 3.4
         - env: DJANGO_VERSION=2.0.4
 install:
     # Install requirements
