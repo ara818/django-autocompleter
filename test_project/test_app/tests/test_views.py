@@ -2,7 +2,10 @@ import json
 
 from .base import AutocompleterTestCase
 
-from django.core.urlresolvers import reverse
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
 
 from autocompleter import Autocompleter, settings
 
