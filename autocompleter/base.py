@@ -181,6 +181,7 @@ class AutocompleterProviderBase(AutocompleterBase):
 
             key = EXACT_SET_BASE_NAME % (provider_name,)
             pipe.srem(key, norm_term)
+
         # Remove model ID to data mapping
         key = AUTO_BASE_NAME % (provider_name,)
         pipe.hdel(key, obj_id)
