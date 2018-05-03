@@ -8,7 +8,6 @@ from autocompleter import Autocompleter
 
 
 class SuggestView(View):
-
     def get(self, request, name):
         if settings.SUGGEST_PARAMETER_NAME in request.GET:
             term = request.GET[settings.SUGGEST_PARAMETER_NAME]
@@ -21,7 +20,6 @@ class SuggestView(View):
 
 
 class ExactSuggestView(View):
-
     def get(self, request, name):
         if settings.SUGGEST_PARAMETER_NAME in request.GET:
             term = request.GET[settings.SUGGEST_PARAMETER_NAME]
