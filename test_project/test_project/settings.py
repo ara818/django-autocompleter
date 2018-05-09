@@ -32,6 +32,8 @@ AUTOCOMPLETER_REDIS_CONNECTION = {
 
 AUTOCOMPLETER_TEST_DATA = True
 
+ROOT_URLCONF = 'autocompleter.urls'
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 NOSE_ARGS = [
