@@ -477,7 +477,7 @@ class Autocompleter(AutocompleterBase):
             for provider in providers:
                 total_results += registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
 
-        # Generate a unique identifier to be used for the intermediate result stores. This is to
+        # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         uuid_str = str(uuid.uuid4())
         base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
@@ -634,7 +634,7 @@ class Autocompleter(AutocompleterBase):
         if len(norm_terms) == 0:
             return []
 
-        # Generate a unique identifier to be used for the intermediate result stores. This is to
+        # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         uuid_str = str(uuid.uuid4())
         base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
