@@ -2,6 +2,7 @@ from collections import OrderedDict
 import redis
 import json
 import itertools
+import uuid
 
 from autocompleter import registry, settings, utils
 
@@ -222,7 +223,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         data = self.get_data()
 
         old_terms = self.__class__.get_old_terms(obj_id)
-        # if old terms are the same as the new, shortcircuit and just
+        # if old terms are the same as the new, short circuit and just
         # update the data payload in case anything there is different.
         if terms == old_terms:
             # Store obj ID to data mapping
@@ -462,7 +463,7 @@ class Autocompleter(AutocompleterBase):
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
 
-        # Get the normalized we need to search for each term... A single term
+        # Get the normalized term variations we need to search for each term. A single term
         # could turn into multiple terms we need to search.
         norm_terms = utils.get_norm_term_variations(term)
         if len(norm_terms) == 0:
@@ -475,6 +476,11 @@ class Autocompleter(AutocompleterBase):
         if settings.ELASTIC_RESULTS:
             for provider in providers:
                 total_results += registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+
+        # Generate a unique identifier to be used for the intermediate result stores. This is to
+        # prevent redis key collisions between competing suggest / exact_suggest calls.
+        uuid_str = str(uuid.uuid4())
+        base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -493,14 +499,14 @@ class Autocompleter(AutocompleterBase):
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                result_key = "djac.results.%s" % (norm_term,)
+                result_key = "djac.results.%s.%s" % (uuid_str, norm_term,)
                 result_keys.append(result_key)
-                keys = [PREFIX_BASE_NAME % (provider_name, i,) for i in norm_words]
+                keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
                 pipe.zinterstore(result_key, keys, aggregate='MIN')
-            pipe.zunionstore("djac.results", result_keys, aggregate='MIN')
+            pipe.zunionstore(base_intermediate_result_set, result_keys, aggregate='MIN')
             for result_key in result_keys:
                 pipe.delete(result_key)
-            pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
+            pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
@@ -511,9 +517,9 @@ class Autocompleter(AutocompleterBase):
                 if len(keys) == 0:
                     continue
 
-                pipe.zunionstore("djac.results", keys, aggregate='MIN')
-                pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
-            pipe.delete("djac.results")
+                pipe.zunionstore(base_intermediate_result_set, keys, aggregate='MIN')
+                pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
+            pipe.delete(base_intermediate_result_set)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
@@ -628,6 +634,11 @@ class Autocompleter(AutocompleterBase):
         if len(norm_terms) == 0:
             return []
 
+        # Generate a unique identifier to be used for the intermediate result stores. This is to
+        # prevent redis key collisions between competing suggest / exact_suggest calls.
+        uuid_str = str(uuid.uuid4())
+        base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
+
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -640,8 +651,9 @@ class Autocompleter(AutocompleterBase):
             # Do not attempt zunionstore on empty list because redis errors out.
             if len(keys) == 0:
                 continue
-            pipe.zunionstore("djac.results", keys, aggregate='MIN')
-            pipe.zrange("djac.results", 0, MAX_RESULTS - 1)
+            pipe.zunionstore(base_intermediate_result_set, keys, aggregate='MIN')
+            pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
+            pipe.delete(base_intermediate_result_set)
         results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs

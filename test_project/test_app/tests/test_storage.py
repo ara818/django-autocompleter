@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from unittest import mock
+import uuid
+
 from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock, Indicator
 from test_app.autocompleters import StockAutocompleteProvider, CalcAutocompleteProvider
@@ -169,6 +172,37 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.test.mixed*')
         self.assertEqual(len(keys), 0)
         keys = self.redis.keys('djac.test.metric*')
+        self.assertEqual(len(keys), 0)
+
+    @mock.patch.object(uuid, 'uuid4')
+    def test_remove_intermediate_results_exact_suggest(self, mock_uuid):
+        """
+        After exact_suggest call, all intermediate result sets are removed
+        """
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 2)
+        autocomp = Autocompleter('stock')
+        autocomp.store_all()
+
+        mock_uuid.return_value = 'mock_uuid'
+        autocomp.exact_suggest('aapl')
+        mock_uuid.assert_called_once()
+        keys = self.redis.keys('djac.results.mock_uuid')
+        self.assertEqual(len(keys), 0)
+
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
+
+    @mock.patch.object(uuid, 'uuid4')
+    def test_remove_intermediate_results_suggest(self, mock_uuid):
+        """
+        After suggest call, all intermediate result sets are removed
+        """
+        autocomp = Autocompleter('stock')
+        autocomp.store_all()
+
+        mock_uuid.return_value = 'mock_uuid'
+        autocomp.suggest('aapl')
+        mock_uuid.assert_called_once()
+        keys = self.redis.keys('djac.results.mock_uuid')
         self.assertEqual(len(keys), 0)
 
 
