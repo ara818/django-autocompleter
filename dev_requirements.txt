@@ -2,3 +2,4 @@
 nose
 django-nose
 coverage
+mock

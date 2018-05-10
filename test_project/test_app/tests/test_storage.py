@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from unittest import mock
+
+import mock
 import uuid
 
 from test_app.tests.base import AutocompleterTestCase
