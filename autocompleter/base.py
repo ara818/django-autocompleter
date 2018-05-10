@@ -21,6 +21,7 @@ PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
 EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
 EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
 TERM_SET_BASE_NAME = AUTO_BASE_NAME + '.ts'
+RESULT_SET_BASE_NAME = 'djac.results.%s'
 
 
 class AutocompleterBase(object):
@@ -480,7 +481,7 @@ class Autocompleter(AutocompleterBase):
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         uuid_str = str(uuid.uuid4())
-        base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
+        base_intermediate_result_key = RESULT_SET_BASE_NAME % (uuid_str,)
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -499,14 +500,14 @@ class Autocompleter(AutocompleterBase):
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                result_key = "djac.results.%s.%s" % (uuid_str, norm_term,)
-                result_keys.append(result_key)
+                term_result_key = base_intermediate_result_key + '.' + norm_term
+                result_keys.append(term_result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
-                pipe.zinterstore(result_key, keys, aggregate='MIN')
-            pipe.zunionstore(base_intermediate_result_set, result_keys, aggregate='MIN')
-            for result_key in result_keys:
-                pipe.delete(result_key)
-            pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
+                pipe.zinterstore(term_result_key, keys, aggregate='MIN')
+            pipe.zunionstore(base_intermediate_result_key, result_keys, aggregate='MIN')
+            for term_result_key in result_keys:
+                pipe.delete(term_result_key)
+            pipe.zrange(base_intermediate_result_key, 0, MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
@@ -517,9 +518,9 @@ class Autocompleter(AutocompleterBase):
                 if len(keys) == 0:
                     continue
 
-                pipe.zunionstore(base_intermediate_result_set, keys, aggregate='MIN')
-                pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
-            pipe.delete(base_intermediate_result_set)
+                pipe.zunionstore(base_intermediate_result_key, keys, aggregate='MIN')
+                pipe.zrange(base_intermediate_result_key, 0, MAX_RESULTS - 1)
+            pipe.delete(base_intermediate_result_key)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
@@ -637,7 +638,7 @@ class Autocompleter(AutocompleterBase):
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         uuid_str = str(uuid.uuid4())
-        base_intermediate_result_set = 'djac.results.%s' % (uuid_str,)
+        base_intermediate_result_key = RESULT_SET_BASE_NAME % (uuid_str,)
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
@@ -651,9 +652,9 @@ class Autocompleter(AutocompleterBase):
             # Do not attempt zunionstore on empty list because redis errors out.
             if len(keys) == 0:
                 continue
-            pipe.zunionstore(base_intermediate_result_set, keys, aggregate='MIN')
-            pipe.zrange(base_intermediate_result_set, 0, MAX_RESULTS - 1)
-            pipe.delete(base_intermediate_result_set)
+            pipe.zunionstore(base_intermediate_result_key, keys, aggregate='MIN')
+            pipe.zrange(base_intermediate_result_key, 0, MAX_RESULTS - 1)
+            pipe.delete(base_intermediate_result_key)
         results = [i for i in pipe.execute() if type(i) == list]
 
         # Create a dict mapping provider to result IDs
