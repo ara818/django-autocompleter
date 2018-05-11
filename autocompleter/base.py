@@ -162,6 +162,9 @@ class AutocompleterProviderBase(AutocompleterBase):
 
     @classmethod
     def delete_old_facets(cls, obj_id, old_facets):
+        """
+        Delete old facets from the obj-id -> facets mapping
+        """
         provider_name = cls.get_provider_name()
         pipe = REDIS.pipeline()
         # Remove old facets from the corresponding facet sorted set.
@@ -228,6 +231,9 @@ class AutocompleterProviderBase(AutocompleterBase):
     @classmethod
     def get_facets(cls):
         """
+        Facets are extra properties users can define to help further filter suggest results.
+        Should be a list of identifiers, where each identifier can be found as a key in the
+        dictionary returned by get_data.
         """
         return []
 
