@@ -163,11 +163,11 @@ class AutocompleterProviderBase(AutocompleterBase):
     @classmethod
     def delete_old_facets(cls, obj_id, old_facets):
         """
-        Delete old facets from the obj-id -> facets mapping
+        Delete old facet data from redis.
         """
         provider_name = cls.get_provider_name()
         pipe = REDIS.pipeline()
-        # Remove old facets from the corresponding facet sorted set.
+        # Remove old facets from the corresponding facet sorted set containing scores
         for facet in old_facets:
             try:
                 facet_value = facet['value']
@@ -175,7 +175,7 @@ class AutocompleterProviderBase(AutocompleterBase):
                 pipe.zrem(facet_set_name, obj_id)
             except KeyError:
                 continue
-        # Now delete the mapping from this obj_id -> facet values
+        # Now delete the mapping from obj_id -> facets
         facet_map_name = FACET_MAP_BASE_NAME % (provider_name,)
         pipe.hdel(facet_map_name, obj_id)
 
