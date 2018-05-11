@@ -520,7 +520,7 @@ class Autocompleter(AutocompleterBase):
         if len(keys) > 0:
             REDIS.delete(*keys)
 
-    def suggest(self, term):
+    def suggest(self, term, facets=[]):
         """
         Suggest matching objects, given a term
         """
@@ -577,6 +577,32 @@ class Autocompleter(AutocompleterBase):
             pipe.zunionstore(intermediate_result_key, result_keys, aggregate='MIN')
             for term_result_key in result_keys:
                 pipe.delete(term_result_key)
+
+            if len(facets) > 0:
+                intermediate_facet_keys = []
+                for facet in facets:
+                    try:
+                        facet_type = facet['type']
+                        if facet_type not in ['and', 'or']:
+                            continue
+                        facet_list = facet['facets']
+                        facet_set_names = []
+                        for facet_dict in facet_list:
+                            facet_value = facet_dict['value']
+                            facet_set_name = FACET_SET_BASE_NAME % (provider_name, facet_value,)
+                            facet_set_names.append(facet_set_name)
+                        intermediate_facet_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                        if facet_type == 'and':
+                            pipe.zinterstore(intermediate_facet_key, facet_set_names, aggregate='MIN')
+                        else:
+                            pipe.zunionstore(intermediate_facet_key, facet_set_names, aggregate='MIN')
+                        intermediate_facet_keys.append(intermediate_facet_key)
+                    except KeyError:
+                        continue
+                pipe.zinterstore(intermediate_result_key, intermediate_facet_keys, aggregate='MIN')
+                for intermediate_facet_key in intermediate_facet_keys:
+                    pipe.delete(intermediate_facet_key)
+
             pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
 
             # Get exact matches

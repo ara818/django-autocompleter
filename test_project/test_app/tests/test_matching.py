@@ -54,6 +54,46 @@ class StockMatchTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0]['search_name'], 'EL')
 
+    def test_facet_or_match(self):
+        """
+        Matching using facets works with the 'or' type
+        """
+        facets = [
+            {
+                'type': 'or',
+                'facets':
+                    [
+                        {'key': 'search_name', 'value': 'AAPL'},
+                        {'key': 'search_name', 'value': 'T'},
+                        {'key': 'search_name', 'value': 'Thisdoesntexist'}
+                    ]
+            }
+        ]
+        matches = self.autocomp.suggest('a', facets=facets)
+        self.assertEqual(len(matches), 2)
+
+    def test_facet_and_match(self):
+        """
+        Matching using facets works with the 'and' type
+        """
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'search_name', 'value': 'T'}]
+            }
+        ]
+        matches = self.autocomp.suggest('a', facets=facets)
+        self.assertEqual(len(matches), 0)
+
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'type', 'value': 'stock'}]
+            }
+        ]
+        matches = self.autocomp.suggest('a', facets=facets)
+        self.assertEqual(len(matches), 1)
+
     def test_max_results_setting(self):
         """
         MAX_RESULTS is respected.
@@ -262,6 +302,17 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')
         registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS')
+
+    def test_multi_provider_facet_match(self):
+
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'type', 'value': 'stock'}]
+            }
+        ]
+        matches = self.autocomp.suggest('a', facets=facets)
+        self.assertEqual(len(matches), 1)
 
 
 class ElasticMatchingTestCase(AutocompleterTestCase):

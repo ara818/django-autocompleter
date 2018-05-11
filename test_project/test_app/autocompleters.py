@@ -22,7 +22,7 @@ class StockAutocompleteProvider(AutocompleterModelProvider):
 
     @classmethod
     def get_facets(cls):
-        return ['search_name']
+        return ['search_name', 'type']
 
     def get_data(self):
         return {
@@ -56,6 +56,10 @@ class IndicatorAutocompleteProvider(AutocompleterModelProvider):
             'display_name': u'%s' % (self.obj.name,),
             'search_name': u'%s' % (self.obj.internal_name,),
         }
+
+    @classmethod
+    def get_facets(cls):
+        return ['type']
 
 
 class IndicatorAliasedAutocompleteProvider(AutocompleterModelProvider):
