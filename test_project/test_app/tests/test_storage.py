@@ -214,6 +214,73 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         keys = self.redis.keys('djac.results.*')
         self.assertEqual(len(keys), 0)
 
+    def test_store_facet_data(self):
+        """
+        Storing saves facet data
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = StockAutocompleteProvider(aapl)
+        provider.store()
+
+        provider_name = provider.get_provider_name()
+        # the stockautocompleteprovider facets is set to 'search_name', so the
+        # facet set name will be set to 'AAPL'
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'AAPL',)
+        keys = self.redis.keys(facet_set_name)
+        self.assertEqual(len(keys), 1)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
+        keys = self.redis.keys(facet_map_name)
+        self.assertEqual(len(keys), 1)
+
+        facet_data = provider._deserialize_data(self.redis.hget(keys[0], aapl.id))
+        self.assertEqual(facet_data, [{'key': 'search_name', 'value': aapl.symbol}])
+
+    def test_second_store_removes_old_facet_data(self):
+        """
+        Store removes outdated facet data
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = StockAutocompleteProvider(aapl)
+        provider.store()
+
+        provider_name = provider.get_provider_name()
+        # the stockautocompleteprovider facets is set to 'search_name', so the
+        # facet set name will be set to 'AAPL'
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'AAPL',)
+        keys = self.redis.keys(facet_set_name)
+        self.assertEqual(len(keys), 1)
+
+        aapl.symbol = 'GOOGL'
+        aapl.save()
+        provider.store()
+        # make sure the old key was removed after the second store call
+        keys = self.redis.keys(facet_set_name)
+        self.assertEqual(len(keys), 0)
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'GOOGL',)
+        keys = self.redis.keys(facet_set_name)
+        self.assertEqual(len(keys), 1)
+
+    def test_remove_facet_data(self):
+        """
+        Remove takes care of deleting facet data
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = StockAutocompleteProvider(aapl)
+        provider.store()
+        provider.remove()
+
+        provider_name = provider.get_provider_name()
+        # the stockautocompleteprovider facets is set to 'search_name', so the
+        # facet set name will be set to 'AAPL'
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'AAPL',)
+        keys = self.redis.keys(facet_set_name)
+        self.assertEqual(len(keys), 0)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
+        keys = self.redis.keys(facet_map_name)
+        self.assertEqual(len(keys), 0)
+
 
 class SelectiveStoringTestCase(AutocompleterTestCase):
     fixtures = ['indicator_test_data_small.json']

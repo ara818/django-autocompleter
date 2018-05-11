@@ -20,6 +20,10 @@ class StockAutocompleteProvider(AutocompleterModelProvider):
         """
         return self.obj.market_cap
 
+    @classmethod
+    def get_facets(cls):
+        return ['search_name']
+
     def get_data(self):
         return {
             'type': 'stock',

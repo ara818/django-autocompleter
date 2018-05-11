@@ -260,6 +260,15 @@ class AutocompleterProviderBase(AutocompleterBase):
         data = self.get_data()
         facets = self.get_facets()
 
+        # Get all the facet values from the data dict
+        facet_dicts = []
+        for facet in facets:
+            try:
+                facet_value = data[facet]
+                facet_dicts.append({'key': facet, 'value': facet_value})
+            except KeyError:
+                continue
+
         old_terms = self.__class__.get_old_terms(obj_id)
         old_facets = self.__class__.get_old_facets(obj_id)
 
@@ -317,18 +326,10 @@ class AutocompleterProviderBase(AutocompleterBase):
                 key = EXACT_SET_BASE_NAME % (provider_name,)
                 pipe.sadd(key, norm_term)
 
-        facets_added = []
-        for facet in facets:
-            try:
-                facet_key = facet['key']
-                expected_facet_value = facet['value']
-                actual_facet_value = data[facet_key]
-                if actual_facet_value == expected_facet_value:
-                    facet_set_name = FACET_SET_BASE_NAME % (provider_name, actual_facet_value,)
-                    pipe.zadd(facet_set_name, obj_id, score)
-                    facets_added.append(facet)
-            except KeyError:
-                continue
+        for facet in facet_dicts:
+            facet_value = facet['value']
+            facet_set_name = FACET_SET_BASE_NAME % (provider_name, facet_value,)
+            pipe.zadd(facet_set_name, obj_id, score)
 
         # Store obj ID to data mapping
         key = AUTO_BASE_NAME % (provider_name,)
@@ -339,10 +340,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         serialized_terms = self.__class__._serialize_data(terms)
         pipe.hset(key, obj_id, serialized_terms)
 
-        # Map provider's obj_id -> facet values
-        if len(facets_added) > 0:
+        # Map provider's obj_id -> facets
+        if len(facet_dicts) > 0:
             facet_map_name = FACET_MAP_BASE_NAME % (provider_name,)
-            pipe.hset(facet_map_name, obj_id, self.__class__._serialize_data(facets_added))
+            pipe.hset(facet_map_name, obj_id, self.__class__._serialize_data(facet_dicts))
 
         # End pipeline
         pipe.execute()
