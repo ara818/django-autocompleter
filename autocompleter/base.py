@@ -22,6 +22,8 @@ EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
 EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
 TERM_SET_BASE_NAME = AUTO_BASE_NAME + '.ts'
 RESULT_SET_BASE_NAME = 'djac.results.%s'
+FACET_SET_BASE_NAME = AUTO_BASE_NAME + '.f.%s'
+FACET_MAP_BASE_NAME = AUTO_BASE_NAME + '.fm'
 
 
 class AutocompleterBase(object):
@@ -147,7 +149,8 @@ class AutocompleterProviderBase(AutocompleterBase):
         """
         Gets rid of old terms based on terms listed in the id-terms mapping.
         """
-        cls.clear_keys(obj_id, old_terms)
+        old_norm_terms = cls._get_norm_terms(old_terms)
+        cls.clear_keys(obj_id, old_norm_terms)
 
     @classmethod
     def get_old_terms(cls, obj_id):
@@ -156,6 +159,33 @@ class AutocompleterProviderBase(AutocompleterBase):
         if old_terms is not None:
             old_terms = cls._deserialize_data(old_terms)
         return old_terms
+
+    @classmethod
+    def delete_old_facets(cls, obj_id, old_facets):
+        provider_name = cls.get_provider_name()
+        pipe = REDIS.pipeline()
+        # Remove old facets from the corresponding facet sorted set.
+        for facet in old_facets:
+            try:
+                facet_value = facet['value']
+                facet_set_name = FACET_SET_BASE_NAME % (provider_name, facet_value,)
+                pipe.zrem(facet_set_name, obj_id)
+            except KeyError:
+                continue
+        # Now delete the mapping from this obj_id -> facet values
+        facet_map_name = FACET_MAP_BASE_NAME % (provider_name,)
+        pipe.hdel(facet_map_name, obj_id)
+
+        # End pipeline
+        pipe.execute()
+
+    @classmethod
+    def get_old_facets(cls, obj_id):
+        facet_map_name = FACET_MAP_BASE_NAME % (cls.get_provider_name(),)
+        old_facets = REDIS.hget(facet_map_name, obj_id)
+        if old_facets is not None:
+            old_facets = cls._deserialize_data(old_facets)
+        return old_facets
 
     @classmethod
     def clear_keys(cls, obj_id, norm_terms):
@@ -195,6 +225,12 @@ class AutocompleterProviderBase(AutocompleterBase):
         # End pipeline
         pipe.execute()
 
+    @classmethod
+    def get_facets(cls):
+        """
+        """
+        return []
+
     def get_data(self):
         """
         The data you want to send along on a successful match.
@@ -222,11 +258,17 @@ class AutocompleterProviderBase(AutocompleterBase):
         norm_terms = self.__class__._get_norm_terms(terms)
         score = self._get_score()
         data = self.get_data()
+        facets = self.get_facets()
 
         old_terms = self.__class__.get_old_terms(obj_id)
-        # if old terms are the same as the new, short circuit and just
-        # update the data payload in case anything there is different.
-        if terms == old_terms:
+        old_facets = self.__class__.get_old_facets(obj_id)
+
+        updated_terms = terms != old_terms
+        updated_facets = facets != old_facets
+
+        # Check if the terms or facets have been updated. If both weren't updated,
+        # then we can just update the data payload and short circuit.
+        if not updated_terms and not updated_facets:
             # Store obj ID to data mapping
             key = AUTO_BASE_NAME % (provider_name,)
             REDIS.hset(key, obj_id, self.__class__._serialize_data(data))
@@ -236,8 +278,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         if delete_old is True:
             # TODO: memoize get_old_terms? Otherwise have to pass old_terms down the line to avoid
             # doing 2 extra redis queries.
-            if old_terms is not None:
+            if updated_terms and old_terms is not None:
                 self.__class__.delete_old_terms(obj_id, old_terms)
+            if updated_facets and old_facets is not None:
+                self.__class__.delete_old_facets(obj_id, old_facets)
 
         # Start pipeline
         pipe = REDIS.pipeline()
@@ -273,16 +317,33 @@ class AutocompleterProviderBase(AutocompleterBase):
                 key = EXACT_SET_BASE_NAME % (provider_name,)
                 pipe.sadd(key, norm_term)
 
+        facets_added = []
+        for facet in facets:
+            try:
+                facet_key = facet['key']
+                expected_facet_value = facet['value']
+                actual_facet_value = data[facet_key]
+                if actual_facet_value == expected_facet_value:
+                    facet_set_name = FACET_SET_BASE_NAME % (provider_name, actual_facet_value,)
+                    pipe.zadd(facet_set_name, obj_id, score)
+                    facets_added.append(facet)
+            except KeyError:
+                continue
+
         # Store obj ID to data mapping
         key = AUTO_BASE_NAME % (provider_name,)
         pipe.hset(key, obj_id, self.__class__._serialize_data(data))
 
         # set provider's obj_id - terms hash.
         key = TERM_SET_BASE_NAME % (provider_name,)
-
-        serialized_terms = self.__class__._serialize_data(norm_terms)
-
+        serialized_terms = self.__class__._serialize_data(terms)
         pipe.hset(key, obj_id, serialized_terms)
+
+        # Map provider's obj_id -> facet values
+        if len(facets_added) > 0:
+            facet_map_name = FACET_MAP_BASE_NAME % (provider_name,)
+            pipe.hset(facet_map_name, obj_id, self.__class__._serialize_data(facets_added))
+
         # End pipeline
         pipe.execute()
 
@@ -295,8 +356,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         obj_id = self.get_item_id()
         terms = self.__class__.get_old_terms(obj_id)
         if terms is not None:
-            norm_terms = self.__class__._get_norm_terms(terms)
-            self.__class__.clear_keys(obj_id, norm_terms)
+            self.__class__.delete_old_terms(obj_id, terms)
+        facets = self.__class__.get_old_facets(obj_id)
+        if facets is not None:
+            self.__class__.delete_old_facets(obj_id, facets)
 
 
 class AutocompleterModelProvider(AutocompleterProviderBase):

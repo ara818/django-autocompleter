@@ -6,7 +6,7 @@ from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock, Indicator
 from test_app.autocompleters import StockAutocompleteProvider, CalcAutocompleteProvider
 from test_app import calc_info
-from autocompleter import Autocompleter, registry, signal_registry
+from autocompleter import base, Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
 
 
@@ -27,6 +27,23 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         provider.remove()
         keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
+
+    def test_store_saves_terms(self):
+        """
+        Storing saves terms, not normalized terms
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = StockAutocompleteProvider(aapl)
+        provider.store()
+
+        terms = provider.get_terms()
+        norm_terms = provider._get_norm_terms(terms)
+        provider_name = provider.get_provider_name()
+        key = base.TERM_SET_BASE_NAME % (provider_name,)
+        terms_stored_serialized = self.redis.hget(key, aapl.id)
+        terms_stored = provider._deserialize_data(terms_stored_serialized)
+        self.assertEqual(terms, terms_stored)
+        self.assertNotEqual(norm_terms, terms_stored)
 
     def test_dict_store_and_remove(self):
         """
