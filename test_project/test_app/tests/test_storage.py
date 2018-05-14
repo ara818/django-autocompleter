@@ -234,7 +234,8 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(len(keys), 1)
 
         facet_data = provider._deserialize_data(self.redis.hget(keys[0], aapl.id))
-        self.assertEqual(facet_data, [{'key': 'search_name', 'value': aapl.symbol}])
+        self.assertEqual(facet_data,
+            [{'key': 'search_name', 'value': aapl.symbol}, {'key': 'type', 'value': 'stock'}])
 
     def test_second_store_removes_old_facet_data(self):
         """

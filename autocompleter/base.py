@@ -550,8 +550,10 @@ class Autocompleter(AutocompleterBase):
 
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
-        uuid_str = str(uuid.uuid4())
-        intermediate_result_key = RESULT_SET_BASE_NAME % (uuid_str,)
+        temp_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+        # If we don't end up using facets for this suggest call, we can just set the intermediate result key
+        # to be equal to temp_term_result key since there was no extra manipulation to this set.
+        intermediate_result_key = temp_term_result_key
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -570,11 +572,11 @@ class Autocompleter(AutocompleterBase):
             result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                term_result_key = intermediate_result_key + '.' + norm_term
+                term_result_key = temp_term_result_key + '.' + norm_term
                 result_keys.append(term_result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
                 pipe.zinterstore(term_result_key, keys, aggregate='MIN')
-            pipe.zunionstore(intermediate_result_key, result_keys, aggregate='MIN')
+            pipe.zunionstore(temp_term_result_key, result_keys, aggregate='MIN')
             for term_result_key in result_keys:
                 pipe.delete(term_result_key)
 
@@ -599,9 +601,16 @@ class Autocompleter(AutocompleterBase):
                         intermediate_facet_keys.append(intermediate_facet_key)
                     except KeyError:
                         continue
+                # We want to calculate the intersection of all the intermediate facet sets created so far
+                # along with the temp term result set. So we need to use a new unique name for the
+                # intermediate result set and append the temp term result key to the list of
+                # intermediate facet keys.
+                intermediate_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                intermediate_facet_keys.append(temp_term_result_key)
                 pipe.zinterstore(intermediate_result_key, intermediate_facet_keys, aggregate='MIN')
                 for intermediate_facet_key in intermediate_facet_keys:
                     pipe.delete(intermediate_facet_key)
+                pipe.delete(temp_term_result_key)
 
             pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
 
@@ -613,7 +622,6 @@ class Autocompleter(AutocompleterBase):
                 # Do not attempt zunionstore on empty list because redis errors out.
                 if len(keys) == 0:
                     continue
-
                 pipe.zunionstore(intermediate_result_key, keys, aggregate='MIN')
                 pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
             pipe.delete(intermediate_result_key)

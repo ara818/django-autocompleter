@@ -72,6 +72,35 @@ class StockMatchTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('a', facets=facets)
         self.assertEqual(len(matches), 2)
 
+    def test_facet_doesnt_skew_suggest(self):
+        """
+        Test that using facets still takes the suggest term into consideration
+        """
+
+        matches = self.autocomp.suggest('q')
+        self.assertEqual(len(matches), 1)
+        facets = [
+            {
+                'type': 'or',
+                'facets':
+                    [
+                        {'key': 'search_name', 'value': 'AAPL'},
+                        {'key': 'search_name', 'value': 'T'},
+                    ]
+            }
+        ]
+        facet_matches = self.autocomp.suggest('q', facets=facets)
+        self.assertEqual(len(facet_matches), 0)
+
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'search_name', 'value': 'QCOM'}]
+            }
+        ]
+        facet_matches = self.autocomp.suggest('q', facets=facets)
+        self.assertEqual(len(facet_matches), 1)
+
     def test_facet_and_match(self):
         """
         Matching using facets works with the 'and' type
@@ -312,7 +341,9 @@ class MultiMatchingTestCase(AutocompleterTestCase):
             }
         ]
         matches = self.autocomp.suggest('a', facets=facets)
-        self.assertEqual(len(matches), 1)
+        self.assertEqual(len(matches['stock']), 1)
+        self.assertEqual(len(matches['ind']), 0)
+        self.assertEqual(len(matches['metric']), 0)
 
 
 class ElasticMatchingTestCase(AutocompleterTestCase):
