@@ -163,7 +163,7 @@ class AutocompleterProviderBase(AutocompleterBase):
     @classmethod
     def clear_facets(cls, obj_id, old_facets):
         """
-        Delete old facet data from redis.
+        For a given object ID, delete old facet data from Redis.
         """
         provider_name = cls.get_provider_name()
         pipe = REDIS.pipeline()
@@ -185,6 +185,9 @@ class AutocompleterProviderBase(AutocompleterBase):
 
     @classmethod
     def clear_keys(cls, obj_id, old_norm_terms):
+        """
+        For a given object ID, delete old norm terms from Redis.
+        """
         provider_name = cls.get_provider_name()
         # Start pipeline
         pipe = REDIS.pipeline()
