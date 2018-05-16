@@ -4,9 +4,9 @@
 
 from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock, Indicator
-from test_app.autocompleters import StockAutocompleteProvider, CalcAutocompleteProvider
+from test_app.autocompleters import CalcAutocompleteProvider, FacetedStockAutocompleteProvider, StockAutocompleteProvider
 from test_app import calc_info
-from autocompleter import Autocompleter, registry, signal_registry
+from autocompleter import base, Autocompleter, registry, signal_registry
 from autocompleter import settings as auto_settings
 
 
@@ -27,6 +27,23 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         provider.remove()
         keys = self.redis.keys('djac.test.stock*')
         self.assertEqual(len(keys), 0)
+
+    def test_store_saves_terms(self):
+        """
+        Storing saves norm terms, not plain terms
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = StockAutocompleteProvider(aapl)
+        provider.store()
+
+        terms = provider.get_terms()
+        norm_terms = provider._get_norm_terms(terms)
+        provider_name = provider.get_provider_name()
+        key = base.TERM_MAP_BASE_NAME % (provider_name,)
+        terms_stored_serialized = self.redis.hget(key, aapl.id)
+        terms_stored = provider._deserialize_data(terms_stored_serialized)
+        self.assertEqual(norm_terms, terms_stored)
+        self.assertNotEqual(terms, terms_stored)
 
     def test_dict_store_and_remove(self):
         """
@@ -195,6 +212,111 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.suggest('aapl')
         keys = self.redis.keys('djac.results.*')
+        self.assertEqual(len(keys), 0)
+
+
+class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json']
+
+    def test_store_facet_data(self):
+        """
+        Storing saves facet data
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = FacetedStockAutocompleteProvider(aapl)
+        provider.store()
+
+        provider_name = provider.get_provider_name()
+        # the FacetedStockAutocompleteProvider get_facets is set to ['sector']
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 1)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
+        facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
+        self.assertEqual(facet_data, [{'key': 'sector', 'value': aapl.sector}])
+
+    def test_second_store_removes_old_facet_data(self):
+        """
+        Store removes outdated facet data and updates mapping
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = FacetedStockAutocompleteProvider(aapl)
+        provider.store()
+
+        provider_name = provider.get_provider_name()
+        # the FacetedStockAutocompleteProvider get_facets is set to ['sector']
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 1)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
+        facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
+        self.assertEqual(facet_data, [{'key': 'sector', 'value': aapl.sector}])
+
+        aapl.sector = 'Healthcare'
+        aapl.save()
+        provider.store()
+        # make sure the old key was removed after the second store call
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 0)
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'sector', 'Healthcare',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 1)
+
+        facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
+        self.assertEqual(facet_data, [{'key': 'sector', 'value': 'Healthcare'}])
+
+    def test_remove_facet_data(self):
+        """
+        Remove takes care of deleting facet data
+        """
+        aapl = Stock.objects.get(symbol='AAPL')
+        provider = FacetedStockAutocompleteProvider(aapl)
+        provider.store()
+        provider.remove()
+
+        provider_name = provider.get_provider_name()
+        # the FacetedStockAutocompleteProvider get_facets is set to ['sector']
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 0)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 0)
+
+    def test_store_all_facet_data(self):
+        """
+        Calling store_all stores all facet data
+        """
+        autocomp = Autocompleter("faceted_stock")
+        autocomp.store_all()
+        facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 8)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 101)
+
+    def test_remove_all_facet_data(self):
+        """
+        Calling remove_all clears all facet data
+        """
+        autocomp = Autocompleter("faceted_stock")
+        autocomp.store_all()
+        facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 8)
+        facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 101)
+
+        autocomp.remove_all()
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 0)
+        keys = self.redis.hkeys(facet_map_name)
         self.assertEqual(len(keys), 0)
 
 

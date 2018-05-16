@@ -30,6 +30,37 @@ class StockAutocompleteProvider(AutocompleterModelProvider):
         }
 
 
+class FacetedStockAutocompleteProvider(AutocompleterModelProvider):
+    model = Stock
+    provider_name = "faceted_stock"
+
+    def get_terms(self):
+        """
+        Term is the name or symbol of the company.
+        """
+        return [self.obj.name, self.obj.symbol]
+
+    def get_score(self):
+        """
+        Larger companies should end up higher in search results.
+        """
+        return self.obj.market_cap
+
+    @classmethod
+    def get_facets(cls):
+        return ['sector']
+
+    def get_data(self):
+        return {
+            'type': 'stock',
+            'id': self.obj.id,
+            'score': self.get_score(),
+            'display_name': u'%s (%s)' % (self.obj.name, self.obj.symbol),
+            'search_name': self.obj.symbol,
+            'sector': self.obj.sector
+        }
+
+
 class IndicatorAutocompleteProvider(AutocompleterModelProvider):
     model = Indicator
 
@@ -178,6 +209,8 @@ class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
     def get_iterator(cls):
         return calc_info.calc_dicts
 
+
+registry.register("faceted_stock", FacetedStockAutocompleteProvider)
 registry.register("stock", StockAutocompleteProvider)
 registry.register("mixed", StockAutocompleteProvider)
 registry.register("mixed", IndicatorAutocompleteProvider)

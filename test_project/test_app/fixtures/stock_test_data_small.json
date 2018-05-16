@@ -4,7 +4,8 @@
     "fields": {
         "symbol": "AAPL",
         "market_cap": 506686.4497,
-        "name": "Apple Inc."
+        "name": "Apple Inc.",
+        "sector": "Technology"
     }
 }, {
     "pk": 2,
@@ -12,7 +13,8 @@
     "fields": {
         "symbol": "XOM",
         "market_cap": 404067.6030,
-        "name": "Exxon Mobil Corporation"
+        "name": "Exxon Mobil Corporation",
+        "sector": "Energy"
     }
 }, {
     "pk": 3,
@@ -20,7 +22,8 @@
     "fields": {
         "symbol": "PTR",
         "market_cap": 270199.5000,
-        "name": "PetroChina Company Limited"
+        "name": "PetroChina Company Limited",
+        "sector": "Energy"
     }
 }, {
     "pk": 4,
@@ -28,7 +31,8 @@
     "fields": {
         "symbol": "MSFT",
         "market_cap": 269105.6382,
-        "name": "Microsoft Corporation"
+        "name": "Microsoft Corporation",
+        "sector": "Technology"
     }
 }, {
     "pk": 5,
@@ -36,7 +40,8 @@
     "fields": {
         "symbol": "IBM",
         "market_cap": 236454.7444,
-        "name": "International Business Machines Corporation"
+        "name": "International Business Machines Corporation",
+        "sector": "Technology"
     }
 }, {
     "pk": 6,
@@ -44,7 +49,8 @@
     "fields": {
         "symbol": "RDS.B",
         "market_cap": 226415.5192,
-        "name": "Royal Dutch Shell plc"
+        "name": "Royal Dutch Shell plc",
+        "sector": "Energy"
     }
 }, {
     "pk": 7,
@@ -52,7 +58,8 @@
     "fields": {
         "symbol": "CHL",
         "market_cap": 222140.5830,
-        "name": "China Mobile Limited"
+        "name": "China Mobile Limited",
+        "sector": "Communication Services"
     }
 }, {
     "pk": 8,
@@ -60,7 +67,8 @@
     "fields": {
         "symbol": "CVX",
         "market_cap": 218206.4636,
-        "name": "Chevron Corporation"
+        "name": "Chevron Corporation",
+        "sector": "Energy"
     }
 }, {
     "pk": 9,
@@ -68,7 +76,8 @@
     "fields": {
         "symbol": "WMT",
         "market_cap": 205755.9760,
-        "name": "Wal-Mart Stores Inc."
+        "name": "Wal-Mart Stores Inc.",
+        "sector": "Consumer Defense"
     }
 }, {
     "pk": 10,
@@ -76,7 +85,8 @@
     "fields": {
         "symbol": "GE",
         "market_cap": 201011.9440,
-        "name": "General Electric Company"
+        "name": "General Electric Company",
+        "sector": "Industrials"
     }
 }, {
     "pk": 11,
@@ -84,7 +94,8 @@
     "fields": {
         "symbol": "BRK.B",
         "market_cap": 196630.2774,
-        "name": "Berkshire Hathaway inc."
+        "name": "Berkshire Hathaway inc.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 12,
@@ -92,7 +103,8 @@
     "fields": {
         "symbol": "BRK.A",
         "market_cap": 196457.2500,
-        "name": "Berkshire Hathaway Inc"
+        "name": "Berkshire Hathaway Inc",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 13,
@@ -100,7 +112,8 @@
     "fields": {
         "symbol": "GOOG",
         "market_cap": 194414.9725,
-        "name": "Google Inc."
+        "name": "Google Inc.",
+        "sector": "Technology"
     }
 }, {
     "pk": 14,
@@ -108,7 +121,8 @@
     "fields": {
         "symbol": "T",
         "market_cap": 184772.6800,
-        "name": "AT&T Inc."
+        "name": "AT&T Inc.",
+        "sector": "Communication Services"
     }
 }, {
     "pk": 15,
@@ -116,7 +130,8 @@
     "fields": {
         "symbol": "PG",
         "market_cap": 184145.8476,
-        "name": "Procter & Gamble Co."
+        "name": "Procter & Gamble Co.",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 16,
@@ -124,7 +139,8 @@
     "fields": {
         "symbol": "JNJ",
         "market_cap": 176795.2290,
-        "name": "Johnson & Johnson"
+        "name": "Johnson & Johnson",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 17,
@@ -132,7 +148,8 @@
     "fields": {
         "symbol": "WFC",
         "market_cap": 166959.9598,
-        "name": "Wells Fargo & Co."
+        "name": "Wells Fargo & Co.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 18,
@@ -140,7 +157,8 @@
     "fields": {
         "symbol": "PFE",
         "market_cap": 165116.1156,
-        "name": "Pfizer Inc."
+        "name": "Pfizer Inc.",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 19,
@@ -148,7 +166,8 @@
     "fields": {
         "symbol": "KO",
         "market_cap": 157873.1973,
-        "name": "The Coca-Cola Company"
+        "name": "The Coca-Cola Company",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 20,
@@ -156,7 +175,8 @@
     "fields": {
         "symbol": "JPM",
         "market_cap": 155904.5631,
-        "name": "JPMorgan Chase & Co."
+        "name": "JPMorgan Chase & Co.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 21,
@@ -164,7 +184,8 @@
     "fields": {
         "symbol": "HBC",
         "market_cap": 154820.8268,
-        "name": "HSBC Holdings PLC"
+        "name": "HSBC Holdings PLC",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 22,
@@ -172,7 +193,8 @@
     "fields": {
         "symbol": "ORCL",
         "market_cap": 151993.7980,
-        "name": "Oracle Corporation"
+        "name": "Oracle Corporation",
+        "sector": "Technology"
     }
 }, {
     "pk": 23,
@@ -180,7 +202,8 @@
     "fields": {
         "symbol": "BP",
         "market_cap": 147566.0795,
-        "name": "BP p.l.c."
+        "name": "BP p.l.c.",
+        "sector": "Energy"
     }
 }, {
     "pk": 24,
@@ -188,7 +211,8 @@
     "fields": {
         "symbol": "PM",
         "market_cap": 146965.8778,
-        "name": "Philip Morris International Inc."
+        "name": "Philip Morris International Inc.",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 25,
@@ -196,7 +220,8 @@
     "fields": {
         "symbol": "INTC",
         "market_cap": 137840.4400,
-        "name": "Intel Corporation"
+        "name": "Intel Corporation",
+        "sector": "Technology"
     }
 }, {
     "pk": 26,
@@ -204,7 +229,8 @@
     "fields": {
         "symbol": "VOD",
         "market_cap": 135170.4636,
-        "name": "Vodafone Group plc"
+        "name": "Vodafone Group plc",
+        "sector": "Communication Services"
     }
 }, {
     "pk": 27,
@@ -212,7 +238,8 @@
     "fields": {
         "symbol": "NVS",
         "market_cap": 131649.8410,
-        "name": "Novartis AG"
+        "name": "Novartis AG",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 28,
@@ -220,7 +247,8 @@
     "fields": {
         "symbol": "TM",
         "market_cap": 131400.6704,
-        "name": "Toyota Motor Corporation"
+        "name": "Toyota Motor Corporation",
+        "sector": "Consumer Cyclical"
     }
 }, {
     "pk": 29,
@@ -228,7 +256,8 @@
     "fields": {
         "symbol": "TOT",
         "market_cap": 130904.4750,
-        "name": "TOTAL S.A."
+        "name": "TOTAL S.A.",
+        "sector": "Energy"
     }
 }, {
     "pk": 30,
@@ -236,7 +265,8 @@
     "fields": {
         "symbol": "ABV",
         "market_cap": 127819.9680,
-        "name": "Ambev - Companhia de Bebidas das Americas"
+        "name": "Ambev - Companhia de Bebidas das Americas",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 31,
@@ -244,7 +274,8 @@
     "fields": {
         "symbol": "BHP",
         "market_cap": 119056.2362,
-        "name": "BHP Billiton Limited"
+        "name": "BHP Billiton Limited",
+        "sector": "Basic Materials"
     }
 }, {
     "pk": 32,
@@ -252,7 +283,8 @@
     "fields": {
         "symbol": "EC",
         "market_cap": 118099.0468,
-        "name": "Ecopetrol S.A."
+        "name": "Ecopetrol S.A.",
+        "sector": "Energy"
     }
 }, {
     "pk": 33,
@@ -260,7 +292,8 @@
     "fields": {
         "symbol": "MRK",
         "market_cap": 114601.7920,
-        "name": "Merck & Co Inc."
+        "name": "Merck & Co Inc.",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 34,
@@ -268,7 +301,8 @@
     "fields": {
         "symbol": "GSK",
         "market_cap": 113657.2346,
-        "name": "GlaxoSmithKline"
+        "name": "GlaxoSmithKline",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 35,
@@ -276,7 +310,8 @@
     "fields": {
         "symbol": "BUD",
         "market_cap": 111689.7096,
-        "name": "Anheuser-Busch Inbev SA/NV"
+        "name": "Anheuser-Busch Inbev SA/NV",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 36,
@@ -284,7 +319,8 @@
     "fields": {
         "symbol": "VZ",
         "market_cap": 110695.6190,
-        "name": "Verizon Communications"
+        "name": "Verizon Communications",
+        "sector": "Communication Services"
     }
 }, {
     "pk": 37,
@@ -292,7 +328,8 @@
     "fields": {
         "symbol": "QCOM",
         "market_cap": 107822.4201,
-        "name": "QUALCOMM Incorporated"
+        "name": "QUALCOMM Incorporated",
+        "sector": "Technology"
     }
 }, {
     "pk": 38,
@@ -300,7 +337,8 @@
     "fields": {
         "symbol": "CSCO",
         "market_cap": 106442.0280,
-        "name": "Cisco Systems Inc."
+        "name": "Cisco Systems Inc.",
+        "sector": "Technology"
     }
 }, {
     "pk": 39,
@@ -308,7 +346,8 @@
     "fields": {
         "symbol": "SNP",
         "market_cap": 104987.0390,
-        "name": "China Petroleum & Chemical Corporation"
+        "name": "China Petroleum & Chemical Corporation",
+        "sector": "Energy"
     }
 }, {
     "pk": 40,
@@ -316,7 +355,8 @@
     "fields": {
         "symbol": "PBR",
         "market_cap": 103933.9539,
-        "name": "Petrobras - Petroleo Brasileiro S.A."
+        "name": "Petrobras - Petroleo Brasileiro S.A.",
+        "sector": "Energy"
     }
 }, {
     "pk": 41,
@@ -324,7 +364,8 @@
     "fields": {
         "symbol": "COP",
         "market_cap": 102448.4184,
-        "name": "ConocoPhillips"
+        "name": "ConocoPhillips",
+        "sector": "Energy"
     }
 }, {
     "pk": 42,
@@ -332,7 +373,8 @@
     "fields": {
         "symbol": "SLB",
         "market_cap": 101787.1392,
-        "name": "Schlumberger Limited"
+        "name": "Schlumberger Limited",
+        "sector": "Energy"
     }
 }, {
     "pk": 43,
@@ -340,7 +382,8 @@
     "fields": {
         "symbol": "C",
         "market_cap": 99990.8820,
-        "name": "Citigroup Inc."
+        "name": "Citigroup Inc.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 44,
@@ -348,7 +391,8 @@
     "fields": {
         "symbol": "SNY",
         "market_cap": 99845.7600,
-        "name": "Sanofi"
+        "name": "Sanofi",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 45,
@@ -356,7 +400,8 @@
     "fields": {
         "symbol": "UN",
         "market_cap": 99651.2000,
-        "name": "Unilever N.V."
+        "name": "Unilever N.V.",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 46,
@@ -364,7 +409,8 @@
     "fields": {
         "symbol": "MCD",
         "market_cap": 99088.6248,
-        "name": "McDonald's Corporation"
+        "name": "McDonald's Corporation",
+        "sector": "Consumer Cyclical"
     }
 }, {
     "pk": 47,
@@ -372,7 +418,8 @@
     "fields": {
         "symbol": "PEP",
         "market_cap": 98729.3415,
-        "name": "PepsiCo Inc."
+        "name": "PepsiCo Inc.",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 48,
@@ -380,7 +427,8 @@
     "fields": {
         "symbol": "ITUB",
         "market_cap": 98072.2000,
-        "name": "Itau Unibanco Holding S.A."
+        "name": "Itau Unibanco Holding S.A.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 49,
@@ -388,7 +436,8 @@
     "fields": {
         "symbol": "CEO",
         "market_cap": 97293.5489,
-        "name": "CNOOC Limited"
+        "name": "CNOOC Limited",
+        "sector": "Energy"
     }
 }, {
     "pk": 50,
@@ -396,7 +445,8 @@
     "fields": {
         "symbol": "UL",
         "market_cap": 97148.0000,
-        "name": "Unilever Plc"
+        "name": "Unilever Plc",
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 51,
@@ -404,7 +454,8 @@
     "fields": {
         "symbol": "V",
         "market_cap": 95253.3515,
-        "name": "Visa Inc."
+        "name": "Visa Inc.",
+        "sector": "Financial Services"
     }
 }, {
     "pk": 52,
