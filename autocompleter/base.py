@@ -585,7 +585,7 @@ class Autocompleter(AutocompleterBase):
                         facet_set_keys = []
                         for facet_dict in facet_list:
                             facet_set_key = FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
-                            intermediate_facet_key = intermediate_facet_key_base + facet_dict['key']
+                            intermediate_facet_key = intermediate_facet_key_base + '.' + facet_dict['key']
                             facet_set_keys.append(facet_set_key)
                         if facet_type == 'and':
                             pipe.zinterstore(intermediate_facet_key, facet_set_keys, aggregate='MIN')
@@ -615,6 +615,7 @@ class Autocompleter(AutocompleterBase):
                 # Do not attempt zunionstore on empty list because redis errors out.
                 if len(keys) == 0:
                     continue
+
                 pipe.zunionstore(intermediate_result_key, keys, aggregate='MIN')
                 pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
             pipe.delete(intermediate_result_key)
