@@ -283,7 +283,7 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(set_length, 0)
 
         facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
-        keys = self.redis.keys(facet_map_name)
+        keys = self.redis.hkeys(facet_map_name)
         self.assertEqual(len(keys), 0)
 
     def test_store_all_facet_data(self):
