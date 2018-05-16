@@ -574,7 +574,6 @@ class Autocompleter(AutocompleterBase):
                 pipe.delete(term_result_key)
 
             if len(facets) > 0:
-                intermediate_facet_key_base = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                 intermediate_facet_keys = []
                 for facet in facets:
                     try:
@@ -585,8 +584,8 @@ class Autocompleter(AutocompleterBase):
                         facet_set_keys = []
                         for facet_dict in facet_list:
                             facet_set_key = FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
-                            intermediate_facet_key = intermediate_facet_key_base + '.' + facet_dict['key']
                             facet_set_keys.append(facet_set_key)
+                        intermediate_facet_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                         if facet_type == 'and':
                             pipe.zinterstore(intermediate_facet_key, facet_set_keys, aggregate='MIN')
                         else:
