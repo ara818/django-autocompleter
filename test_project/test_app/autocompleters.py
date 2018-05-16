@@ -48,7 +48,7 @@ class FacetedStockAutocompleteProvider(AutocompleterModelProvider):
 
     @classmethod
     def get_facets(cls):
-        return ['sector']
+        return ['sector', 'industry']
 
     def get_data(self):
         return {
@@ -57,7 +57,8 @@ class FacetedStockAutocompleteProvider(AutocompleterModelProvider):
             'score': self.get_score(),
             'display_name': u'%s (%s)' % (self.obj.name, self.obj.symbol),
             'search_name': self.obj.symbol,
-            'sector': self.obj.sector
+            'sector': self.obj.sector,
+            'industry': self.obj.industry
         }
 
 
@@ -83,10 +84,6 @@ class IndicatorAutocompleteProvider(AutocompleterModelProvider):
             'display_name': u'%s' % (self.obj.name,),
             'search_name': u'%s' % (self.obj.internal_name,),
         }
-
-    @classmethod
-    def get_facets(cls):
-        return ['type']
 
 
 class IndicatorAliasedAutocompleteProvider(AutocompleterModelProvider):

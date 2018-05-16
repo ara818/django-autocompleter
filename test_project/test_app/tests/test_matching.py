@@ -54,75 +54,6 @@ class StockMatchTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0]['search_name'], 'EL')
 
-    def test_facet_or_match(self):
-        """
-        Matching using facets works with the 'or' type
-        """
-        facets = [
-            {
-                'type': 'or',
-                'facets':
-                    [
-                        {'key': 'search_name', 'value': 'AAPL'},
-                        {'key': 'search_name', 'value': 'T'},
-                        {'key': 'search_name', 'value': 'Thisdoesntexist'}
-                    ]
-            }
-        ]
-        matches = self.autocomp.suggest('a', facets=facets)
-        self.assertEqual(len(matches), 2)
-
-    def test_facet_doesnt_skew_suggest(self):
-        """
-        Test that using facets still takes the suggest term into consideration
-        """
-
-        matches = self.autocomp.suggest('q')
-        self.assertEqual(len(matches), 1)
-        facets = [
-            {
-                'type': 'or',
-                'facets':
-                    [
-                        {'key': 'search_name', 'value': 'AAPL'},
-                        {'key': 'search_name', 'value': 'T'},
-                    ]
-            }
-        ]
-        facet_matches = self.autocomp.suggest('q', facets=facets)
-        self.assertEqual(len(facet_matches), 0)
-
-        facets = [
-            {
-                'type': 'and',
-                'facets': [{'key': 'search_name', 'value': 'QCOM'}]
-            }
-        ]
-        facet_matches = self.autocomp.suggest('q', facets=facets)
-        self.assertEqual(len(facet_matches), 1)
-
-    def test_facet_and_match(self):
-        """
-        Matching using facets works with the 'and' type
-        """
-        facets = [
-            {
-                'type': 'and',
-                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'search_name', 'value': 'T'}]
-            }
-        ]
-        matches = self.autocomp.suggest('a', facets=facets)
-        self.assertEqual(len(matches), 0)
-
-        facets = [
-            {
-                'type': 'and',
-                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'type', 'value': 'stock'}]
-            }
-        ]
-        matches = self.autocomp.suggest('a', facets=facets)
-        self.assertEqual(len(matches), 1)
-
     def test_max_results_setting(self):
         """
         MAX_RESULTS is respected.
@@ -332,18 +263,148 @@ class MultiMatchingTestCase(AutocompleterTestCase):
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')
         registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS')
 
-    def test_multi_provider_facet_match(self):
+
+class FacetMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json']
+
+    def setUp(self):
+        super(FacetMatchingTestCase, self).setUp()
+        self.autocomp = Autocompleter("faceted_stock")
+        self.autocomp.store_all()
+
+    def test_facet_or_match(self):
+        """
+        Matching using facets works with the 'or' type
+        """
+        facets = [
+            {
+                'type': 'or',
+                'facets':
+                    [
+                        {'key': 'sector', 'value': 'Technology'},
+                        {'key': 'sector', 'value': 'Consumer Defensive'},
+                        {'key': 'sector', 'value': 'Thisdoesntexist'}
+                    ]
+            }
+        ]
+        matches = self.autocomp.suggest('a', facets=facets)
+        self.assertEqual(len(matches), 4)
+
+    def test_facet_doesnt_skew_suggest(self):
+        """
+        Test that using facets takes the suggest term into consideration
+        """
+
+        matches = self.autocomp.suggest('nosearchresultsforthisterm')
+        self.assertEqual(len(matches), 0)
+        facets = [
+            {
+                'type': 'or',
+                'facets':
+                    [
+                        {'key': 'sector', 'value': 'Technology'},
+                    ]
+            }
+        ]
+
+        # we expect that adding facets to a suggest call with no results will not
+        # add any results
+        facet_matches = self.autocomp.suggest('nosearchresultsforthisterm', facets=facets)
+        self.assertEqual(len(facet_matches), 0)
+
+    def test_facet_and_match(self):
+        """
+        Matching using facets works with the 'and' type
+        """
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'sector', 'value': 'SectorDoesntExist'}]
+            }
+        ]
+        matches = self.autocomp.suggest('ch', facets=facets)
+        # since a stock can't have two different values for a sector, we expect calculating an 'and' on
+        # two different sectors to have zero matches
+        self.assertEqual(len(matches), 0)
 
         facets = [
             {
                 'type': 'and',
-                'facets': [{'key': 'search_name', 'value': 'AAPL'}, {'key': 'type', 'value': 'stock'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Communication Services'},
+                    {'key': 'industry', 'value': 'Telecom Services'}
+                ]
             }
         ]
-        matches = self.autocomp.suggest('a', facets=facets)
-        self.assertEqual(len(matches['stock']), 1)
-        self.assertEqual(len(matches['ind']), 0)
-        self.assertEqual(len(matches['metric']), 0)
+
+        matches = self.autocomp.suggest('ch', facets=facets)
+        self.assertEqual(len(matches), 1)
+
+        facets = [
+            {
+                'type': 'and',
+                'facets': [
+                    {'key': 'sector', 'value': 'Energy'},
+                    {'key': 'industry', 'value': 'Oil & Gas Integrated'}
+                ]
+            }
+        ]
+        matches = self.autocomp.suggest('ch', facets=facets)
+        self.assertEqual(len(matches), 2)
+
+    def test_facet_match_with_move_exact_matches(self):
+        """
+        Exact matching still works with facet suggest
+        """
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
+        temp_autocomp = Autocompleter('faceted_stock')
+        temp_autocomp.store_all()
+
+        facets = [
+            {
+                'type': 'or',
+                'facets': [{'key': 'sector', 'value': 'Technology'}]
+            }
+        ]
+
+        matches = temp_autocomp.suggest('Ma', facets=facets)
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        matches2 = temp_autocomp.suggest('Ma', facets=facets)
+        self.assertNotEqual(matches[0]['search_name'], matches2[0]['search_name'])
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+        temp_autocomp.remove_all()
+
+    def test_multiple_facet_dicts_match(self):
+        """
+        Matching with multiple passed in facet dicts works
+        """
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'sector', 'value': 'Communication Services'}]
+            },
+            {
+                'type': 'and',
+                'facets': [{'key': 'industry', 'value': 'Telecom Services'}]
+            }
+        ]
+        matches = self.autocomp.suggest('ch', facets=facets)
+        self.assertEqual(len(matches), 1)
+
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'sector', 'value': 'Energy'}]
+            },
+            {
+                'type': 'and',
+                'facets': [{'key': 'industry', 'value': 'Oil & Gas Integrated'}]
+            },
+        ]
+        matches = self.autocomp.suggest('ch', facets=facets)
+        self.assertEqual(len(matches), 2)
 
 
 class ElasticMatchingTestCase(AutocompleterTestCase):
