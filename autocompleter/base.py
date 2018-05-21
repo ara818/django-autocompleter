@@ -544,8 +544,8 @@ class Autocompleter(AutocompleterBase):
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         base_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
-        # If we don't end up using facets for this suggest call, we can just set the intermediate result key
-        # to be equal to temp_term_result key since there was no extra manipulation to this set.
+        # If we don't end up using facets for this suggest call, we can just set the base_result_key
+        # to be equal to base_term_result_key since there was no extra manipulation to this set.
         base_result_key = base_term_result_key
 
         pipe = REDIS.pipeline()

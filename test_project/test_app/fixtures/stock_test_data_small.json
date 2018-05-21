@@ -861,6 +861,33 @@
         "sector": "Technology"
     }
 }, {
+    "pk": 101,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "Z",
+        "market_cap": 10.00,
+        "name": "Zillow",
+        "sector": "Technology"
+    }
+}, {
+    "pk": 102,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "Zbra",
+        "market_cap": 15000.00,
+        "name": "Zbra Technologies",
+        "sector": "Technology"
+    }
+}, {
+    "pk": 103,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "Zoes",
+        "market_cap": 20000.00,
+        "name": "Zoes Kitchen",
+        "sector": "Technology"
+    }
+}, {
     "pk": 225,
     "model": "test_app.stock",
     "fields": {

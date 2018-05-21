@@ -398,7 +398,6 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         # the only match should be UnitedHealth Group Inc. when using the Healthcare sector facet
         matches = temp_autocomp.suggest('Un', facets=facets)
         self.assertEqual(len(matches), 1)
-        print(matches)
         self.assertEqual(matches[0]['search_name'], "UNH")
 
         # When MOVE_EXACT_MATCHES_TO_TOP is set to True and not using facets,
@@ -415,6 +414,40 @@ class FacetMatchingTestCase(AutocompleterTestCase):
 
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+        temp_autocomp.remove_all()
+
+    def test_exact_match_low_score_still_at_top(self):
+        """
+        Exact matching when using facets should push low scoring object to top if exact match
+        """
+        # The setup for this test case is that we have three stocks that begin with the letter Z
+        # but limit our MAX_RESULTS setting to just 2.
+        # With MOVE_EXACT_MATCHES_TO_TOP initially set to False, we do not expect to see the
+        # stock with symbol 'Z' in the suggest results since it has the lowest market cap of the 3 which is
+        # what we base the score off of.
+        # Once we set MOVE_EXACT_MATCHES_TO_TOP to True we expect Z to be right at the top even though
+        # it didn't even show up in the previous suggest call since it is an exact match.
+        setattr(auto_settings, 'MAX_RESULTS', 2)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
+        temp_autocomp = Autocompleter('faceted_stock')
+        temp_autocomp.store_all()
+        facets = [
+            {
+                'type': 'or',
+                'facets': [{'key': 'sector', 'value': 'Technology'}]
+            }
+        ]
+        matches = temp_autocomp.suggest('Z', facets=facets)
+        search_names = [match['search_name'] for match in matches]
+        self.assertTrue('Z' not in search_names)
+
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        matches = temp_autocomp.suggest('Z', facets=facets)
+        self.assertTrue(matches[0]['search_name'] == 'Z')
+
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+        setattr(auto_settings, 'MAX_RESULTS', 10)
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
         temp_autocomp.remove_all()
 
     def test_multiple_facet_dicts_match(self):

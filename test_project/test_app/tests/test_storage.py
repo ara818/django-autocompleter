@@ -68,7 +68,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.store_all()
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104
 
         autocomp.remove_all()
         keys = self.redis.keys('djac.test.stock*')
@@ -120,7 +120,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
 
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
 
         autocomp = Autocompleter("stock")
         for i in range(0, 3):
@@ -173,7 +173,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.store_all()
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
         keys = self.redis.hkeys('djac.test.ind')
         self.assertEqual(len(keys), 100)
         keys = self.redis.hkeys('djac.test.metric')
@@ -301,7 +301,7 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
         facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
         set_length = self.redis.zcard(facet_set_name)
-        self.assertEqual(set_length, 9)
+        self.assertEqual(set_length, 12)
 
         facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
         keys = self.redis.hkeys(facet_map_name)
@@ -315,7 +315,7 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
         facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
         set_length = self.redis.zcard(facet_set_name)
-        self.assertEqual(set_length, 9)
+        self.assertEqual(set_length, 12)
         facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
         keys = self.redis.hkeys(facet_map_name)
         self.assertEqual(len(keys), 101)
