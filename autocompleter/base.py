@@ -543,10 +543,10 @@ class Autocompleter(AutocompleterBase):
 
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
-        temp_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+        base_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         # If we don't end up using facets for this suggest call, we can just set the intermediate result key
         # to be equal to temp_term_result key since there was no extra manipulation to this set.
-        intermediate_result_key = temp_term_result_key
+        base_result_key = base_term_result_key
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -562,19 +562,19 @@ class Autocompleter(AutocompleterBase):
             if len(term) < MIN_LETTERS:
                 continue
 
-            result_keys = []
+            term_result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                term_result_key = temp_term_result_key + '.' + norm_term
-                result_keys.append(term_result_key)
+                term_result_key = base_term_result_key + '.' + norm_term
+                term_result_keys.append(term_result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
                 pipe.zinterstore(term_result_key, keys, aggregate='MIN')
-            pipe.zunionstore(temp_term_result_key, result_keys, aggregate='MIN')
-            for term_result_key in result_keys:
+            pipe.zunionstore(base_term_result_key, term_result_keys, aggregate='MIN')
+            for term_result_key in term_result_keys:
                 pipe.delete(term_result_key)
 
             if len(facets) > 0:
-                intermediate_facet_keys = []
+                facet_result_keys = []
                 for facet in facets:
                     try:
                         facet_type = facet['type']
@@ -585,26 +585,27 @@ class Autocompleter(AutocompleterBase):
                         for facet_dict in facet_list:
                             facet_set_key = FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
                             facet_set_keys.append(facet_set_key)
-                        intermediate_facet_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                        facet_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                         if facet_type == 'and':
-                            pipe.zinterstore(intermediate_facet_key, facet_set_keys, aggregate='MIN')
+                            pipe.zinterstore(facet_result_key, facet_set_keys, aggregate='MIN')
                         else:
-                            pipe.zunionstore(intermediate_facet_key, facet_set_keys, aggregate='MIN')
-                        intermediate_facet_keys.append(intermediate_facet_key)
+                            pipe.zunionstore(facet_result_key, facet_set_keys, aggregate='MIN')
+                        facet_result_keys.append(facet_result_key)
                     except KeyError:
                         continue
+
                 # We want to calculate the intersection of all the intermediate facet sets created so far
                 # along with the temp term result set. So we need to use a new unique name for the
                 # intermediate result set and append the temp term result key to the list of
                 # intermediate facet keys.
-                intermediate_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
-                intermediate_facet_keys.append(temp_term_result_key)
-                pipe.zinterstore(intermediate_result_key, intermediate_facet_keys, aggregate='MIN')
-                for intermediate_facet_key in intermediate_facet_keys:
-                    pipe.delete(intermediate_facet_key)
-                pipe.delete(temp_term_result_key)
+                base_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                facet_result_keys.append(base_term_result_key)
+                pipe.zinterstore(base_result_key, facet_result_keys, aggregate='MIN')
+                for facet_result_key in facet_result_keys:
+                    pipe.delete(facet_result_key)
+                pipe.delete(base_term_result_key)
 
-            pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
+            pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
 
             # Get exact matches
             if settings.MOVE_EXACT_MATCHES_TO_TOP:
@@ -615,9 +616,20 @@ class Autocompleter(AutocompleterBase):
                 if len(keys) == 0:
                     continue
 
-                pipe.zunionstore(intermediate_result_key, keys, aggregate='MIN')
-                pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
-            pipe.delete(intermediate_result_key)
+                if len(facets) > 0:
+                    # If facets are being used for this suggest call, we need to make sure that
+                    # exact term matches don't bypass the requirement of having matching facet values.
+                    # To achieve this, we append the previous intermediate result key (which at this point will
+                    # contain all the facet matches) to the list of exact match keys and perform an intersection.
+                    keys.append(base_result_key)
+                    old_base_result_key = base_result_key
+                    base_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                    pipe.zinterstore(base_result_key, keys, aggregate='MIN')
+                    pipe.delete(old_base_result_key)
+                else:
+                    pipe.zunionstore(base_result_key, keys, aggregate='MIN')
+                pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
+            pipe.delete(base_result_key)
 
         results = [i for i in pipe.execute() if type(i) == list]
 

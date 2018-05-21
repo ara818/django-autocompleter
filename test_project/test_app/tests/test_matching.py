@@ -376,6 +376,47 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
         temp_autocomp.remove_all()
 
+    def test_facet_mismatch_with_move_exact_matches(self):
+        """
+        Exact matching shouldn't move an object that doesn't have a matching facet value
+        """
+        # This test case depends on very specific data, which is why this test
+        # issues multiple asserts to check our assumptions
+
+        setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 10)
+        temp_autocomp = Autocompleter('faceted_stock')
+        temp_autocomp.store_all()
+
+        facets = [
+            {
+                'type': 'or',
+                'facets': [{'key': 'sector', 'value': 'Healthcare'}]
+            }
+        ]
+
+        # When gathering suggestions for 'Un', based on the stock_data_small.json fixture,
+        # the only match should be UnitedHealth Group Inc. when using the Healthcare sector facet
+        matches = temp_autocomp.suggest('Un', facets=facets)
+        self.assertEqual(len(matches), 1)
+        print(matches)
+        self.assertEqual(matches[0]['search_name'], "UNH")
+
+        # When MOVE_EXACT_MATCHES_TO_TOP is set to True and not using facets,
+        # we are expecting Unilever to be moved to the top.
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        matches = temp_autocomp.suggest('Un')
+        self.assertEqual(matches[0]['search_name'], "UN")
+
+        # When MOVE_EXACT_MATCHES_TO_TOP is set to True and we are using the
+        # Healthcare sector facet, we are expecting to see UnitedHealth group
+        # since Unilever belongs to the Consumer Defensive sector
+        matches = temp_autocomp.suggest('Un', facets=facets)
+        self.assertEqual(matches[0]['search_name'], "UNH")
+
+        # Must set the setting back to where it was as it will persist
+        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+        temp_autocomp.remove_all()
+
     def test_multiple_facet_dicts_match(self):
         """
         Matching with multiple passed in facet dicts works

@@ -84,7 +84,7 @@
         "symbol": "WMT",
         "market_cap": 205755.9760,
         "name": "Wal-Mart Stores Inc.",
-        "sector": "Consumer Defense"
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 10,
@@ -767,8 +767,9 @@
     "model": "test_app.stock",
     "fields": {
         "symbol": "UNH",
-        "market_cap": 59463.1534,
-        "name": "UnitedHealth Group Inc."
+        "market_cap": 594630.1534,
+        "name": "UnitedHealth Group Inc.",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 90,
