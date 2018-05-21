@@ -68,7 +68,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.store_all()
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 104
+        self.assertEqual(len(keys), 104)
 
         autocomp.remove_all()
         keys = self.redis.keys('djac.test.stock*')
