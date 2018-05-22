@@ -595,9 +595,9 @@ class Autocompleter(AutocompleterBase):
                         continue
 
                 # We want to calculate the intersection of all the intermediate facet sets created so far
-                # along with the temp term result set. So we need to use a new unique name for the
-                # intermediate result set and append the temp term result key to the list of
-                # intermediate facet keys.
+                # along with the base term result set. So we need to use a new unique name for the
+                # intermediate result set and append the base_term_result_key to the list of
+                # facet_result_keys.
                 base_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                 facet_result_keys.append(base_term_result_key)
                 pipe.zinterstore(base_result_key, facet_result_keys, aggregate='MIN')

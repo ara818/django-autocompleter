@@ -290,28 +290,6 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('a', facets=facets)
         self.assertEqual(len(matches), 4)
 
-    def test_facet_doesnt_skew_suggest(self):
-        """
-        Test that using facets takes the suggest term into consideration
-        """
-
-        matches = self.autocomp.suggest('nosearchresultsforthisterm')
-        self.assertEqual(len(matches), 0)
-        facets = [
-            {
-                'type': 'or',
-                'facets':
-                    [
-                        {'key': 'sector', 'value': 'Technology'},
-                    ]
-            }
-        ]
-
-        # we expect that adding facets to a suggest call with no results will not
-        # add any results
-        facet_matches = self.autocomp.suggest('nosearchresultsforthisterm', facets=facets)
-        self.assertEqual(len(facet_matches), 0)
-
     def test_facet_and_match(self):
         """
         Matching using facets works with the 'and' type
@@ -351,6 +329,28 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         ]
         matches = self.autocomp.suggest('ch', facets=facets)
         self.assertEqual(len(matches), 2)
+
+    def test_facet_doesnt_skew_suggest(self):
+        """
+        Test that using facets takes the suggest term into consideration
+        """
+
+        matches = self.autocomp.suggest('nosearchresultsforthisterm')
+        self.assertEqual(len(matches), 0)
+        facets = [
+            {
+                'type': 'or',
+                'facets':
+                    [
+                        {'key': 'sector', 'value': 'Technology'},
+                    ]
+            }
+        ]
+
+        # we expect that adding facets to a suggest call with no results will not
+        # add any results
+        facet_matches = self.autocomp.suggest('nosearchresultsforthisterm', facets=facets)
+        self.assertEqual(len(facet_matches), 0)
 
     def test_facet_match_with_move_exact_matches(self):
         """
