@@ -12,6 +12,9 @@ CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-
 # term returns 2 results for A, ELASTIC_RESULTS will allow B to return up to 6 results
 ELASTIC_RESULTS = getattr(settings, 'AUTOCOMPLETER_ELASTIC_RESULTS', False)
 
+# Name of variable autocompleter will look for to populate facet data on a suggest call
+FACET_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_FACET_PARAMETER_NAME', 'facets')
+
 # When an autocompleter only has one type of result it can return, this setting determines
 # whether the results set is "flattened" so that it no longer uses the data structure needed
 # to return multi-type results
@@ -42,7 +45,7 @@ MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_
 # Redis connection parameters
 REDIS_CONNECTION = getattr(settings, 'AUTOCOMPLETER_REDIS_CONNECTION', {})
 
-# Name of variable autcompleter will look for to grab what term to search on.
+# Name of variable autocompleter will look for to grab what term to search on.
 SUGGEST_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_SUGGEST_PARAMETER_NAME', 'q')
 
 # Test data for debugging/running tests

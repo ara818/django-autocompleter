@@ -85,3 +85,52 @@ class TestExactSuggestView(AutocompleterTestCase):
 
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(json_response), len(matches_symbol))
+
+
+class TextFacetSuggestView(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json']
+
+    def setUp(self):
+        super(TextFacetSuggestView, self).setUp()
+        self.autocomp = Autocompleter('faceted_stock')
+        self.autocomp.store_all()
+
+    def tearDown(self):
+        self.autocomp.remove_all()
+
+    def test_facet_suggest_match(self):
+        suggest_url = reverse('suggest', kwargs={'name': 'faceted_stock'})
+
+        facets = [
+            {
+                'type': 'or',
+                'facets': [{'key': 'sector', 'value': 'Technology'}]
+            }
+        ]
+
+        matches_symbol = self.autocomp.suggest('a', facets=facets)
+
+        data = {
+            settings.SUGGEST_PARAMETER_NAME: 'a',
+            settings.FACET_PARAMETER_NAME: json.dumps(facets)
+        }
+        response = self.client.get(suggest_url, data=data)
+        self.assertEqual(response.status_code, 200)
+
+        json_response = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(json_response), len(matches_symbol))
+
+    def test_empty_facet_suggest(self):
+        suggest_url = reverse('suggest', kwargs={'name': 'faceted_stock'})
+
+        matches_symbol = self.autocomp.suggest('a', facets=[])
+
+        data = {
+            settings.SUGGEST_PARAMETER_NAME: 'a',
+            settings.FACET_PARAMETER_NAME: json.dumps([])
+        }
+        response = self.client.get(suggest_url, data=data)
+        self.assertEqual(response.status_code, 200)
+
+        json_response = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(json_response), len(matches_symbol))

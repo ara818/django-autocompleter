@@ -12,7 +12,12 @@ class SuggestView(View):
         if settings.SUGGEST_PARAMETER_NAME in request.GET:
             term = request.GET[settings.SUGGEST_PARAMETER_NAME]
             ac = Autocompleter(name)
-            results = ac.suggest(term)
+            if settings.FACET_PARAMETER_NAME in request.GET:
+                facets = request.GET[settings.FACET_PARAMETER_NAME]
+                facets = json.loads(facets)
+                results = ac.suggest(term, facets=facets)
+            else:
+                results = ac.suggest(term)
 
             json_response = json.dumps(results)
             return HttpResponse(json_response, content_type='application/json')
