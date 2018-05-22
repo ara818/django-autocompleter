@@ -873,7 +873,7 @@
     "pk": 102,
     "model": "test_app.stock",
     "fields": {
-        "symbol": "Zbra",
+        "symbol": "ZBRA",
         "market_cap": 15000.00,
         "name": "Zbra Technologies",
         "sector": "Technology"
@@ -882,7 +882,7 @@
     "pk": 103,
     "model": "test_app.stock",
     "fields": {
-        "symbol": "Zoes",
+        "symbol": "ZOES",
         "market_cap": 20000.00,
         "name": "Zoes Kitchen",
         "sector": "Technology"
