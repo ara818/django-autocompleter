@@ -68,7 +68,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.store_all()
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
 
         autocomp.remove_all()
         keys = self.redis.keys('djac.test.stock*')
@@ -120,7 +120,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
 
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
 
         autocomp = Autocompleter("stock")
         for i in range(0, 3):
@@ -173,7 +173,7 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
 
         autocomp.store_all()
         keys = self.redis.hkeys('djac.test.stock')
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
         keys = self.redis.hkeys('djac.test.ind')
         self.assertEqual(len(keys), 100)
         keys = self.redis.hkeys('djac.test.metric')
@@ -227,14 +227,19 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         provider.store()
 
         provider_name = provider.get_provider_name()
-        # the FacetedStockAutocompleteProvider get_facets is set to ['sector']
+        # the FacetedStockAutocompleteProvider get_facets is set to ['sector', 'industry']
         facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 1)
+
+        facet_set_name = base.FACET_SET_BASE_NAME % (provider_name, 'industry', 'Consumer Electronics',)
         set_length = self.redis.zcard(facet_set_name)
         self.assertEqual(set_length, 1)
 
         facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
         facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
-        self.assertEqual(facet_data, [{'key': 'sector', 'value': aapl.sector}])
+        self.assertEqual(facet_data,
+            [{'key': 'sector', 'value': aapl.sector}, {'key': 'industry', 'value': aapl.industry}])
 
     def test_second_store_removes_old_facet_data(self):
         """
@@ -252,7 +257,8 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
 
         facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
         facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
-        self.assertEqual(facet_data, [{'key': 'sector', 'value': aapl.sector}])
+        self.assertEqual(facet_data,
+            [{'key': 'sector', 'value': aapl.sector}, {'key': 'industry', 'value': aapl.industry}])
 
         aapl.sector = 'Healthcare'
         aapl.save()
@@ -265,7 +271,8 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         self.assertEqual(set_length, 1)
 
         facet_data = provider._deserialize_data(self.redis.hget(facet_map_name, aapl.id))
-        self.assertEqual(facet_data, [{'key': 'sector', 'value': 'Healthcare'}])
+        self.assertEqual(facet_data,
+            [{'key': 'sector', 'value': 'Healthcare'}, {'key': 'industry', 'value': aapl.industry}])
 
     def test_remove_facet_data(self):
         """
@@ -294,11 +301,11 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
         facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
         set_length = self.redis.zcard(facet_set_name)
-        self.assertEqual(set_length, 8)
+        self.assertEqual(set_length, 12)
 
         facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
         keys = self.redis.hkeys(facet_map_name)
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
 
     def test_remove_all_facet_data(self):
         """
@@ -308,10 +315,10 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.store_all()
         facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
         set_length = self.redis.zcard(facet_set_name)
-        self.assertEqual(set_length, 8)
+        self.assertEqual(set_length, 12)
         facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
         keys = self.redis.hkeys(facet_map_name)
-        self.assertEqual(len(keys), 101)
+        self.assertEqual(len(keys), 104)
 
         autocomp.remove_all()
         set_length = self.redis.zcard(facet_set_name)

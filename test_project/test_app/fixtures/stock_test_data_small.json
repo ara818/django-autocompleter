@@ -5,7 +5,8 @@
         "symbol": "AAPL",
         "market_cap": 506686.4497,
         "name": "Apple Inc.",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Consumer Electronics"
     }
 }, {
     "pk": 2,
@@ -14,7 +15,9 @@
         "symbol": "XOM",
         "market_cap": 404067.6030,
         "name": "Exxon Mobil Corporation",
-        "sector": "Energy"
+        "sector": "Energy",
+        "industry": "Oil & Gas Integrated"
+
     }
 }, {
     "pk": 3,
@@ -23,7 +26,8 @@
         "symbol": "PTR",
         "market_cap": 270199.5000,
         "name": "PetroChina Company Limited",
-        "sector": "Energy"
+        "sector": "Energy",
+        "industry": "Oil & Gas Integrated"
     }
 }, {
     "pk": 4,
@@ -32,7 +36,8 @@
         "symbol": "MSFT",
         "market_cap": 269105.6382,
         "name": "Microsoft Corporation",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software - Infrastructure"
     }
 }, {
     "pk": 5,
@@ -59,7 +64,8 @@
         "symbol": "CHL",
         "market_cap": 222140.5830,
         "name": "China Mobile Limited",
-        "sector": "Communication Services"
+        "sector": "Communication Services",
+        "industry": "Telecom Services"
     }
 }, {
     "pk": 8,
@@ -68,7 +74,8 @@
         "symbol": "CVX",
         "market_cap": 218206.4636,
         "name": "Chevron Corporation",
-        "sector": "Energy"
+        "sector": "Energy",
+        "industry": "Oil & Gas Integrated"
     }
 }, {
     "pk": 9,
@@ -77,7 +84,7 @@
         "symbol": "WMT",
         "market_cap": 205755.9760,
         "name": "Wal-Mart Stores Inc.",
-        "sector": "Consumer Defense"
+        "sector": "Consumer Defensive"
     }
 }, {
     "pk": 10,
@@ -347,7 +354,9 @@
         "symbol": "SNP",
         "market_cap": 104987.0390,
         "name": "China Petroleum & Chemical Corporation",
-        "sector": "Energy"
+        "sector": "Energy",
+        "industry": "Oil & Gas Integrated"
+
     }
 }, {
     "pk": 40,
@@ -758,8 +767,9 @@
     "model": "test_app.stock",
     "fields": {
         "symbol": "UNH",
-        "market_cap": 59463.1534,
-        "name": "UnitedHealth Group Inc."
+        "market_cap": 594630.1534,
+        "name": "UnitedHealth Group Inc.",
+        "sector": "Healthcare"
     }
 }, {
     "pk": 90,
@@ -847,7 +857,35 @@
     "fields": {
         "symbol": "MA",
         "market_cap": 53245.4784,
-        "name": "MasterCard Incorporated"
+        "name": "MasterCard Incorporated",
+        "sector": "Technology"
+    }
+}, {
+    "pk": 101,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "Z",
+        "market_cap": 10.00,
+        "name": "Zillow",
+        "sector": "Technology"
+    }
+}, {
+    "pk": 102,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "ZBRA",
+        "market_cap": 15000.00,
+        "name": "Zbra Technologies",
+        "sector": "Technology"
+    }
+}, {
+    "pk": 103,
+    "model": "test_app.stock",
+    "fields": {
+        "symbol": "ZOES",
+        "market_cap": 20000.00,
+        "name": "Zoes Kitchen",
+        "sector": "Technology"
     }
 }, {
     "pk": 225,

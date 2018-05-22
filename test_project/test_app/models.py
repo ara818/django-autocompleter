@@ -6,6 +6,7 @@ class Stock(models.Model):
     name = models.CharField(max_length=200)
     market_cap = models.FloatField(null=True, blank=True)
     sector = models.CharField(max_length=200, default='')
+    industry = models.CharField(max_length=200, default='')
 
 
 class Indicator(models.Model):
