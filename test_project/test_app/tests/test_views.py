@@ -140,3 +140,22 @@ class TextFacetSuggestView(AutocompleterTestCase):
 
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(json_response), len(matches_symbol))
+
+    def test_invalid_facet(self):
+        """
+        An invalid facet should return a 400 response
+        """
+        suggest_url = reverse('suggest', kwargs={'name': 'faceted_stock'})
+
+        no_type_facets = [
+            {
+                'facets': [{'key': 'sector', 'value': 'Technology'}]
+            }
+        ]
+
+        data = {
+            settings.SUGGEST_PARAMETER_NAME: 'a',
+            settings.FACET_PARAMETER_NAME: json.dumps(no_type_facets)
+        }
+        response = self.client.get(suggest_url, data=data)
+        self.assertEqual(response.status_code, 400)

@@ -522,7 +522,7 @@ class Autocompleter(AutocompleterBase):
             return []
 
         # If we have a cached version of the search results available, return it!
-        hashed_facets = hash(str(facets))
+        hashed_facets = utils.hash_facets(facets)
         cache_key = CACHE_BASE_NAME % \
             (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS), hashed_facets)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
