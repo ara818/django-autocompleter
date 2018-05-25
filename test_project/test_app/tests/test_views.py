@@ -99,6 +99,9 @@ class TextFacetSuggestView(AutocompleterTestCase):
         self.autocomp.remove_all()
 
     def test_facet_suggest_match(self):
+        """
+        Using suggest view works with facets
+        """
         suggest_url = reverse('suggest', kwargs={'name': 'faceted_stock'})
 
         facets = [
@@ -121,6 +124,9 @@ class TextFacetSuggestView(AutocompleterTestCase):
         self.assertEqual(len(json_response), len(matches_symbol))
 
     def test_empty_facet_suggest(self):
+        """
+        An empty facet parameter still returns 200 response
+        """
         suggest_url = reverse('suggest', kwargs={'name': 'faceted_stock'})
 
         matches_symbol = self.autocomp.suggest('a', facets=[])
