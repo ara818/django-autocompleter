@@ -1,6 +1,6 @@
 from django.test import TestCase
-
-from autocompleter import utils
+from autocompleter import Autocompleter
+from autocompleter.views import SuggestView
 
 
 class TestFacetHash(TestCase):
@@ -14,8 +14,8 @@ class TestFacetHash(TestCase):
                 'facets': [{'key': 'sector', 'value': 'Technology'}]
             }
         ]
-        first_hash = utils.hash_facets(facets)
-        second_hash = utils.hash_facets(facets)
+        first_hash = Autocompleter.hash_facets(facets)
+        second_hash = Autocompleter.hash_facets(facets)
         self.assertEqual(first_hash, second_hash)
 
     def test_hashing_facet_type(self):
@@ -35,8 +35,8 @@ class TestFacetHash(TestCase):
                 'facets': [{'key': 'sector', 'value': 'Technology'}]
             }
         ]
-        and_hash = utils.hash_facets(and_facet)
-        or_hash = utils.hash_facets(or_facet)
+        and_hash = Autocompleter.hash_facets(and_facet)
+        or_hash = Autocompleter.hash_facets(or_facet)
         self.assertNotEqual(and_hash, or_hash)
 
     def test_hashing_order(self):
@@ -63,8 +63,8 @@ class TestFacetHash(TestCase):
             }
         ]
 
-        facet_1_hash = utils.hash_facets(facet_1)
-        facet_2_hash = utils.hash_facets(facet_2)
+        facet_1_hash = Autocompleter.hash_facets(facet_1)
+        facet_2_hash = Autocompleter.hash_facets(facet_2)
         self.assertEqual(facet_1_hash, facet_2_hash)
 
     def test_hash_identical_values_different_facet_type(self):
@@ -91,8 +91,8 @@ class TestFacetHash(TestCase):
             }
         ]
 
-        facet_1_hash = utils.hash_facets(facet_1)
-        facet_2_hash = utils.hash_facets(facet_2)
+        facet_1_hash = Autocompleter.hash_facets(facet_1)
+        facet_2_hash = Autocompleter.hash_facets(facet_2)
         self.assertNotEqual(facet_1_hash, facet_2_hash)
 
     def test_multiple_facets_hashing_order(self):
@@ -133,8 +133,8 @@ class TestFacetHash(TestCase):
             },
         ]
 
-        facet_1_hash = utils.hash_facets(facet_1)
-        facet_2_hash = utils.hash_facets(facet_2)
+        facet_1_hash = Autocompleter.hash_facets(facet_1)
+        facet_2_hash = Autocompleter.hash_facets(facet_2)
         self.assertEqual(facet_1_hash, facet_2_hash)
 
 
@@ -160,7 +160,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertTrue(utils.validate_facets(facets))
+        self.assertTrue(SuggestView.validate_facets(facets))
 
     def test_invalid_facet_no_type(self):
         """
@@ -172,7 +172,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(no_type_facets))
+        self.assertFalse(SuggestView.validate_facets(no_type_facets))
 
     def test_invalid_facet_wrong_type(self):
         """
@@ -185,7 +185,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(wrong_type_facets))
+        self.assertFalse(SuggestView.validate_facets(wrong_type_facets))
 
     def test_invalid_facet_no_sub_facets(self):
         """
@@ -197,7 +197,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(no_sub_facets))
+        self.assertFalse(SuggestView.validate_facets(no_sub_facets))
 
         empty_sub_facets = [
             {
@@ -206,7 +206,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(empty_sub_facets))
+        self.assertFalse(SuggestView.validate_facets(empty_sub_facets))
 
     def test_invalid_facet_no_key(self):
         """
@@ -219,7 +219,7 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(no_key_in_sub_facet))
+        self.assertFalse(SuggestView.validate_facets(no_key_in_sub_facet))
 
     def test_invalid_facet_no_value(self):
         """
@@ -232,4 +232,4 @@ class TestFacetValidation(TestCase):
             }
         ]
 
-        self.assertFalse(utils.validate_facets(no_value_in_sub_facet))
+        self.assertFalse(SuggestView.validate_facets(no_value_in_sub_facet))
