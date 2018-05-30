@@ -578,7 +578,8 @@ class Autocompleter(AutocompleterBase):
             facet_key_mismatch = False
 
             if len(facets) > 0:
-                sub_facets = [facet['facets'] for facet in facets]
+                # we use from_iterable to flatten the list comprehension into a single list
+                sub_facets = itertools.chain.from_iterable([facet['facets'] for facet in facets])
                 suggest_facet_keyset = set([sub_facet['key'] for sub_facet in sub_facets])
                 # if the providers facet keys is not a subset of the suggest facet keys we skip the facet logic
                 if not set(suggest_facet_keyset).issubset(provider_facet_keys):
