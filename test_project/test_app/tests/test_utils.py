@@ -46,14 +46,20 @@ class TestFacetHash(TestCase):
         facet_1 = [
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'Software'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             }
         ]
 
         facet_2 = [
             {
                 'type': 'or',
-                'facets': [{'key': 'industry', 'value': 'Software'}, {'key': 'sector', 'value': 'Technology'}]
+                'facets': [
+                    {'key': 'industry', 'value': 'Software'},
+                    {'key': 'sector', 'value': 'Technology'}
+                ]
             }
         ]
 
@@ -63,19 +69,25 @@ class TestFacetHash(TestCase):
 
     def test_hash_identical_values_different_facet_type(self):
         """
-        Facets with identical key/values but different facet type in different order should not have same hash
+        Facets with same key/values but different facet type in different order shouldn't have same hash
         """
         facet_1 = [
             {
                 'type': 'and',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'Software'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             }
         ]
 
         facet_2 = [
             {
                 'type': 'or',
-                'facets': [{'key': 'industry', 'value': 'Software'}, {'key': 'sector', 'value': 'Technology'}]
+                'facets': [
+                    {'key': 'industry', 'value': 'Software'},
+                    {'key': 'sector', 'value': 'Technology'}
+                ]
             }
         ]
 
@@ -90,22 +102,34 @@ class TestFacetHash(TestCase):
         facet_1 = [
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'Software'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             },
             {
                 'type': 'and',
-                'facets': [{'key': 'sector', 'value': 'Energy'}, {'key': 'industry', 'value': 'Oil & Gas Integrated'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Energy'},
+                    {'key': 'industry', 'value': 'Oil & Gas Integrated'}
+                ]
             }
         ]
 
         facet_2 = [
             {
                 'type': 'and',
-                'facets': [{'key': 'industry', 'value': 'Oil & Gas Integrated'}, {'key': 'sector', 'value': 'Energy'}]
+                'facets': [
+                    {'key': 'industry', 'value': 'Oil & Gas Integrated'},
+                    {'key': 'sector', 'value': 'Energy'}
+                ]
             },
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'Software'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             },
         ]
 
@@ -122,11 +146,17 @@ class TestFacetValidation(TestCase):
         facets = [
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Financial Services'}, {'key': 'industry', 'value': 'Investment'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Financial Services'},
+                    {'key': 'industry', 'value': 'Investment'}
+                ]
             },
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'Software'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             }
         ]
 
@@ -191,7 +221,7 @@ class TestFacetValidation(TestCase):
 
         self.assertFalse(utils.validate_facets(no_key_in_sub_facet))
 
-    def test_invalid_facet_no_key(self):
+    def test_invalid_facet_no_value(self):
         """
         Facet with no value in the sub facet should fail validation
         """
