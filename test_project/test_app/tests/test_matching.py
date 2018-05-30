@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from test_app.tests.base import AutocompleterTestCase
 from test_app.autocompleters import StockAutocompleteProvider, IndicatorAutocompleteProvider, CalcAutocompleteProvider
+from test_app.tests.base import AutocompleterTestCase
+from test_app.models import Stock
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
@@ -283,7 +284,7 @@ class FacetMatchingTestCase(AutocompleterTestCase):
                     [
                         {'key': 'sector', 'value': 'Technology'},
                         {'key': 'sector', 'value': 'Consumer Defensive'},
-                        {'key': 'sector', 'value': 'Thisdoesntexist'}
+                        {'key': 'industry', 'value': 'Thisdoesntexist'}
                     ]
             }
         ]
@@ -297,7 +298,7 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         facets = [
             {
                 'type': 'and',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'sector', 'value': 'SectorDoesntExist'}]
+                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'SectorDoesntExist'}]
             }
         ]
         matches = self.autocomp.suggest('ch', facets=facets)
@@ -329,6 +330,47 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         ]
         matches = self.autocomp.suggest('ch', facets=facets)
         self.assertEqual(len(matches), 2)
+
+    def test_provider_keys_is_not_subset_of_facet_keys(self):
+        """
+        A provider's facet keys has to match at least one of the requested facet keys to kick in
+        """
+
+        facets = [
+            {
+                'type': 'and',
+                'facets':
+                    [
+                        {'key': 'thisisfake', 'value': 'Technology'},
+                    ]
+            }
+        ]
+        facet_matches = self.autocomp.suggest('a', facets=facets)
+        regular_matches = self.autocomp.suggest('a')
+        # since the 'thisisfake' key does not exist in our provider, the results for a facet
+        # suggest should be the same as a regular suggest
+        self.assertEqual(facet_matches, regular_matches)
+
+    def test_provider_keys_is_subset_of_facet_keys_no_match(self):
+        """
+        A provider which declares one of the requested facet keys but has no matches should not return any results
+        """
+
+        facets = [
+            {
+                'type': 'and',
+                'facets':
+                    [
+                        {'key': 'sector', 'value': 'ZZ9 Plural Z Alpha'},
+                    ]
+            }
+        ]
+        facet_matches = self.autocomp.suggest('a', facets=facets)
+        regular_matches = self.autocomp.suggest('a')
+        # since the 'sector' key does belong to our faceted stock provider facets, we expected facets
+        # logic to kick in, but with a bogus value there should be no results.
+        self.assertEqual(len(facet_matches), 0)
+        self.assertGreaterEqual(len(regular_matches), 1)
 
     def test_facet_doesnt_skew_suggest(self):
         """
@@ -363,7 +405,10 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         facets = [
             {
                 'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'}
+                ]
             }
         ]
 
@@ -389,8 +434,11 @@ class FacetMatchingTestCase(AutocompleterTestCase):
 
         facets = [
             {
-                'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Healthcare'}]
+                'type': 'and',
+                'facets': [
+                    {'key': 'sector', 'value': 'Healthcare'},
+                    {'key': 'industry', 'value': 'Healthcare Plans'},
+                ]
             }
         ]
 
@@ -433,8 +481,11 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         temp_autocomp.store_all()
         facets = [
             {
-                'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
+                'type': 'and',
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'Software'},
+                ]
             }
         ]
         matches = temp_autocomp.suggest('Z', facets=facets)
