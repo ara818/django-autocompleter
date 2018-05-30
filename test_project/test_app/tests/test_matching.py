@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from test_app.autocompleters import StockAutocompleteProvider, IndicatorAutocompleteProvider, CalcAutocompleteProvider
-from test_app.tests.base import AutocompleterTestCase
 from test_app.models import Stock
+from test_app.tests.base import AutocompleterTestCase
+
 from autocompleter import Autocompleter, registry
 from autocompleter import settings as auto_settings
 
@@ -298,7 +299,10 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         facets = [
             {
                 'type': 'and',
-                'facets': [{'key': 'sector', 'value': 'Technology'}, {'key': 'industry', 'value': 'SectorDoesntExist'}]
+                'facets': [
+                    {'key': 'sector', 'value': 'Technology'},
+                    {'key': 'industry', 'value': 'SectorDoesntExist'}
+                ]
             }
         ]
         matches = self.autocomp.suggest('ch', facets=facets)
