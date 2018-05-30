@@ -450,6 +450,26 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         setattr(auto_settings, 'MAX_EXACT_MATCH_WORDS', 0)
         temp_autocomp.remove_all()
 
+    def test_facet_works_with_cache(self):
+        """
+        Caching works with facet suggest
+        """
+        no_cache_no_facet_matches = self.autocomp.suggest('a')
+
+        facets = [{'type': 'or', 'facets': [{'key': 'sector', 'value': 'Technology'}]}]
+
+        no_cache_facet_matches = self.autocomp.suggest('a', facets=facets)
+
+        setattr(auto_settings, 'CACHE_TIMEOUT', 3600)
+
+        cache_facet_matches = self.autocomp.suggest('a', facets=facets)
+        cache_no_facet_matches = self.autocomp.suggest('a')
+
+        self.assertEqual(no_cache_no_facet_matches, cache_no_facet_matches)
+        self.assertEqual(cache_facet_matches, no_cache_facet_matches)
+
+        setattr(auto_settings, 'CACHE_TIMEOUT', 0)
+
     def test_multiple_facet_dicts_match(self):
         """
         Matching with multiple passed in facet dicts works

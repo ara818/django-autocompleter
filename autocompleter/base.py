@@ -14,7 +14,7 @@ if settings.TEST_DATA:
     AUTO_BASE_NAME = 'djac.test.%s'
 else:
     AUTO_BASE_NAME = 'djac.%s'
-CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s'
+CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s.%s'
 EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
 PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
 PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
@@ -506,7 +506,7 @@ class Autocompleter(AutocompleterBase):
         """
         Clear cache
         """
-        cache_key = CACHE_BASE_NAME % (self.name, '*',)
+        cache_key = CACHE_BASE_NAME % (self.name, '*', '*')
         exact_cache_key = EXACT_CACHE_BASE_NAME % (self.name, '*',)
 
         keys = REDIS.keys(cache_key) + REDIS.keys(exact_cache_key)
@@ -522,8 +522,9 @@ class Autocompleter(AutocompleterBase):
             return []
 
         # If we have a cached version of the search results available, return it!
+        hashed_facets = self.hash_facets(facets)
         cache_key = CACHE_BASE_NAME % \
-            (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS))
+            (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS), hashed_facets)
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
 
@@ -806,3 +807,24 @@ class Autocompleter(AutocompleterBase):
 
     def _get_all_providers_by_autocompleter(self):
         return registry.get_all_by_autocompleter(self.name)
+
+    @staticmethod
+    def hash_facets(facets):
+        """
+        Given an array of facet data, return a deterministic hash such that
+        the ordering of keys inside the facet dicts does not matter.
+        """
+        facet_hashes = []
+        for facet in facets:
+            sub_facet_hashes = []
+            facet_type = facet['type']
+            sub_facets = facet['facets']
+            for sub_facet in sub_facets:
+                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + sub_facet['value']
+                sub_facet_hashes.append(hash(sub_facet_str))
+            sub_facet_hashes.sort()
+            facet_str = 'type:' + facet_type + 'facets:' + str(sub_facet_hashes)
+            facet_hashes.append(hash(facet_str))
+        facet_hashes.sort()
+        final_facet_hash = hash(str(facet_hashes))
+        return final_facet_hash
