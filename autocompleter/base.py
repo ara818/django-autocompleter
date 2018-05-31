@@ -830,7 +830,7 @@ class Autocompleter(AutocompleterBase):
             facet_type = facet['type']
             sub_facets = facet['facets']
             for sub_facet in sub_facets:
-                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + sub_facet['value']
+                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + str(sub_facet['value'])
                 sub_facet_hashes.append(hash(sub_facet_str))
             sub_facet_hashes.sort()
             facet_str = 'type:' + facet_type + 'facets:' + str(sub_facet_hashes)
