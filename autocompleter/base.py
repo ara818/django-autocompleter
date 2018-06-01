@@ -549,7 +549,14 @@ class Autocompleter(AutocompleterBase):
         # to be equal to base_term_result_key since there was no extra manipulation to this set.
         base_result_key = base_term_result_key
 
+        facet_keys_set = set()
+        if len(facets) > 0:
+            # we use from_iterable to flatten the list comprehension into a single list
+            sub_facets = itertools.chain.from_iterable([facet['facets'] for facet in facets])
+            facet_keys_set = set([sub_facet['key'] for sub_facet in sub_facets])
+
         pipe = REDIS.pipeline()
+
         for provider in providers:
             provider_name = provider.provider_name
             # If we have total_results from adding up all MAX_RESULTS from ELASTIC_RESULTS use it.
@@ -574,7 +581,13 @@ class Autocompleter(AutocompleterBase):
             for term_result_key in term_result_keys:
                 pipe.delete(term_result_key)
 
-            if len(facets) > 0:
+            use_facets = False
+            if len(facet_keys_set) > 0:
+                provider_keys_set = set(provider.get_facets())
+                if facet_keys_set.issubset(provider_keys_set):
+                    use_facets = True
+
+            if use_facets:
                 facet_result_keys = []
                 for facet in facets:
                     try:
@@ -584,7 +597,8 @@ class Autocompleter(AutocompleterBase):
                         facet_list = facet['facets']
                         facet_set_keys = []
                         for facet_dict in facet_list:
-                            facet_set_key = FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
+                            facet_set_key = \
+                                FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
                             facet_set_keys.append(facet_set_key)
                         facet_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                         if facet_type == 'and':
@@ -594,7 +608,6 @@ class Autocompleter(AutocompleterBase):
                         facet_result_keys.append(facet_result_key)
                     except KeyError:
                         continue
-
                 # We want to calculate the intersection of all the intermediate facet sets created so far
                 # along with the base term result set. So we need to use a new unique name for the
                 # intermediate result set and append the base_term_result_key to the list of
@@ -617,7 +630,7 @@ class Autocompleter(AutocompleterBase):
                 if len(keys) == 0:
                     continue
 
-                if len(facets) > 0:
+                if use_facets:
                     # If facets are being used for this suggest call, we need to make sure that
                     # exact term matches don't bypass the requirement of having matching facet values.
                     # To achieve this, we append the previous intermediate result key (which at this point will
@@ -820,7 +833,7 @@ class Autocompleter(AutocompleterBase):
             facet_type = facet['type']
             sub_facets = facet['facets']
             for sub_facet in sub_facets:
-                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + sub_facet['value']
+                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + str(sub_facet['value'])
                 sub_facet_hashes.append(hash(sub_facet_str))
             sub_facet_hashes.sort()
             facet_str = 'type:' + facet_type + 'facets:' + str(sub_facet_hashes)

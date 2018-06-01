@@ -46,7 +46,8 @@
         "symbol": "IBM",
         "market_cap": 236454.7444,
         "name": "International Business Machines Corporation",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software"
     }
 }, {
     "pk": 6,
@@ -410,7 +411,8 @@
         "symbol": "UN",
         "market_cap": 99651.2000,
         "name": "Unilever N.V.",
-        "sector": "Consumer Defensive"
+        "sector": "Consumer Defensive",
+        "industry": "Household & Personal Products"
     }
 }, {
     "pk": 46,
@@ -769,7 +771,8 @@
         "symbol": "UNH",
         "market_cap": 594630.1534,
         "name": "UnitedHealth Group Inc.",
-        "sector": "Healthcare"
+        "sector": "Healthcare",
+        "industry": "Healthcare Plans"
     }
 }, {
     "pk": 90,
@@ -858,7 +861,8 @@
         "symbol": "MA",
         "market_cap": 53245.4784,
         "name": "MasterCard Incorporated",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software"
     }
 }, {
     "pk": 101,
@@ -867,7 +871,8 @@
         "symbol": "Z",
         "market_cap": 10.00,
         "name": "Zillow",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software"
     }
 }, {
     "pk": 102,
@@ -876,7 +881,8 @@
         "symbol": "ZBRA",
         "market_cap": 15000.00,
         "name": "Zbra Technologies",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software"
     }
 }, {
     "pk": 103,
@@ -885,7 +891,8 @@
         "symbol": "ZOES",
         "market_cap": 20000.00,
         "name": "Zoes Kitchen",
-        "sector": "Technology"
+        "sector": "Technology",
+        "industry": "Software"
     }
 }, {
     "pk": 225,
