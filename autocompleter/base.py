@@ -486,7 +486,7 @@ class Autocompleter(AutocompleterBase):
             # cleaned up if their ID changed but for some reason we did not
             # delete the old ID... Here we delete what's left, just to be safe
             key = AUTO_BASE_NAME % (provider_name,)
-            key += '*'
+            key += '.*'
             leftovers = REDIS.keys(key)
 
             # Start pipeline
