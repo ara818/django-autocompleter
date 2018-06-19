@@ -1,17 +1,20 @@
-from django.db.models.signals import post_save, pre_save, post_delete
+from collections import OrderedDict
+
+from django.db.models.signals import post_save, post_delete
 
 from autocompleter import settings
 
 
 class AutocompleterRegistry(object):
     def __init__(self):
-        self._providers_by_ac = {}
-        self._providers_by_model = {}
-        self._ac_provider_settings = {}
+        self._ac_settings = OrderedDict()
+        self._ac_provider_settings = OrderedDict()
+        self._providers_by_ac = OrderedDict()
+        self._providers_by_model = OrderedDict()
 
-    def register(self, ac_name, provider, local_settings=None):
+    def register(self, ac_name, provider, ac_provider_settings=None):
         """
-        Register an autocompleter wit ha  provider.
+        Register an autocompleter with a provider.
         Each autocompleter can have multiple providers.
         """
         if provider is None:
@@ -19,7 +22,8 @@ class AutocompleterRegistry(object):
 
         if ac_name not in self._providers_by_ac:
             self._providers_by_ac[ac_name] = []
-        if getattr(provider, 'model', None) != None:
+            self._ac_settings[ac_name] = {}
+        if getattr(provider, 'model', None) is not None:
             if provider.model not in self._providers_by_model:
                 self._providers_by_model[provider.model] = []
             if provider not in self._providers_by_model[provider.model]:
@@ -29,12 +33,12 @@ class AutocompleterRegistry(object):
             self._providers_by_ac[ac_name].append(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
-        # Note: the reason we default local_settings to None, then set to a dict is when we had
-        # local_settings default to {} it was a reference to the same dict so when a setting
+        # Note: the reason we default ac_provider_settings to None, then set to a dict is when we had
+        # ac_provider_settings default to {} it was a reference to the same dict so when a setting
         # for one AC/provider was set, it was set for all AC/provider pairs.
-        if local_settings is None:
-            local_settings = {}
-        self._ac_provider_settings[combined_name] = local_settings
+        if ac_provider_settings is None:
+            ac_provider_settings = {}
+        self._ac_provider_settings[combined_name] = ac_provider_settings
 
     def unregister(self, ac_name, provider):
         """
@@ -65,10 +69,33 @@ class AutocompleterRegistry(object):
             return None
         return self._providers_by_model[model]
 
+    def get_autocompleter_setting(self, ac_name, setting_name):
+        """
+        Get an autocompleter specific setting.
+        If that doesn't exist, fall back to the global version of the setting.
+        """
+        try:
+            return self._ac_settings[ac_name][setting_name]
+        except (AttributeError, KeyError):
+            return getattr(settings, setting_name)
+
+    def set_autocompleter_setting(self, ac_name, setting_name, setting_value):
+        """
+        Set an autocompleter specific setting.
+        """
+        self._ac_settings[ac_name][setting_name] = setting_value
+
+    def del_autocompleter_setting(self, ac_name, setting_name):
+        """
+        Delete an autocompleter specific setting.
+        """
+        if setting_name in self._ac_settings[ac_name]:
+            del self._ac_settings[ac_name][setting_name]
+
     def get_provider_setting(self, provider, setting_name):
         """
         Get a provider specific setting.
-        If that doesn't eixst, fall back to the global version of the setting.
+        If that doesn't exist, fall back to the global version of the setting.
         """
         # Provider specific version
         try:

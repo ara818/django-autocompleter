@@ -148,6 +148,16 @@ class StockExactMatchTestCase(AutocompleterTestCase):
         # Must set the setting back to where it was as it will persist
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
 
+    def test_move_exact_matches_overridable_at_ac_level(self):
+        """
+        MOVE_EXACT_MATCHES_TO_TOP can be set at the autocompleter level
+        """
+        matches = self.autocomp.suggest('Ma')
+        registry.set_autocompleter_setting(self.autocomp.name, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        matches2 = self.autocomp.suggest('Ma')
+        registry.del_autocompleter_setting(self.autocomp.name, 'MOVE_EXACT_MATCHES_TO_TOP')
+        self.assertNotEqual(matches[0]['search_name'], matches2[0]['search_name'])
+
     def test_exact_caching(self):
         """
         Exact caching works
@@ -198,3 +208,13 @@ class MultiExactMatchTestCase(AutocompleterTestCase):
         matches2 = self.autocomp.suggest('Ma')
         self.assertNotEqual(matches['stock'][0]['search_name'], matches2['stock'][0]['search_name'])
         setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', False)
+
+    def test_move_exact_matches_multi_provider_autocompleter_setting(self):
+        """
+        MOVE_EXACT_MATCHES_TO_TOP works in multi-provider autocompleter at autocompleter level
+        """
+        matches = self.autocomp.suggest('Ma')
+        registry.set_autocompleter_setting(self.autocomp.name, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        matches2 = self.autocomp.suggest('Ma')
+        registry.del_autocompleter_setting(self.autocomp.name, 'MOVE_EXACT_MATCHES_TO_TOP')
+        self.assertNotEqual(matches['stock'][0]['search_name'], matches2['stock'][0]['search_name'])
