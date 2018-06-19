@@ -131,7 +131,7 @@ class AutocompleterRegistry(object):
 
     def get_ac_provider_setting(self, ac_name, provider, setting_name):
         """
-        Get an autocompleter provider specific setting.
+        Get an autocompleter/provider specific setting.
         If that doesn't exist, fallback to the provider specific setting.
         If that doesn't eixst, fall back to the global version of the setting.
         """
