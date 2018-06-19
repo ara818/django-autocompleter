@@ -38,26 +38,22 @@ TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
 
 # AC SETTINGS #
 
+# Whether to detect exact matches and move them to top of the results set (ignoring score)
+# This will obviously not work if MAX_EXACT_MATCH_WORDS == 0 for your install or your provider.
+MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
+
 
 # PROVIDER SETTINGS #
 
 # Maximum number of words in term we should be able to match as exact match. Default is 0,
 # which means there is no exact matching at all.
-# Note: Provider override possible
 MAX_EXACT_MATCH_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_EXACT_MATCH_WORDS', 0)
 
 
 # AC/PROVIDER SETTINGS #
 
 # Maximum number of results returned per result type
-# Note: AC/Provider and Provider override possible
 MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
 # Minimum number of letters required to start returning results
-# Note: AC/Provider and Provider override possible
 MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)
-
-# Whether to detect exact matches and move them to top of the results set (ignoring score)
-# This will obviously not work if MAX_EXACT_MATCH_WORDS == 0 for your install or your provider.
-# Note: AC/Provider and Provider override possible
-MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)

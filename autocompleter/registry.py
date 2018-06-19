@@ -7,12 +7,12 @@ from autocompleter import settings
 
 class AutocompleterRegistry(object):
     def __init__(self):
-        self._ac_provider_settings = OrderedDict()
         self._ac_settings = OrderedDict()
+        self._ac_provider_settings = OrderedDict()
         self._providers_by_ac = OrderedDict()
         self._providers_by_model = OrderedDict()
 
-    def register(self, ac_name, provider, local_settings=None):
+    def register(self, ac_name, provider, ac_provider_settings=None):
         """
         Register an autocompleter with a provider.
         Each autocompleter can have multiple providers.
@@ -33,13 +33,12 @@ class AutocompleterRegistry(object):
             self._providers_by_ac[ac_name].append(provider)
 
         combined_name = "%s%s" % (ac_name, provider,)
-        # Note: the reason we default local_settings to None, then set to a dict is when we had
-        # local_settings default to {} it was a reference to the same dict so when a setting
+        # Note: the reason we default ac_provider_settings to None, then set to a dict is when we had
+        # ac_provider_settings default to {} it was a reference to the same dict so when a setting
         # for one AC/provider was set, it was set for all AC/provider pairs.
-        if local_settings is None:
-            local_settings = {}
-        self._ac_provider_settings[combined_name] = local_settings
-        self._ac_settings[ac_name] = local_settings
+        if ac_provider_settings is None:
+            ac_provider_settings = {}
+        self._ac_provider_settings[combined_name] = ac_provider_settings
 
     def unregister(self, ac_name, provider):
         """

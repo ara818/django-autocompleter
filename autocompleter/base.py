@@ -555,6 +555,8 @@ class Autocompleter(AutocompleterBase):
             sub_facets = itertools.chain.from_iterable([facet['facets'] for facet in facets])
             facet_keys_set = set([sub_facet['key'] for sub_facet in sub_facets])
 
+        MOVE_EXACT_MATCHES_TO_TOP = registry.get_autocompleter_setting(self.name, 'MOVE_EXACT_MATCHES_TO_TOP')
+
         pipe = REDIS.pipeline()
 
         for provider in providers:
@@ -622,7 +624,7 @@ class Autocompleter(AutocompleterBase):
             pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
 
             # Get exact matches
-            if settings.MOVE_EXACT_MATCHES_TO_TOP:
+            if MOVE_EXACT_MATCHES_TO_TOP:
                 keys = []
                 for norm_term in norm_terms:
                     keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
@@ -673,7 +675,7 @@ class Autocompleter(AutocompleterBase):
             ids = results.pop(0)
             # We merge exact matches with base matches by moving them to
             # the head of the results
-            if settings.MOVE_EXACT_MATCHES_TO_TOP:
+            if MOVE_EXACT_MATCHES_TO_TOP:
                 exact_ids = results.pop(0)
 
                 # Need to reverse exact IDs so high scores are behind low scores, since we
