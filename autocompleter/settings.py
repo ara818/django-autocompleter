@@ -8,12 +8,6 @@ CACHE_TIMEOUT = getattr(settings, 'AUTOCOMPLETER_CACHE_TIMEOUT', 0)
 # Regex that filters out characters we ignore for the purposes of autocompleting
 CHARACTER_FILTER = getattr(settings, 'AUTOCOMPLETER_CHARACTER_FILTER', r'[^a-z0-9_ ]')
 
-# Whether to redistribute MAX_RESULTS allowance to other result types, on a
-# multi-result type search if possible.
-# Example: If an AC has two results A and B, and MAX_RESULTS = 4, if a given search
-# term returns 2 results for A, ELASTIC_RESULTS will allow B to return up to 6 results
-ELASTIC_RESULTS = getattr(settings, 'AUTOCOMPLETER_ELASTIC_RESULTS', False)
-
 # Name of variable autocompleter will look for to populate facet data on a suggest call
 FACET_PARAMETER_NAME = getattr(settings, 'AUTOCOMPLETER_FACET_PARAMETER_NAME', 'facets')
 
@@ -38,6 +32,9 @@ TEST_DATA = getattr(settings, 'AUTOCOMPLETER_TEST_DATA', False)
 
 # AC SETTINGS #
 
+# Maximum number of results returned per result type
+MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
+
 # Whether to detect exact matches and move them to top of the results set (ignoring score)
 # This will obviously not work if MAX_EXACT_MATCH_WORDS == 0 for your install or your provider.
 MOVE_EXACT_MATCHES_TO_TOP = getattr(settings, 'AUTOCOMPLETER_MOVE_EXACT_MATCHES_TO_TOP', False)
@@ -51,9 +48,6 @@ MAX_EXACT_MATCH_WORDS = getattr(settings, 'AUTOCOMPLETER_MAX_EXACT_MATCH_WORDS',
 
 
 # AC/PROVIDER SETTINGS #
-
-# Maximum number of results returned per result type
-MAX_RESULTS = getattr(settings, 'AUTOCOMPLETER_MAX_RESULTS', 10)
 
 # Minimum number of letters required to start returning results
 MIN_LETTERS = getattr(settings, 'AUTOCOMPLETER_MIN_LETTERS', 1)

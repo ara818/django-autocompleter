@@ -536,12 +536,6 @@ class Autocompleter(AutocompleterBase):
 
         provider_results = OrderedDict()
 
-        # Get the matched result IDs
-        total_results = 0
-        if settings.ELASTIC_RESULTS:
-            for provider in providers:
-                total_results += registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
-
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
         base_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
@@ -559,13 +553,12 @@ class Autocompleter(AutocompleterBase):
 
         pipe = REDIS.pipeline()
 
+        # Get the max results autocompleter setting
+        MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
+
         for provider in providers:
             provider_name = provider.provider_name
-            # If we have total_results from adding up all MAX_RESULTS from ELASTIC_RESULTS use it.
-            if settings.ELASTIC_RESULTS:
-                MAX_RESULTS = total_results
-            else:
-                MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
+
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
@@ -649,27 +642,18 @@ class Autocompleter(AutocompleterBase):
 
         results = [i for i in pipe.execute() if type(i) == list]
 
-        # init mappings and surplus for Elastic Result distribution
-        deficits = {}
         # Mapping required to store result_ids outside of per provider loop before
-        # fetching items / redistributing availabe result slots in elastic results
+        # fetching items
         provider_result_ids = {}
         max_results_dict = {}
-        # total pool of available result slots
-        total_surplus = 0
+
         # Create a dict mapping provider to result IDs
         # We combine the 2 different kinds of results into 1 result ID list per provider.
         for provider in providers:
-            provider_name = provider.provider_name
-
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
             if len(term) < MIN_LETTERS:
-                # if provider will not be used due to min_letters, put all result slots
-                # in surplus pool then continue
-                total_surplus += MAX_RESULTS
                 continue
 
             ids = results.pop(0)
@@ -689,42 +673,7 @@ class Autocompleter(AutocompleterBase):
                         ids.remove(j)
                     ids.insert(0, j)
             provider_result_ids[provider] = ids
-
-            if settings.ELASTIC_RESULTS:
-                surplus = MAX_RESULTS - len(ids)
-                if surplus >= 0:
-                    max_results_dict[provider] = len(ids)
-                    total_surplus += surplus
-                else:
-                    # create base usage
-                    max_results_dict[provider] = MAX_RESULTS
-                    # create dict of how many extra each provider actually needs
-                    deficits[provider] = surplus * -1
-            else:
-                max_results_dict[provider] = MAX_RESULTS
-
-        if settings.ELASTIC_RESULTS:
-            while total_surplus > 0:
-                # get a list of providers with deficits for two reasons. First, to know how
-                # to divide the surplus, secondly, to iterate over rather than the deficit dict
-                # as we will be manipulating the dict in the for loop
-                beneficiaries = list(deficits.keys())
-                num_beneficiaries = len(beneficiaries)
-                # if num_beneficiaries is greater than surplus, surplus_each will be 0 because of int
-                # division in python, but total_surplus will still be > 0, resulting in infinite loop.
-                if num_beneficiaries == 0 or num_beneficiaries > total_surplus:
-                    break
-                else:
-                    surplus_payout = int(total_surplus / num_beneficiaries)
-                    for provider in beneficiaries:
-                        deficit = deficits.pop(provider)
-                        if (deficit - surplus_payout) <= 0:
-                            total_surplus -= deficit
-                            max_results_dict[provider] += surplus_payout
-                        else:
-                            total_surplus -= surplus_payout
-                            max_results_dict[provider] += surplus_payout
-                            deficits[provider] = deficit - surplus_payout
+            max_results_dict[provider] = MAX_RESULTS
 
         for provider in providers:
             try:
@@ -765,12 +714,12 @@ class Autocompleter(AutocompleterBase):
         uuid_str = str(uuid.uuid4())
         intermediate_result_key = RESULT_SET_BASE_NAME % (uuid_str,)
 
+        MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
+
         # Get the matched result IDs
         pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
-
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             keys = []
             for norm_term in norm_terms:
                 keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
@@ -785,8 +734,6 @@ class Autocompleter(AutocompleterBase):
         # Create a dict mapping provider to result IDs
         for provider in providers:
             provider_name = provider.provider_name
-
-            MAX_RESULTS = registry.get_ac_provider_setting(self.name, provider, 'MAX_RESULTS')
             exact_ids = results.pop(0)
             provider_results[provider_name] = exact_ids[:MAX_RESULTS]
 
