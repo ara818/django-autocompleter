@@ -650,7 +650,7 @@ class Autocompleter(AutocompleterBase):
         # Get an initial max/provider based on a equal share of MAX_RESULTS
         for provider in providers:
             provider_name = provider.provider_name
-            results_per_provider = round(MAX_RESULTS / len(providers))
+            results_per_provider = self.normalize_rounding(MAX_RESULTS / len(providers))
             provider_max_results[provider_name] = results_per_provider
             total_allocated_results += results_per_provider
 
@@ -853,3 +853,16 @@ class Autocompleter(AutocompleterBase):
         facet_hashes.sort()
         final_facet_hash = hash(str(facet_hashes))
         return final_facet_hash
+
+    @staticmethod
+    def normalize_rounding(value):
+        """
+        Python 2 and Python 3 handing the rounding of halves (0.5, 1.5, etc) differently.
+        Stick to Python 2 version of rounding to be consistent.
+        """
+        if not isinstance(value, (int, float)):
+            raise ValueError("Value to round must be an int or float, not %s." % type(value).__name__)
+        if round(0.5) != 1 and value % 1 == .5 and not int(value) % 2:
+            return int((round(value) + (abs(value) / value) * 1))
+        else:
+            return int(round(value))

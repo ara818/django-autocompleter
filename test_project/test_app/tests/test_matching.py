@@ -317,6 +317,17 @@ class MaxResultsMatchingTestCase(AutocompleterTestCase):
 
         registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
 
+    def test_max_results_has_hard_limit(self):
+        """
+        Suggest respects MAX_RESULTS over giving every provider at least 1 result
+        """
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 1)
+        matches = self.autocomp.suggest('a')
+        # Either stock or indicator matches is empty
+        self.assertEqual(1, len(matches['stock']) + len(matches['ind']))
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
+
 
 class FacetMatchingTestCase(AutocompleterTestCase):
     fixtures = ['stock_test_data_small.json']
