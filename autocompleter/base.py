@@ -642,18 +642,53 @@ class Autocompleter(AutocompleterBase):
 
         results = [i for i in pipe.execute() if type(i) == list]
 
-        # Mapping required to store result_ids outside of per provider loop before
-        # fetching items
-        provider_result_ids = {}
-        max_results_dict = {}
+        # Total number of results currently allocated to providers
+        total_allocated_results = 0
+        # Maximum number of results allowed per provider
+        provider_max_results = OrderedDict()
 
-        # Create a dict mapping provider to result IDs
-        # We combine the 2 different kinds of results into 1 result ID list per provider.
+        # Get an initial max/provider based on a equal share of MAX_RESULTS
         for provider in providers:
+            provider_name = provider.provider_name
+            results_per_provider = round(MAX_RESULTS / len(providers))
+            provider_max_results[provider_name] = results_per_provider
+            total_allocated_results += results_per_provider
+
+        # Due to having to round to nearest result, the maximum number of results
+        # allocated could be less/more than the max allowed... Here we adjust providers
+        # results until total allocation equals max allowed
+        diff = 1 if total_allocated_results < MAX_RESULTS else -1
+        while total_allocated_results != MAX_RESULTS:
+            for provider in providers:
+                provider_name = provider.provider_name
+                provider_max_results[provider_name] += diff
+                total_allocated_results += diff
+                if total_allocated_results == MAX_RESULTS:
+                    break
+
+        # Result IDs per provider
+        provider_result_ids = OrderedDict()
+        # Number of results we will be getting from each provider
+        provider_num_results = OrderedDict()
+        # Total pool of extra result slots
+        total_surplus = 0
+        # Number of extra result slots a provider could use
+        provider_deficits = OrderedDict()
+
+        # Create a dict mapping provider to number of result IDs available
+        # We combine the 2 different kinds of results into 1 result ID list per provider.
+        # Also keep track of number of extra result slots available when a provider does not
+        # use up its allocated slots.
+        for provider in providers:
+            provider_name = provider.provider_name
+
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
             MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
             if len(term) < MIN_LETTERS:
+                # if provider will not be used due to min_letters, put all result slots
+                # in surplus pool then continue
+                total_surplus += provider_max_results[provider_name]
                 continue
 
             ids = results.pop(0)
@@ -673,12 +708,40 @@ class Autocompleter(AutocompleterBase):
                         ids.remove(j)
                     ids.insert(0, j)
             provider_result_ids[provider] = ids
-            max_results_dict[provider] = MAX_RESULTS
+            surplus = provider_max_results[provider_name] - len(ids)
+            if surplus >= 0:
+                provider_num_results[provider_name] = len(ids)
+                total_surplus += surplus
+            else:
+                # create base usage
+                provider_num_results[provider_name] = provider_max_results[provider_name]
+                # create dict of how many extra each provider actually needs
+                provider_deficits[provider_name] = -surplus
 
+        # If there are extra result slots available, go through each provider that
+        # needs extra results, and hand them out until there are no more to give
+        while total_surplus > 0:
+            # Can happen if no provider has a deficit and the total number of results
+            # from all providers < MAX_RESULTS
+            if len(provider_deficits) == 0:
+                break
+            for provider_name in provider_deficits:
+                deficit = provider_deficits[provider_name]
+                if deficit > 0:
+                    provider_num_results[provider_name] += 1
+                    provider_deficits[provider_name] -= 1
+                    total_surplus -= 1
+
+                if total_surplus <= 0:
+                    break
+
+        # At this point we should have the final number of results we will be getting
+        # from each provider, so we get from provider and put in final result IDs dict
         for provider in providers:
+            provider_name = provider.provider_name
             try:
-                max_results = max_results_dict[provider]
-                provider_results[provider.provider_name] = provider_result_ids[provider][:max_results]
+                num_results = provider_num_results[provider_name]
+                provider_results[provider_name] = provider_result_ids[provider][:num_results]
             except KeyError:
                 continue
 
