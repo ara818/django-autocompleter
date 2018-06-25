@@ -231,16 +231,16 @@ class MultiMatchingTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches), 3)
 
         matches = self.autocomp.suggest('a')
-        self.assertEqual(len(matches['stock']), 10)
-        self.assertEqual(len(matches['ind']), 10)
+        self.assertEqual(len(matches['stock']), 6)
+        self.assertEqual(len(matches['ind']), 4)
 
     def test_min_letters_setting(self):
         """
         MIN_LETTERS is respected in multi-type search case.
         """
         matches = self.autocomp.suggest('a')
-        self.assertEqual(len(matches['stock']), 10)
-        self.assertEqual(len(matches['ind']), 10)
+        self.assertEqual(len(matches['stock']), 6)
+        self.assertEqual(len(matches['ind']), 4)
 
         setattr(auto_settings, 'MIN_LETTERS', 2)
         matches = self.autocomp.suggest('a')
@@ -253,8 +253,8 @@ class MultiMatchingTestCase(AutocompleterTestCase):
         Autocompleter/Provider specific MIN_LETTERS is respected in multi-type search case.
         """
         matches = self.autocomp.suggest('a')
-        self.assertEqual(len(matches['stock']), 10)
-        self.assertEqual(len(matches['ind']), 10)
+        self.assertEqual(len(matches['stock']), 6)
+        self.assertEqual(len(matches['ind']), 4)
 
         registry.set_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS', 2)
         registry.set_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS', 2)
@@ -264,6 +264,70 @@ class MultiMatchingTestCase(AutocompleterTestCase):
 
         registry.del_ac_provider_setting("mixed", IndicatorAutocompleteProvider, 'MIN_LETTERS')
         registry.del_ac_provider_setting("mixed", CalcAutocompleteProvider, 'MIN_LETTERS')
+
+
+class MaxResultsMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        super(MaxResultsMatchingTestCase, self).setUp()
+        self.autocomp = Autocompleter('ind_stock')
+        self.autocomp.store_all()
+
+    def test_max_results_respected(self):
+        """
+        MAX_RESULTS is respected for multi-type search case
+        """
+        # set MAX_RESULTS to an arbitrarily large number
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 100)
+
+        matches = self.autocomp.suggest('a')
+        total_matches_with_large_max_results = len(matches['stock']) + len(matches['ind'])
+        self.assertGreaterEqual(100, total_matches_with_large_max_results)
+        self.assertEqual(41, total_matches_with_large_max_results)
+
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 4)
+        matches = self.autocomp.suggest('a')
+        total_matches_with_small_max_results = len(matches['stock']) + len(matches['ind'])
+        self.assertEqual(4, total_matches_with_small_max_results)
+
+        self.assertGreater(total_matches_with_large_max_results, total_matches_with_small_max_results)
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
+
+    def test_max_results_spreads_results_evenly(self):
+        """
+        MAX_RESULTS spreads the results among providers equally
+        """
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 4)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(4, len(matches['stock']) + len(matches['ind']))
+        self.assertEqual(len(matches['stock']), len(matches['ind']))
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
+
+    def test_max_results_handles_surplus(self):
+        """
+        Suggest respects MAX_RESULTS while still dealing with surplus
+        """
+        # we know that there are 16 ind matches and 25 stock matches for 'a'
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 36)
+        matches = self.autocomp.suggest('a')
+        self.assertEqual(16, len(matches['ind']))
+        self.assertEqual(20, len(matches['stock']))
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
+
+    def test_max_results_has_hard_limit(self):
+        """
+        Suggest respects MAX_RESULTS over giving every provider at least 1 result
+        """
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 1)
+        matches = self.autocomp.suggest('a')
+        # Either stock or indicator matches is empty
+        self.assertEqual(1, len(matches['stock']) + len(matches['ind']))
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
 
 
 class FacetMatchingTestCase(AutocompleterTestCase):
