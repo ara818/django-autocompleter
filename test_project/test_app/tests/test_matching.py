@@ -284,6 +284,7 @@ class MaxResultsMatchingTestCase(AutocompleterTestCase):
         matches = self.autocomp.suggest('a')
         total_matches_with_large_max_results = len(matches['stock']) + len(matches['ind'])
         self.assertGreaterEqual(100, total_matches_with_large_max_results)
+        self.assertEqual(41, total_matches_with_large_max_results)
 
         registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 4)
         matches = self.autocomp.suggest('a')

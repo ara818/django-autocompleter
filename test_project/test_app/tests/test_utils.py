@@ -233,3 +233,23 @@ class TestFacetValidation(TestCase):
         ]
 
         self.assertFalse(SuggestView.validate_facets(no_value_in_sub_facet))
+
+
+class TestNormalizeRounding(TestCase):
+    def test_rounding_half(self):
+        """
+        Rounding a number that ends in .5 should produce a number with a greater absolute value
+        """
+        self.assertEqual(1, Autocompleter.normalize_rounding(.5))
+        self.assertEqual(2, Autocompleter.normalize_rounding(1.5))
+        self.assertEqual(-1, Autocompleter.normalize_rounding(-.5))
+        self.assertEqual(-2, Autocompleter.normalize_rounding(-1.5))
+
+    def test_rounding_works_correctly(self):
+        """
+        Rounding works correctly
+        """
+        self.assertEqual(1, Autocompleter.normalize_rounding(.51))
+        self.assertEqual(0, Autocompleter.normalize_rounding(.49))
+        self.assertEqual(-1, Autocompleter.normalize_rounding(-.51))
+        self.assertEqual(0, Autocompleter.normalize_rounding(-.49))
