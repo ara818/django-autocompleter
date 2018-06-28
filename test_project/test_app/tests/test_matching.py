@@ -318,6 +318,23 @@ class MaxResultsMatchingTestCase(AutocompleterTestCase):
 
         registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
 
+    def test_max_results_handles_deficit_less_than_surplus(self):
+        """
+        MAX_RESULTS stops trying to hand out surplus matches when provider's deficits are met
+        """
+        # Previous code would have failed on this test case because of an infinite while loop that
+        # failed to break when all provider's deficits were met. The setup requires
+        # there to be at least one provider which will have a deficit less than the total surplus.
+        # In this test case, the total surplus will be 3 (since stock has no matches) and the deficit
+        # for indicators will be 2 (since there are 5 total matches for indicators and 3 slots are
+        # reserved initially)
+        registry.set_autocompleter_setting('ind_stock', 'MAX_RESULTS', 6)
+        matches = self.autocomp.suggest('S&P')
+        self.assertEqual(5, len(matches['ind']))
+        self.assertEqual(0, len(matches['stock']))
+
+        registry.del_autocompleter_setting('ind_stock', 'MAX_RESULTS')
+
     def test_max_results_has_hard_limit(self):
         """
         Suggest respects MAX_RESULTS over giving every provider at least 1 result
