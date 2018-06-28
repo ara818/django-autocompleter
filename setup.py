@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-autocompleter',
-    version="0.7.0",
+    version="0.7.1",
     description='A redis-backed autocompletor for Django projects',
     author='Ara Anjargolian',
     author_email='ara818@gmail.com',
