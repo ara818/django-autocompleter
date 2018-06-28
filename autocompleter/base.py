@@ -721,8 +721,8 @@ class Autocompleter(AutocompleterBase):
         # If there are extra result slots available, go through each provider that
         # needs extra results, and hand them out until there are no more to give
         while total_surplus > 0:
-            # Check if there are any existing providers which need a handout, otherwise
-            # we get caught in an infinite loop
+            # Check if there are any providers that still need extra results, and if not exit the loop,
+            # else we get caught in an infinite loop
             provider_with_deficit_exists = False
             for provider_name in provider_deficits:
                 deficit = provider_deficits[provider_name]
