@@ -224,3 +224,6 @@ registry.register("indicator_aliased", IndicatorAliasedAutocompleteProvider)
 registry.register("indicator_selective", IndicatorSelectiveAutocompleteProvider)
 registry.register("metric", CalcAutocompleteProvider)
 registry.register("metric_aliased", CalcAliasedAutocompleteProvider)
+
+registry.register("facet_stock_no_facet_ind", FacetedStockAutocompleteProvider)
+registry.register("facet_stock_no_facet_ind", IndicatorAutocompleteProvider)

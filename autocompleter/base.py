@@ -538,10 +538,6 @@ class Autocompleter(AutocompleterBase):
 
         # Generate a unique identifier to be used for storing intermediate results. This is to
         # prevent redis key collisions between competing suggest / exact_suggest calls.
-        base_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
-        # If we don't end up using facets for this suggest call, we can just set the base_result_key
-        # to be equal to base_term_result_key since there was no extra manipulation to this set.
-        base_result_key = base_term_result_key
 
         facet_keys_set = set()
         if len(facets) > 0:
@@ -557,6 +553,12 @@ class Autocompleter(AutocompleterBase):
         MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
 
         for provider in providers:
+
+            base_term_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+            # If we don't end up using facets for this suggest call, we can just set the base_result_key
+            # to be equal to base_term_result_key since there was no extra manipulation to this set.
+            base_result_key = base_term_result_key
+
             provider_name = provider.provider_name
 
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
@@ -612,7 +614,6 @@ class Autocompleter(AutocompleterBase):
                 pipe.zinterstore(base_result_key, facet_result_keys, aggregate='MIN')
                 for facet_result_key in facet_result_keys:
                     pipe.delete(facet_result_key)
-                pipe.delete(base_term_result_key)
 
             pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
 
@@ -638,7 +639,9 @@ class Autocompleter(AutocompleterBase):
                 else:
                     pipe.zunionstore(base_result_key, keys, aggregate='MIN')
                 pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
-            pipe.delete(base_result_key)
+            pipe.delete(base_term_result_key)
+            if base_term_result_key != base_result_key:
+                pipe.delete(base_result_key)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
