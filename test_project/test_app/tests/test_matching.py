@@ -635,3 +635,39 @@ class FacetMatchingTestCase(AutocompleterTestCase):
         ]
         matches = self.autocomp.suggest('ch', facets=facets)
         self.assertEqual(len(matches), 2)
+
+
+class MixedFacetProvidersMatchingTestCase(AutocompleterTestCase):
+    fixtures = ['stock_test_data_small.json', 'indicator_test_data_small.json']
+
+    def setUp(self):
+        super(MixedFacetProvidersMatchingTestCase, self).setUp()
+        self.autocomp = Autocompleter('facet_stock_no_facet_ind')
+        self.autocomp.store_all()
+
+    def test_autocompleter_with_facet_and_non_facet_providers(self):
+        """
+        Autocompleter with facet and non-facet providers works correctly
+        """
+        registry.set_autocompleter_setting('facet_stock_no_facet_ind', 'MAX_RESULTS', 100)
+        facets = [
+            {
+                'type': 'and',
+                'facets': [{'key': 'sector', 'value': 'Financial Services'}]
+            }
+        ]
+        matches = self.autocomp.suggest('a')
+        facet_matches = self.autocomp.suggest('a', facets=facets)
+
+        # because we are using the faceted stock provider in the 'facet_stock_no_facet_ind' AC,
+        # we expect using facets will decrease the amount of results when searching.
+        self.assertEqual(len(matches['faceted_stock']), 25)
+        self.assertEqual(len(facet_matches['faceted_stock']), 2)
+
+        # since the indicator provider does not support facets,
+        # we expect the search results from both a facet and non-facet search to be the same.
+        self.assertEqual(len(matches['ind']), 16)
+        self.assertEqual(len(matches['ind']), len(facet_matches['ind']))
+
+        registry.del_autocompleter_setting('facet_stock_no_facet_ind', 'MAX_RESULTS')
+
