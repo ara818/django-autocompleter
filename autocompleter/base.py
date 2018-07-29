@@ -812,7 +812,7 @@ class Autocompleter(AutocompleterBase):
 
         results = self._get_results_from_ids(provider_results)
 
-        # If told to, cache the final results for CACHE_TIMEOUT secnds
+        # If told to, cache the final results for CACHE_TIMEOUT seconds
         if settings.CACHE_TIMEOUT:
             REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
         return results
@@ -830,7 +830,7 @@ class Autocompleter(AutocompleterBase):
                 pipe.hmget(key, ids)
         results = pipe.execute()
 
-        # Put them in the  provider results didct
+        # Put them in the  provider results dict
         for provider_name, ids in provider_results.items():
             if len(ids) > 0:
                 provider_results[provider_name] = \
