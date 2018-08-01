@@ -819,7 +819,7 @@ class Autocompleter(AutocompleterBase):
 
     def get_provider_result_from_id(self, provider_name, object_id):
         """
-        Given an object's `search_id`, return the corresponding data object.
+        Given a `provider_name` and `id`, return the corresponding redis payload.
         """
         results = self._get_results_from_ids({provider_name: [object_id]})
         try:

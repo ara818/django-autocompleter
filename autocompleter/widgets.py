@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from django import forms
 from django.conf import settings
 from django.db.models import ObjectDoesNotExist
@@ -45,7 +43,13 @@ class AutocompleterSelectWidget(forms.MultiWidget):
 
     Wrapper for 2 widgets:
         1. `AutocompleterWidget`: renders an <input> that acts as the search field.
-        2. `HiddenInput`: renders an <input> that holds the actual object ID / `search_id` value.
+        2. `HiddenInput`: renders an <input> that holds the actual DB value (which is some kind of GUI)
+
+
+    :autocompleter_name - `str` specify the Autocompleter to use for search.
+    :display_name_field - `str` specify field from payload to display to user when result is selected.
+    :database_field     - `str` specify field from payload to save to the DB (should be a GUI).
+    :object_resolver    - `callable` that can fetch the object using the `database_field` value.
     """
 
     def __init__(self, autocompleter_name, autocompleter_url, display_name_field,
@@ -99,8 +103,10 @@ class AutocompleterSelectWidget(forms.MultiWidget):
 
     def _get_model_provider(self, obj):
         """
-        Fetch the `ModelProvider` class from the registry. Because there is no guarantee that it
-        is unique per AC or per object_class, we take the intersection of both result sets.
+        Fetch the `AutocompleterModelProvider` class for a specific model from the registry.
+
+        Note: because there is no guarantee that a provider is unique per Autocompleter
+        or per model_class alone, we take the intersection of both result sets.
         """
         providers_by_ac = set(registry.get_all_by_autocompleter(self.autocompleter_name))
         model_providers = set(registry.get_all_by_model(obj.__class__))
