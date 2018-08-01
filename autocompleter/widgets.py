@@ -2,8 +2,9 @@ from collections import OrderedDict
 
 from django import forms
 from django.conf import settings
+from django.db.models import ObjectDoesNotExist
 
-from autocompleter import Autocompleter
+from autocompleter import Autocompleter, registry
 
 
 STATIC_PREFIX = '{static}autocompleter'.format(static=settings.STATIC_URL)
@@ -47,9 +48,13 @@ class AutocompleterSelectWidget(forms.MultiWidget):
         2. `HiddenInput`: renders an <input> that holds the actual object ID / `search_id` value.
     """
 
-    def __init__(self, autocompleter_name, autocompleter_url, display_name_field, *args, **kwargs):
+    def __init__(self, autocompleter_name, autocompleter_url, display_name_field,
+                 database_field, object_resolver=None, *args, **kwargs):
         self.autocompleter_name = autocompleter_name
         self.display_name_field = display_name_field
+        self.database_field = database_field
+        self.object_resolver = object_resolver
+
         widgets = [
             AutocompleterWidget(autocompleter_url),
             forms.HiddenInput()
@@ -58,28 +63,49 @@ class AutocompleterSelectWidget(forms.MultiWidget):
 
     def decompress(self, value):
         """
-        Decompress the field's DB value to both widgets.
-            1. `value` being the identifier, it goes to the `HiddenInput`.
-            2. using the identifier, we load the corresponding display name (or search term). The best way
-               to do so is by taking the first result from the `Autocompleter.exact_suggest`;
-               since we are using the object's unique identifier, `exact_suggest` should yield only 1 result.
+        Decompress the field's DB value to both widgets <input> fields.
 
-        If the field is empty, leave both values blank (None).
+            1. since `value` is the object identifier, we do a reverse lookup to fetch the AC
+               payload and show the `display_name_field` value.
+            2. `value` is held in the `HiddenInput` as the DB value.
+
+        returns [`display_name_field`, `db_value`]
         """
-        if value:
-            result = Autocompleter(self.autocompleter_name).exact_suggest(value)
-            try:
-                if type(result) in (OrderedDict, dict):
-                    # in the case of multiple providers, flatten our result set
-                    # to the first non-empty container and pick out the first value.
-                    ac_result = next(filter(None, result.values()))
-                    exact_match = ac_result[0]
-                else:
-                    # otherwise, simply take the first result from our container.
-                    exact_match = result[0]
-                name = exact_match.get(self.display_name_field)
-            except (StopIteration, IndexError, KeyError):
-                name = None
-            return [name, value]
+        # if DB field is empty, keep widgets blank.
+        if not value:
+            return [None, None]
 
-        return [None, None]
+        # if no `object_resolver` callable is provided, we can fall back to showing
+        # the DB value in the search field. Not ideal, but better than leaving it blank.
+        if not self.object_resolver:
+            return ['ID: {}'.format(value), value]
+
+        # use the `object_resolver` to fetch the object instance.
+        try:
+            obj = self.object_resolver(value)
+        except ObjectDoesNotExist:
+            return ['Object does not exit', value]
+
+        # Use the `obj` and the Autocompleter to find the `ModelProvider`.
+        model_provider = self._get_model_provider(obj)
+        # with the provider & object_id, we can do a direct lookup for the AC payload.
+        object_data = Autocompleter(self.autocompleter_name).get_provider_result_from_id(
+            provider_name=model_provider.provider_name,
+            object_id=model_provider(obj).get_item_id()
+        )
+        # show the `display_name_field` value in the search field.
+        name = object_data.get(self.display_name_field)
+        return [name, value]
+
+    def _get_model_provider(self, obj):
+        """
+        Fetch the `ModelProvider` class from the registry. Because there is no guarantee that it
+        is unique per AC or per object_class, we take the intersection of both result sets.
+        """
+        providers_by_ac = set(registry.get_all_by_autocompleter(self.autocompleter_name))
+        model_providers = set(registry.get_all_by_model(obj.__class__))
+        try:
+            model_provider = providers_by_ac.intersection(model_providers).pop()
+        except KeyError:
+            model_provider = None
+        return model_provider
