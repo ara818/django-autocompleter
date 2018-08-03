@@ -13,3 +13,12 @@ class Indicator(models.Model):
     name = models.CharField(max_length=200, unique=True)
     internal_name = models.CharField(max_length=200, unique=True)
     score = models.FloatField(null=True, blank=True)
+
+
+class CalcList(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+class CalcListItem(models.Model):
+    calc_list = models.ForeignKey(CalcList)
+    calc_name = models.CharField(max_length=200)

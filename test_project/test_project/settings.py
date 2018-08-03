@@ -17,12 +17,17 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'django_nose',
     'test_app',
     'autocompleter',
 ]
 
-MIDDLEWARE_CLASSES = ()
+MIDDLEWARE_CLASSES = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+]
 
 AUTOCOMPLETER_REDIS_CONNECTION = {
     'host': 'localhost',
@@ -32,7 +37,7 @@ AUTOCOMPLETER_REDIS_CONNECTION = {
 
 AUTOCOMPLETER_TEST_DATA = True
 
-ROOT_URLCONF = 'autocompleter.urls'
+ROOT_URLCONF = 'test_project.urls'
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -44,3 +49,8 @@ NOSE_ARGS = [
 ]
 
 SECRET_KEY = 'asdvdfbdgbrf076'
+
+DEBUG = True
+WSGI_APPLICATION = 'test_project.wsgi.application'
+
+STATIC_URL = '/static/'
