@@ -1,8 +1,8 @@
 from django import forms
 from django.conf import settings
-from django.db.models import ObjectDoesNotExist
+from django.core.exceptions import ImproperlyConfigured
 
-from autocompleter import Autocompleter, registry
+from autocompleter import Autocompleter, AutocompleterDictProvider, registry
 
 
 STATIC_PREFIX = '{static}autocompleter'.format(static=settings.STATIC_URL)
@@ -20,9 +20,11 @@ class AutocompleterWidget(forms.TextInput):
             'all': ('{}/css/dj.autocompleter.css'.format(STATIC_PREFIX),)
         }
 
-    def __init__(self, autocompleter_url, *args, **kwargs):
+    def __init__(self, autocompleter_url, display_name_field, database_field, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.autocompleter_url = autocompleter_url
+        self.display_name_field = display_name_field
+        self.database_field = database_field
 
     def build_attrs(self, *args, **kwargs):
         """
@@ -31,36 +33,34 @@ class AutocompleterWidget(forms.TextInput):
         attrs = super().build_attrs(*args, **kwargs)
         attrs.update({
             'data-autocompleter': '',
-            'data-autocompleter-url': self.autocompleter_url
+            'data-autocompleter-url': self.autocompleter_url,
+            'data-autocompleter-name-field': self.display_name_field,
+            'data-autocompleter-db-field': self.database_field,
         })
         return attrs
 
 
-class AutocompleterSelectWidget(forms.MultiWidget):
+class AutocompleterSelectWidgetBase(forms.MultiWidget):
     """
-    This widget renders two adjacent <input> elements that provide a clean user interface
-    for searching via the Autocompleter API & selecting the desired object.
+    This is a base class for a forms.Field widget that renders two adjacent <input> elements
+    to provide a clean user interface for searching via the Autocompleter API.
 
-    Wrapper for 2 widgets:
+    It is essentially a wrapper for 2 more granular widgets:
         1. `AutocompleterWidget`: renders an <input> that acts as the search field.
         2. `HiddenInput`: renders an <input> that holds the actual DB value (which is some kind of GUI)
 
-
-    :autocompleter_name - `str` specify the Autocompleter to use for search.
-    :display_name_field - `str` specify field from payload to display to user when result is selected.
-    :database_field     - `str` specify field from payload to save to the DB (should be a GUI).
-    :object_resolver    - `callable` that can fetch the object using the `database_field` value.
+    :autocompleter_name - `str` the Autocompleter used for search.
+    :display_name_field - `str` obj field to display to user when result is selected.
+    :database_field     - `str` obj field to save to the DB.
     """
-
     def __init__(self, autocompleter_name, autocompleter_url, display_name_field,
-                 database_field, object_resolver=None, *args, **kwargs):
+                 database_field, *args, **kwargs):
         self.autocompleter_name = autocompleter_name
         self.display_name_field = display_name_field
         self.database_field = database_field
-        self.object_resolver = object_resolver
 
         widgets = [
-            AutocompleterWidget(autocompleter_url),
+            AutocompleterWidget(autocompleter_url, display_name_field, database_field),
             forms.HiddenInput()
         ]
         super().__init__(widgets, *args, **kwargs)
@@ -68,50 +68,48 @@ class AutocompleterSelectWidget(forms.MultiWidget):
     def decompress(self, value):
         """
         Decompress the field's DB value to both widgets <input> fields.
-
-            1. since `value` is the object identifier, we do a reverse lookup to fetch the AC
-               payload and show the `display_name_field` value.
-            2. `value` is held in the `HiddenInput` as the DB value.
-
-        returns [`display_name_field`, `db_value`]
+        returns [`display_name_field`, `database_field`]
         """
-        # if DB field is empty, keep widgets blank.
         if not value:
+            # if DB field is empty, return blank values.
             return [None, None]
 
-        # if no `object_resolver` callable is provided, we can fall back to showing
-        # the DB value in the search field. Not ideal, but better than leaving it blank.
-        if not self.object_resolver:
-            return ['ID: {}'.format(value), value]
+        provider = self._get_provider()
 
-        # use the `object_resolver` to fetch the object instance.
-        try:
-            obj = self.object_resolver(value)
-        except ObjectDoesNotExist:
-            return ['Object does not exit', value]
-
-        # Use the `obj` and the Autocompleter to find the `ModelProvider`.
-        model_provider = self._get_model_provider(obj)
-        # with the provider & object_id, we can do a direct lookup for the AC payload.
         object_data = Autocompleter(self.autocompleter_name).get_provider_result_from_id(
-            provider_name=model_provider.provider_name,
-            object_id=model_provider(obj).get_item_id()
+            provider_name=provider.provider_name,
+            object_id=self._get_object_id(value, provider)
         )
+        if not object_data:
+            raise forms.ValidationError('Unable to retrieve data for "{}"'.format(value))
+
         # show the `display_name_field` value in the search field.
         name = object_data.get(self.display_name_field)
         return [name, value]
 
-    def _get_model_provider(self, obj):
-        """
-        Fetch the `AutocompleterModelProvider` class for a specific model from the registry.
+    def _get_object_id(self, value, provider):
+        raise NotImplementedError
 
-        Note: because there is no guarantee that a provider is unique per Autocompleter
-        or per model_class alone, we take the intersection of both result sets.
+    def _get_provider(self):
+        raise NotImplementedError
+
+
+class AutocompleterDictProviderSelectWidget(AutocompleterSelectWidgetBase):
+
+    def _get_object_id(self, value, provider):
         """
-        providers_by_ac = set(registry.get_all_by_autocompleter(self.autocompleter_name))
-        model_providers = set(registry.get_all_by_model(obj.__class__))
-        try:
-            model_provider = providers_by_ac.intersection(model_providers).pop()
-        except KeyError:
-            model_provider = None
-        return model_provider
+        In the case of the `AutocompleterDictProvider`, the database_field value
+        acts as the object identifier.
+        """
+        return value
+
+    def _get_provider(self):
+        providers = registry.get_all_by_autocompleter(self.autocompleter_name)
+        if not providers or len(providers) != 1:
+            raise ImproperlyConfigured('The Autocompleter used by the AutocompleterDictProviderSelectWidget '
+                                       'must have only 1 provider.')
+        provider = providers[0]
+        if not issubclass(provider, AutocompleterDictProvider):
+            raise ImproperlyConfigured('The Autocompleter used by the AutocompleterDictProviderSelectWidget '
+                                       'must be of type `AutocompleterDictProvider`.')
+        return provider
