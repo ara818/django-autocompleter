@@ -1,0 +1,18 @@
+ul.autocompleter-results-list {
+}
+
+ul.autocompleter-results-list ul {
+  margin-left: 0;
+}
+
+ul.autocompleter-results-list li.provider-name {
+  font-weight: 900;
+}
+
+ul.autocompleter-results-list li.result-item {
+  cursor: pointer;
+}
+
+ul.autocompleter-results-list li.result-item:hover{
+  background: #eeffee;
+}
