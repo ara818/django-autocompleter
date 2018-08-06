@@ -21,7 +21,7 @@ class AutocompleterWidget(forms.TextInput):
         }
 
     def __init__(self, autocompleter_url, display_name_field, database_field, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(AutocompleterWidget, self).__init__(*args, **kwargs)
         self.autocompleter_url = autocompleter_url
         self.display_name_field = display_name_field
         self.database_field = database_field
@@ -30,7 +30,7 @@ class AutocompleterWidget(forms.TextInput):
         """
         pass autocompleter values to jQuery via data-attributes
         """
-        attrs = super().build_attrs(*args, **kwargs)
+        attrs = super(AutocompleterWidget, self).build_attrs(*args, **kwargs)
         attrs.update({
             'data-autocompleter': '',
             'data-autocompleter-url': self.autocompleter_url,
@@ -64,7 +64,7 @@ class AutocompleterSelectWidgetBase(forms.MultiWidget):
             AutocompleterWidget(autocompleter_url, display_name_field, database_field),
             forms.HiddenInput()
         ]
-        super().__init__(widgets, *args, **kwargs)
+        super(AutocompleterSelectWidgetBase, self).__init__(widgets, *args, **kwargs)
 
     def decompress(self, value):
         """
