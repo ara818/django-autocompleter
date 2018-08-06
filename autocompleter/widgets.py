@@ -50,8 +50,9 @@ class AutocompleterSelectWidgetBase(forms.MultiWidget):
         2. `HiddenInput`: renders an <input> that holds the actual DB value (which is some kind of GUI)
 
     :autocompleter_name - `str` the Autocompleter used for search.
-    :display_name_field - `str` obj field to display to user when result is selected.
-    :database_field     - `str` obj field to save to the DB.
+    :autocompleter_url  - `str` the search URL for the autocompleter API.
+    :display_name_field - `str` field from payload to display to user when result is selected.
+    :database_field     - `str` field from payload to save to the DB, serving as the obj identifier.
     """
     def __init__(self, autocompleter_name, autocompleter_url, display_name_field,
                  database_field, *args, **kwargs):
