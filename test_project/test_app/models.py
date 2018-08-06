@@ -20,5 +20,5 @@ class CalcList(models.Model):
 
 
 class CalcListItem(models.Model):
-    calc_list = models.ForeignKey(CalcList)
+    calc_list = models.ForeignKey(CalcList, on_delete=models.CASCADE)
     calc_name = models.CharField(max_length=200)
