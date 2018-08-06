@@ -817,6 +817,20 @@ class Autocompleter(AutocompleterBase):
             REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
         return results
 
+    def get_provider_result_from_id(self, provider_name, object_id):
+        """
+        Given a `provider_name` and `id`, return the corresponding redis payload.
+        """
+        results = self._get_results_from_ids({provider_name: [object_id]})
+        try:
+            if isinstance(results, list):
+                result = results[0]
+            else:
+                result = list(filter(None, results.values()))[0][0]
+        except IndexError:
+            result = {}
+        return result
+
     def _get_results_from_ids(self, provider_results):
         """
         Given a dict mapping providers to results IDs, return
