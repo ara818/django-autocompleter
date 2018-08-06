@@ -1,6 +1,12 @@
 from autocompleter.fields import AutocompleterDictProviderSelectField
 from django import forms
-from django.urls import reverse_lazy
+# compatible with django 1.7 - 2.0
+try:
+    # django >= 1.10
+    from django.urls import reverse_lazy
+except ImportError:
+    # django 1.7 - 1.9
+    from django.core.urlresolvers import reverse_lazy
 
 from test_app.models import CalcListItem
 
