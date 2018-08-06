@@ -147,13 +147,10 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
 class CalcAutocompleteProvider(AutocompleterDictProvider):
     obj_dict = calc_info.calc_dicts
     provider_name = "metric"
-
     settings = {}
 
-    obj_dict = calc_info.calc_dicts
-
     def get_item_id(self):
-        return self.obj['label']
+        return self.obj['short_label']
 
     def get_term(self):
         return self.obj['label']
@@ -164,7 +161,7 @@ class CalcAutocompleteProvider(AutocompleterDictProvider):
     def get_data(self):
         return {
             'type': 'metric',
-            'id': self.obj['label'],
+            'id': self.get_item_id(),
             'score': self.obj.get('score', 1),
             'display_name': u'%s' % (self.obj['label'],),
             'search_name': u'%s' % (self.obj['label'],),
