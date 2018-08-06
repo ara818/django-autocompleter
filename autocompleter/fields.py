@@ -17,7 +17,7 @@ class AutocompleterDictProviderSelectField(forms.CharField):
         kwargs['widget'] = self.widget(
             autocompleter_name, autocompleter_url, display_name_field, database_field,
         )
-        super().__init__(*args, **kwargs)
+        super(AutocompleterDictProviderSelectField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
         """
