@@ -1,16 +1,22 @@
 ul.autocompleter-results-list {
-}
-
-ul.autocompleter-results-list ul {
-  margin-left: 0;
+  margin: 0;
+  padding: 0;
+  max-width: 600px;
 }
 
 ul.autocompleter-results-list li.provider-name {
   font-weight: 900;
 }
 
+ul.autocompleter-results-list li {
+  list-style: none;
+  padding: 5px;
+  font-size: 13px;
+}
+
 ul.autocompleter-results-list li.result-item {
   cursor: pointer;
+  border-bottom: 1px solid darkgray;
 }
 
 ul.autocompleter-results-list li.result-item:hover{
