@@ -305,7 +305,7 @@ class AutocompleterProviderBase(AutocompleterBase):
                     word_prefix += char
                     # Store prefix to obj ID mapping, with score
                     key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
-                    pipe.zadd(key, obj_id, score)
+                    pipe.zadd(key, {obj_id: score})
                     # Store autocompleter to prefix mapping so we know all prefixes
                     # of an autocompleter
                     key = PREFIX_SET_BASE_NAME % (provider_name,)
@@ -320,7 +320,7 @@ class AutocompleterProviderBase(AutocompleterBase):
                     continue
                 # Store exact term to obj ID mapping, with score
                 key = EXACT_BASE_NAME % (provider_name, norm_term,)
-                pipe.zadd(key, obj_id, score)
+                pipe.zadd(key, {obj_id: score})
 
                 # Store autocompleter to exact term mapping so we know all exact terms
                 # of an autocompleter
@@ -329,7 +329,7 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         for facet in facet_dicts:
             key = FACET_SET_BASE_NAME % (provider_name, facet['key'], facet['value'],)
-            pipe.zadd(key, obj_id, score)
+            pipe.zadd(key, {obj_id: score})
 
         # Map provider's obj_id -> data payload
         key = AUTO_BASE_NAME % (provider_name,)
@@ -759,7 +759,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
         return results
 
     def exact_suggest(self, term):
@@ -814,7 +814,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT seconds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
         return results
 
     def get_provider_result_from_id(self, provider_name, object_id):
