@@ -7,17 +7,37 @@ from autocompleter import Autocompleter
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option("--name", dest="name",
+    def add_arguments(self, parser):
+        parser.add_argument("--name",
+            action="store"
+            dest="name"
             help="Name of autocompleter to initialize. Defaults to default autocompleter name.",
-            action="store", type="string"),
-        make_option("--remove", dest="remove",
-            help="Remove all autocompleter data. Default to false.",
-            action="store_true", default=False),
-        make_option("--store", dest="store",
-            help="Store all autocompleter data. Default to false.",
-            action="store_true", default=False),
-        make_option("--clear_cache", dest="clear_cache",
+            type="string")
+        parser.add_argument("--remove",
+            action="store_true",
+            default=False,
+            dest="remove",
+            help="Remove all autocompleter data. Default to false.")
+        parser.add_argument("--store",
+            action="store_true",
+            default=False,
+            dest="store",
+            help="Store all autocompleter data. Default to false.")
+        parser.add_argument("--clear_cache",
+            action="store_true",
+            default=False,
+            dest="clear_cache",
+            help="Clear cache for autocompleter. Default to false.")
+        parser.add_argument("--skip_delete_old",
+            action="store_false",
+            default=True,
+            dest="delete_old",
+            help="Do not clear old terms from autocompleter when storing. "
+                 "Recommended only to be used with store all after remove_all otherwise orphan keys will remain.")
+
+
+    option_list = BaseCommand.option_list + (
+       make_option("--clear_cache", dest="clear_cache",
             help="Clear cache for autocompleter. Default to false.",
             action="store_true", default=False),
         make_option("--skip_delete_old", dest="delete_old",
