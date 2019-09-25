@@ -9,10 +9,10 @@ from autocompleter import Autocompleter
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--name",
-            action="store"
-            dest="name"
+            action="store",
+            dest="name",
             help="Name of autocompleter to initialize. Defaults to default autocompleter name.",
-            type="string")
+            type=str)
         parser.add_argument("--remove",
             action="store_true",
             default=False,
@@ -34,19 +34,6 @@ class Command(BaseCommand):
             dest="delete_old",
             help="Do not clear old terms from autocompleter when storing. "
                  "Recommended only to be used with store all after remove_all otherwise orphan keys will remain.")
-
-
-    option_list = BaseCommand.option_list + (
-       make_option("--clear_cache", dest="clear_cache",
-            help="Clear cache for autocompleter. Default to false.",
-            action="store_true", default=False),
-        make_option("--skip_delete_old", dest="delete_old",
-            help="Clear old terms from autocompleter.\
-            Recommended only to be used with store all after remove_all otherwise \
-            orphan keys will remain.",
-            action="store_false", default=True),
-    )
-
     help = "Store and/or remove autocompleter data"
 
     def handle(self, *args, **options):
