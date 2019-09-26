@@ -1,5 +1,5 @@
 *.pyc
 .idea/
-!.gitignore
+.vscode/
 .DS_Store
-
+!.gitignore
