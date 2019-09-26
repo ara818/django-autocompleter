@@ -670,4 +670,3 @@ class MixedFacetProvidersMatchingTestCase(AutocompleterTestCase):
         self.assertEqual(len(matches['ind']), len(facet_matches['ind']))
 
         registry.del_autocompleter_setting('facet_stock_no_facet_ind', 'MAX_RESULTS')
-
