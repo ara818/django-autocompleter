@@ -48,7 +48,7 @@ class TestFacetHash(TestCase):
                 'type': 'or',
                 'facets': [
                     {'key': 'sector', 'value': 'Technology'},
-                    {'key': 'industry', 'value': 'Software'}
+                    {'value': 'Software', 'key': 'industry'}
                 ]
             }
         ]
@@ -103,8 +103,8 @@ class TestFacetHash(TestCase):
             {
                 'type': 'or',
                 'facets': [
-                    {'key': 'sector', 'value': 'Technology'},
-                    {'key': 'industry', 'value': 'Software'}
+                    {'value': 'Technology', 'key': 'sector'},
+                    {'value': 'Software', 'key': 'industry'}
                 ]
             },
             {
@@ -127,7 +127,7 @@ class TestFacetHash(TestCase):
             {
                 'type': 'or',
                 'facets': [
-                    {'key': 'sector', 'value': 'Technology'},
+                    {'value': 'Technology', 'key': 'sector'},
                     {'key': 'industry', 'value': 'Software'}
                 ]
             },
