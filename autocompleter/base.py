@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from hashlib import sha1
 import redis
 import json
 import itertools
@@ -863,6 +864,9 @@ class Autocompleter(AutocompleterBase):
         Given an array of facet data, return a deterministic hash such that
         the ordering of keys inside the facet dicts does not matter.
         """
+        def sha1_digest(my_str):
+            return sha1(my_str.encode(encoding='UTF-8')).hexdigest()
+
         facet_hashes = []
         for facet in facets:
             sub_facet_hashes = []
@@ -870,12 +874,12 @@ class Autocompleter(AutocompleterBase):
             sub_facets = facet['facets']
             for sub_facet in sub_facets:
                 sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + str(sub_facet['value'])
-                sub_facet_hashes.append(hash(sub_facet_str))
+                sub_facet_hashes.append(sha1_digest(sub_facet_str))
             sub_facet_hashes.sort()
             facet_str = 'type:' + facet_type + 'facets:' + str(sub_facet_hashes)
-            facet_hashes.append(hash(facet_str))
+            facet_hashes.append(sha1_digest(facet_str))
         facet_hashes.sort()
-        final_facet_hash = hash(str(facet_hashes))
+        final_facet_hash = sha1_digest(str(facet_hashes))
         return final_facet_hash
 
     @staticmethod
