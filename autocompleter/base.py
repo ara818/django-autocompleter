@@ -526,7 +526,7 @@ class Autocompleter(AutocompleterBase):
         hashed_facets = self.hash_facets(facets)
         cache_key = CACHE_BASE_NAME % \
             (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS), hashed_facets)
-        if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
+        if False and settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
 
         # Get the normalized term variations we need to search for each term. A single term
@@ -542,8 +542,8 @@ class Autocompleter(AutocompleterBase):
         base_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         base_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         # Same idea as the base_result_key, but for when we are using facets in the suggest call.
-        facet_base_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
-        facet_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+        facet_final_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+        facet_final_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
 
         facet_keys_set = set()
         if len(facets) > 0:
@@ -555,8 +555,11 @@ class Autocompleter(AutocompleterBase):
         # Get the max results autocompleter setting
         MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
 
-        pipe = REDIS.pipeline()
+        # As we search, we may store a number of intermediate data items. We keep track of
+        # what we store and delete so there is nothing left over
+        keys_to_delete = set()
 
+        pipe = REDIS.pipeline()
         for provider in providers:
             provider_name = provider.provider_name
 
@@ -569,13 +572,21 @@ class Autocompleter(AutocompleterBase):
             term_result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                term_result_key = base_result_key + '.' + norm_term
-                term_result_keys.append(term_result_key)
                 keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
-                pipe.zinterstore(term_result_key, keys, aggregate='MIN')
-            pipe.zunionstore(base_result_key, term_result_keys, aggregate='MIN')
-            for term_result_key in term_result_keys:
-                pipe.delete(term_result_key)
+                if len(keys) == 1:
+                    term_result_keys.append(keys[0])
+                else:
+                    term_result_key = base_result_key + '.' + norm_term
+                    term_result_keys.append(term_result_key)
+                    keys_to_delete.add(term_result_key)
+                    pipe.zinterstore(term_result_key, keys, aggregate='MIN')
+
+            if len(term_result_keys) == 1:
+                final_result_key = term_result_keys[0]
+            else:
+                final_result_key = base_result_key
+                keys_to_delete.add(final_result_key)
+                pipe.zunionstore(final_result_key, term_result_keys, aggregate='MIN')
 
             use_facets = False
             if len(facet_keys_set) > 0:
@@ -596,26 +607,29 @@ class Autocompleter(AutocompleterBase):
                             facet_set_key = \
                                 FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
                             facet_set_keys.append(facet_set_key)
-                        facet_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
-                        if facet_type == 'and':
-                            pipe.zinterstore(facet_result_key, facet_set_keys, aggregate='MIN')
+
+                        if len(facet_set_keys) == 1:
+                            facet_result_keys.append(facet_set_keys[0])
                         else:
-                            pipe.zunionstore(facet_result_key, facet_set_keys, aggregate='MIN')
-                        facet_result_keys.append(facet_result_key)
+                            facet_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+                            facet_result_keys.append(facet_result_key)
+                            keys_to_delete.add(facet_result_key)
+                            if facet_type == 'and':
+                                pipe.zinterstore(facet_result_key, facet_set_keys, aggregate='MIN')
+                            else:
+                                pipe.zunionstore(facet_result_key, facet_set_keys, aggregate='MIN')
                     except KeyError:
                         continue
+
                 # We want to calculate the intersection of all the intermediate facet sets created so far
-                # along with the base result set. So we append the base_result_key to the list of
-                # facet_result_keys and store the intersection in the facet-dedicated set.
-                facet_result_keys.append(base_result_key)
-                pipe.zinterstore(facet_base_result_key, facet_result_keys, aggregate='MIN')
-                for facet_result_key in facet_result_keys:
-                    pipe.delete(facet_result_key)
+                # along with the final result set. So we append the final_result_key to the list of
+                # facet_result_keys and store the intersection in the faceted final result set.
+                pipe.zinterstore(facet_final_result_key, facet_result_keys + [final_result_key], aggregate='MIN')
 
             if use_facets:
-                pipe.zrange(facet_base_result_key, 0, MAX_RESULTS - 1)
+                pipe.zrange(facet_final_result_key, 0, MAX_RESULTS - 1)
             else:
-                pipe.zrange(base_result_key, 0, MAX_RESULTS - 1)
+                pipe.zrange(final_result_key, 0, MAX_RESULTS - 1)
 
             # Get exact matches
             if MOVE_EXACT_MATCHES_TO_TOP:
@@ -626,25 +640,28 @@ class Autocompleter(AutocompleterBase):
                 if len(keys) == 0:
                     continue
 
-                if use_facets:
-                    # If facets are being used for this suggest call, we need to make sure that
-                    # exact term matches don't bypass the requirement of having matching facet values.
-                    # To achieve this, we append the previous intermediate result key (which at this point will
-                    # contain all the facet matches) to the list of exact match keys and perform an intersection.
-                    keys.append(facet_base_result_key)
-                    pipe.zinterstore(facet_exact_match_key, keys, aggregate='MIN')
+                if len(keys) == 1:
+                    final_exact_match_key = keys[0]
                 else:
-                    pipe.zunionstore(base_exact_match_key, keys, aggregate='MIN')
+                    final_exact_match_key = base_exact_match_key
+                    keys_to_delete.add(final_exact_match_key)
+                    pipe.zunionstore(final_exact_match_key, keys, aggregate='MIN')
 
+                # If facets are being used for this suggest call, we need to make sure that
+                # exact term matches don't bypass the requirement of having matching facet values.
+                # To achieve this, we intersect all faceted matches (exact-and-non-exact) with
+                # all exact matches.
                 if use_facets:
-                    pipe.zrange(facet_exact_match_key, 0, MAX_RESULTS - 1)
+                    pipe.zinterstore(facet_final_exact_match_key, facet_result_keys + [final_exact_match_key],
+                                     aggregate='MIN')
+                    pipe.zrange(facet_final_exact_match_key, 0, MAX_RESULTS - 1)
                 else:
-                    pipe.zrange(base_exact_match_key, 0, MAX_RESULTS - 1)
+                    pipe.zrange(final_exact_match_key, 0, MAX_RESULTS - 1)
 
-        pipe.delete(base_result_key)
-        pipe.delete(base_exact_match_key)
-        pipe.delete(facet_base_result_key)
-        pipe.delete(facet_exact_match_key)
+        for key in keys_to_delete:
+            pipe.delete(key)
+        pipe.delete(facet_final_result_key)
+        pipe.delete(facet_final_exact_match_key)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
