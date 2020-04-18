@@ -17,14 +17,20 @@ else:
     AUTO_BASE_NAME = 'djac.%s'
 CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s.%s'
 EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
+
 PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
 PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
+
 EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
 EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
+
 TERM_MAP_BASE_NAME = AUTO_BASE_NAME + '.tm'
-RESULT_SET_BASE_NAME = 'djac.results.%s'
-FACET_SET_BASE_NAME = AUTO_BASE_NAME + '.f.%s.%s'
+
+FACET_BASE_NAME = AUTO_BASE_NAME + '.f'
+FACET_SET_BASE_NAME = FACET_BASE_NAME + '.%s.%s'
 FACET_MAP_BASE_NAME = AUTO_BASE_NAME + '.fm'
+
+RESULT_SET_BASE_NAME = 'djac.results.%s'
 
 
 class AutocompleterBase(object):
@@ -454,30 +460,48 @@ class Autocompleter(AutocompleterBase):
             # Get list of all prefixes for autocompleter
             prefix_set_name = PREFIX_SET_BASE_NAME % (provider_name,)
             prefixes = REDIS.smembers(prefix_set_name)
+            keys = [PREFIX_BASE_NAME % (provider_name, prefix.decode(),) for prefix in prefixes]
+            chunked_prefix_keys = self.chunk_list(keys, 100)
 
             # Get list of all exact match terms for autocompleter
             exact_set_name = EXACT_SET_BASE_NAME % (provider_name,)
             norm_terms = REDIS.smembers(exact_set_name)
+            keys = [EXACT_BASE_NAME % (provider_name, norm_term.decode(),) for norm_term in norm_terms]
+            chunked_norm_term_keys = self.chunk_list(keys, 100)
+
+            # Get list of facets
+            facet_base = FACET_BASE_NAME % (provider_name,)
+            keys = [facet.decode() for facet in REDIS.keys(facet_base + '.*')]
+            facet_keys = self.chunk_list(keys, 100)
 
             # Start pipeline
             pipe = REDIS.pipeline()
 
-            # For each prefix, delete sorted set
-            for prefix in prefixes:
-                key = PREFIX_BASE_NAME % (provider_name, prefix,)
-                pipe.delete(key)
+            # For each prefix, delete sorted set (in groups of 100)
+            for chunk in chunked_prefix_keys:
+                pipe.delete(*chunk)
             # Delete the set of prefixes
             pipe.delete(prefix_set_name)
 
-            # For each exact match term, deleting sorted set
-            for norm_term in norm_terms:
-                key = EXACT_BASE_NAME % (provider_name, norm_term,)
-                pipe.delete(key)
+            # For each exact match term, delete sorted set (in groups of 100
+            for chunk in chunked_norm_term_keys:
+                pipe.delete(*chunk)
             # Delete the set of exact matches
             pipe.delete(exact_set_name)
 
-            # Remove the entire obj ID to data mapping hash
+            # For each facet, delete sorted set (in groups of 100)
+            for chunk in facet_keys:
+                pipe.delete(*chunk)
+            # Delete the facet mapping
+            facet_map_name = FACET_MAP_BASE_NAME % (provider_name,)
+            pipe.delete(facet_map_name)
+
+            # Remove provider's obj_id -> data payload mapping
             key = AUTO_BASE_NAME % (provider_name,)
+            pipe.delete(key)
+
+            # Remove provider's obj_id -> norm terms mapping
+            key = TERM_MAP_BASE_NAME % (provider_name,)
             pipe.delete(key)
 
             # End pipeline
@@ -485,19 +509,23 @@ class Autocompleter(AutocompleterBase):
 
             # There is a possibility that some straggling keys have not been
             # cleaned up if their ID changed but for some reason we did not
-            # delete the old ID... Here we delete what's left, just to be safe
-            key = AUTO_BASE_NAME % (provider_name,)
-            key += '.*'
-            leftovers = REDIS.keys(key)
+            # delete the old ID... Here we delete what's left, just to be safe.
 
-            # Start pipeline
-            pipe = REDIS.pipeline()
+            # However in our controlled testing environment, we should be perfect so
+            # this clean up should not be necessary, and if it is it means something real is wrong.
+            if not settings.TEST_DATA:
+                key = AUTO_BASE_NAME % (provider_name,)
+                key += '*'
+                leftovers = REDIS.keys(key)
 
-            for i in leftovers:
-                pipe.delete(i)
+                # Start pipeline
+                pipe = REDIS.pipeline()
 
-            # End pipeline
-            pipe.execute()
+                for i in leftovers:
+                    pipe.delete(i)
+
+                # End pipeline
+                pipe.execute()
 
         # Just to be extra super clean, let's delete all cached results
         # for this autocompleter
@@ -857,6 +885,19 @@ class Autocompleter(AutocompleterBase):
 
     def _get_all_providers_by_autocompleter(self):
         return registry.get_all_by_autocompleter(self.name)
+
+    @staticmethod
+    def chunk_list(lst, chunk_size):
+        """
+        Given list, return a list of lists where each sublist is of  size chunk_size or less.
+
+        :param lst: list to break up into chunks
+        :type lst: lst
+        :param chunk_size: size of each chunk
+        :type chunk_size: int
+        """
+        for i in range(0, len(lst), chunk_size):
+            yield lst[i:i + chunk_size]
 
     @staticmethod
     def hash_facets(facets):
