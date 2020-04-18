@@ -13,8 +13,12 @@ REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
 
 if settings.TEST_DATA:
     AUTO_BASE_NAME = 'djac.test.%s'
+    RESULT_SET_BASE_NAME = 'djac.test.results.%s'
+
 else:
     AUTO_BASE_NAME = 'djac.%s'
+    RESULT_SET_BASE_NAME = 'djac.results.%s'
+
 CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s.%s'
 EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
 PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
@@ -22,7 +26,6 @@ PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
 EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
 EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
 TERM_MAP_BASE_NAME = AUTO_BASE_NAME + '.tm'
-RESULT_SET_BASE_NAME = 'djac.results.%s'
 FACET_SET_BASE_NAME = AUTO_BASE_NAME + '.f.%s.%s'
 FACET_MAP_BASE_NAME = AUTO_BASE_NAME + '.fm'
 
