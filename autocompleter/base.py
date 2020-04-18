@@ -13,8 +13,12 @@ REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
 
 if settings.TEST_DATA:
     AUTO_BASE_NAME = 'djac.test.%s'
+    RESULT_SET_BASE_NAME = 'djac.test.results.%s'
+
 else:
     AUTO_BASE_NAME = 'djac.%s'
+    RESULT_SET_BASE_NAME = 'djac.results.%s'
+
 CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s.%s'
 EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
 
