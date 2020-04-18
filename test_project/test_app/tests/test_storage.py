@@ -323,8 +323,8 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.remove_all()
         set_length = self.redis.zcard(facet_set_name)
         self.assertEqual(set_length, 0)
-        # keys = self.redis.hkeys(facet_map_name)
-        # self.assertEqual(len(keys), 0)
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 0)
 
 
 class SelectiveStoringTestCase(AutocompleterTestCase):
