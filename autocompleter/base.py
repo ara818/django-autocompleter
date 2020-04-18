@@ -546,6 +546,7 @@ class Autocompleter(AutocompleterBase):
         facet_final_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         # As we search, we may store a number of intermediate data items. We keep track of
         # what we store and delete so there is nothing left over
+        # We initialize with the base keys all of which could end up being used.
         keys_to_delete = {base_result_key, base_exact_match_key, facet_final_result_key, facet_final_exact_match_key}
 
         facet_keys_set = set()
