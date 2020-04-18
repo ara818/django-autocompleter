@@ -526,7 +526,7 @@ class Autocompleter(AutocompleterBase):
         hashed_facets = self.hash_facets(facets)
         cache_key = CACHE_BASE_NAME % \
             (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS), hashed_facets)
-        if False and settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
+        if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
 
         # Get the normalized term variations we need to search for each term. A single term
