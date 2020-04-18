@@ -574,7 +574,7 @@ class Autocompleter(AutocompleterBase):
         facet_final_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         # As we search, we may store a number of intermediate data items. We keep track of
         # what we store and delete so there is nothing left over
-        keys_to_delete = {facet_final_result_key, facet_final_exact_match_key}
+        keys_to_delete = {base_result_key, base_exact_match_key, facet_final_result_key, facet_final_exact_match_key}
 
         facet_keys_set = set()
         if len(facets) > 0:
@@ -612,7 +612,6 @@ class Autocompleter(AutocompleterBase):
                 final_result_key = term_result_keys[0]
             else:
                 final_result_key = base_result_key
-                keys_to_delete.add(final_result_key)
                 pipe.zunionstore(final_result_key, term_result_keys, aggregate='MIN')
 
             use_facets = False
@@ -671,7 +670,6 @@ class Autocompleter(AutocompleterBase):
                     final_exact_match_key = keys[0]
                 else:
                     final_exact_match_key = base_exact_match_key
-                    keys_to_delete.add(final_exact_match_key)
                     pipe.zunionstore(final_exact_match_key, keys, aggregate='MIN')
 
                 # If facets are being used for this suggest call, we need to make sure that
