@@ -544,6 +544,9 @@ class Autocompleter(AutocompleterBase):
         # Same idea as the base_result_key, but for when we are using facets in the suggest call.
         facet_final_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
         facet_final_exact_match_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
+        # As we search, we may store a number of intermediate data items. We keep track of
+        # what we store and delete so there is nothing left over
+        keys_to_delete = {facet_final_result_key, facet_final_exact_match_key}
 
         facet_keys_set = set()
         if len(facets) > 0:
@@ -554,10 +557,6 @@ class Autocompleter(AutocompleterBase):
         MOVE_EXACT_MATCHES_TO_TOP = registry.get_autocompleter_setting(self.name, 'MOVE_EXACT_MATCHES_TO_TOP')
         # Get the max results autocompleter setting
         MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
-
-        # As we search, we may store a number of intermediate data items. We keep track of
-        # what we store and delete so there is nothing left over
-        keys_to_delete = set()
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -658,10 +657,7 @@ class Autocompleter(AutocompleterBase):
                 else:
                     pipe.zrange(final_exact_match_key, 0, MAX_RESULTS - 1)
 
-        for key in keys_to_delete:
-            pipe.delete(key)
-        pipe.delete(facet_final_result_key)
-        pipe.delete(facet_final_exact_match_key)
+        pipe.delete(*keys_to_delete)
 
         results = [i for i in pipe.execute() if type(i) == list]
 
