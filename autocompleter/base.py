@@ -804,7 +804,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
         return results
 
     def exact_suggest(self, term):
@@ -859,7 +859,7 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT seconds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, self.__class__._serialize_data(results), settings.CACHE_TIMEOUT)
+            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
         return results
 
     def get_provider_result_from_id(self, provider_name, object_id):
