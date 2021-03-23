@@ -16,13 +16,14 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     services:
-      image: redis
-      # Set health checks to wait until redis has started
-      options: >-
-        --health-cmd "redis-cli ping"
-        --health-interval 10s
-        --health-timeout 5s
-        --health-retries 5
+      redis:
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     strategy:
       matrix:
         python-version: [ 2.7, 3.4, 3.5, 3.6, 3.7 ]
