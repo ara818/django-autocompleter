@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name='django-autocompleter',
-    version="0.10.0",
+    version='0.10.0',
     description='A redis-backed autocompletor for Django projects',
     author='Ara Anjargolian',
     author_email='ara818@gmail.com',
-    url='http://github.com/ara818/django-autocompleter',
+    url='http://github.com/ycharts/django-autocompleter',
     packages=['autocompleter', 'autocompleter.management', 'autocompleter.management.commands'],
     install_requires=['setuptools', 'redis'],
     classifiers=[
