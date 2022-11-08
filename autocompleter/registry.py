@@ -196,7 +196,6 @@ def add_obj_to_autocompleter(sender, instance, created, **kwargs):
     provider_classes = registry.get_all_by_model(sender)
     for provider_class in provider_classes:
         provider = provider_class(instance)
-        # TODO: Consider that this will now be called twice...
         if provider.include_item():
             provider.store()
         else:
