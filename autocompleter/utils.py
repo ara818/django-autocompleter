@@ -6,9 +6,9 @@ import itertools
 from autocompleter import settings
 
 def replace_all(string, replace=[], with_this=''):
-    '''
-    replace all items in replace with with
-    '''
+    """
+    replace all items in replace.
+    """
     for i in replace:
         string = string.replace(i, with_this)
     return string
