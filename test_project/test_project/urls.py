@@ -1,8 +1,8 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
 from django.contrib import admin
-
+from django.urls import re_path
 
 urlpatterns = [
-    url(r"^admin/", admin.site.urls),
-    url(r"", include("autocompleter.urls")),
+    re_path(r"^admin/", admin.site.urls),
+    re_path(r"", include("autocompleter.urls")),
 ]

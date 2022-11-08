@@ -18,16 +18,33 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.sites",
     "django.contrib.staticfiles",
-    "django_nose",
+    "django.contrib.messages",
     "test_app",
     "autocompleter",
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
+
+TEMPLATES = [
+    {
+        "APP_DIRS": True,
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "OPTIONS": {
+            "libraries": {},
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
+            ],
+        },
+    }
+]
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTOCOMPLETER_REDIS_CONNECTION = {
     "host": "localhost",
@@ -38,15 +55,6 @@ AUTOCOMPLETER_REDIS_CONNECTION = {
 AUTOCOMPLETER_TEST_DATA = True
 
 ROOT_URLCONF = "test_project.urls"
-
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-
-NOSE_ARGS = [
-    "--verbosity=2",
-    "--nocapture",
-    #'--with-coverage',
-    #'--cover-package=autocompleter'
-]
 
 SECRET_KEY = "asdvdfbdgbrf076"
 
