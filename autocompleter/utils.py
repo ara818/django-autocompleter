@@ -5,7 +5,8 @@ import itertools
 
 from autocompleter import settings
 
-def replace_all(string, replace=[], with_this=''):
+
+def replace_all(string, replace=[], with_this=""):
     """
     replace all items in replace.
     """
@@ -27,15 +28,15 @@ def get_normalized_term(term, replaced_chars=[]):
     8) Remove all characters that are not alphanumeric
     """
     if isinstance(term, bytes):
-        term = term.decode('utf-8')
+        term = term.decode("utf-8")
     term = term.lower()
-    term = unicodedata.normalize('NFKD', term).encode('ASCII', 'ignore').decode('utf-8')
-    term = term.replace('&', 'and')
+    term = unicodedata.normalize("NFKD", term).encode("ASCII", "ignore").decode("utf-8")
+    term = term.replace("&", "and")
     term = term.strip()
     if replaced_chars != []:
-        term = replace_all(term, replace=replaced_chars, with_this=' ')
-    term = re.sub(settings.CHARACTER_FILTER, '', term)
-    term = re.sub(r'[\s]+', ' ', term)
+        term = replace_all(term, replace=replaced_chars, with_this=" ")
+    term = re.sub(settings.CHARACTER_FILTER, "", term)
+    term = re.sub(r"[\s]+", " ", term)
     return term
 
 
@@ -48,20 +49,23 @@ def get_norm_term_variations(term):
     present_join_chars = [i for i in settings.JOIN_CHARS if i in term]
     # If none are present, we can just normalize without replacing anything, otherwise...
     if present_join_chars != []:
-        join_char_combinations = [''.join(subset) for n in range(len(present_join_chars) + 1)
-                                for subset in itertools.combinations(present_join_chars, n)]
+        join_char_combinations = [
+            "".join(subset)
+            for n in range(len(present_join_chars) + 1)
+            for subset in itertools.combinations(present_join_chars, n)
+        ]
         # Iterate through all combinations of present join characters and normalize/replace
         # with a space.
         for combo in join_char_combinations:
             norm_term = get_normalized_term(term, combo)
             # Now get rid of ALL present join characters and replace with empty string
             # So that every combination of replace x with '', y with '', x with ' ' y with '' etc is created.
-            norm_term = replace_all(norm_term, replace=present_join_chars, with_this='')
-            if norm_term not in norm_terms and norm_term.strip() != '':
+            norm_term = replace_all(norm_term, replace=present_join_chars, with_this="")
+            if norm_term not in norm_terms and norm_term.strip() != "":
                 norm_terms.append(norm_term)
     else:
         norm_term = get_normalized_term(term, [])
-        if norm_term.strip() != '':
+        if norm_term.strip() != "":
             norm_terms.append(norm_term)
     return norm_terms
 
@@ -72,7 +76,7 @@ def get_aliased_variations(term, phrase_aliases):
     return all perumations of term with possible alias phrases substituted
     """
     # We form a stack of different terms we come up with and put each new alias in
-    #then keep popping from it until the stack is empty. The stack allows us to
+    # then keep popping from it until the stack is empty. The stack allows us to
     # alias different parts of already aliased terms
     # ie. US CPI -> United Stats CPI -> United States Consumer Price Index
     term_stack = [term]
@@ -94,18 +98,24 @@ def get_aliased_variations(term, phrase_aliases):
             if phrase in phrase_aliases:
                 # First we get the index of the start/end words of the phrasein the term
                 # the alias is meant to replace
-                (aliasable_phrase_start, aliasable_phrase_end,) = phrase_map[phrase]
+                (
+                    aliasable_phrase_start,
+                    aliasable_phrase_end,
+                ) = phrase_map[phrase]
                 # If any part of the phrase meant to be replaced is itself an alias, then nevermind.
-                if term_phrase_already_aliased(aliasable_phrase_start, aliasable_phrase_end,
-                        aliased_phrase_ranges):
+                if term_phrase_already_aliased(
+                    aliasable_phrase_start, aliasable_phrase_end, aliased_phrase_ranges
+                ):
                     continue
 
                 # Grab aliases, iterate through them and do the replacing
                 phrase_alias_list = phrase_aliases[phrase]
                 for phrase_alias in phrase_alias_list:
                     term_words = term.split()
-                    term_words[aliasable_phrase_start:aliasable_phrase_end] = [phrase_alias]
-                    term_alias = ' '.join(term_words)
+                    term_words[aliasable_phrase_start:aliasable_phrase_end] = [
+                        phrase_alias
+                    ]
+                    term_alias = " ".join(term_words)
                     # If newly aliased term is not a new term, then nevermind...Else can get in endless aliasing loop
                     if term_alias in term_aliases:
                         continue
@@ -115,10 +125,16 @@ def get_aliased_variations(term, phrase_aliases):
                     # Aliased phrase ranges of this new term equals the already aliased phrase ranges
                     # of the parent term + this newly aliased phrase range
                     term_alias_phrase_ranges = copy.copy(aliased_phrase_ranges)
-                    term_alias_phrase_ranges.append((aliasable_phrase_start, aliasable_phrase_end,))
+                    term_alias_phrase_ranges.append(
+                        (
+                            aliasable_phrase_start,
+                            aliasable_phrase_end,
+                        )
+                    )
                     term_aliases[term_alias] = term_alias_phrase_ranges
 
     return list(term_aliases.keys())
+
 
 # Here we build the dict where 1 phrase can map to 1 or more aliased phrases
 def build_norm_phrase_alias_dict(phrase_alias_dict, two_way=True):
@@ -167,19 +183,26 @@ def get_phrase_indices_for_term(term):
         for j in range(1, num_words + 1):
             if i >= j:
                 continue
-            phrase = ' '.join(words[i:j])
-            phrase_map[phrase] = (i, j,)
+            phrase = " ".join(words[i:j])
+            phrase_map[phrase] = (
+                i,
+                j,
+            )
     return phrase_map
 
 
-def term_phrase_already_aliased(aliasable_phrase_start, aliasable_phrase_end,
-        aliased_phrase_ranges):
+def term_phrase_already_aliased(
+    aliasable_phrase_start, aliasable_phrase_end, aliased_phrase_ranges
+):
     """
     For the phrase range (start/end word index) that we want to alias, tell us if
     some part of the phrase has already been aliased.
     """
     for aliased_phrase_range in aliased_phrase_ranges:
-        (aliased_phrase_start, aliased_phrase_end,) = aliased_phrase_range
+        (
+            aliased_phrase_start,
+            aliased_phrase_end,
+        ) = aliased_phrase_range
         if aliasable_phrase_start >= aliased_phrase_start:
             return True
         elif aliasable_phrase_end <= aliased_phrase_end:

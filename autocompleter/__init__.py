@@ -1,13 +1,22 @@
 VERSION = (1, 0, 0)
 
 from autocompleter.registry import registry, signal_registry
-from autocompleter.base import AutocompleterBase, AutocompleterModelProvider, AutocompleterDictProvider, Autocompleter
+from autocompleter.base import (
+    AutocompleterBase,
+    AutocompleterModelProvider,
+    AutocompleterDictProvider,
+    Autocompleter,
+)
 
 from django.utils.module_loading import autodiscover_modules
 
 __all__ = [
-    'registry', 'signal_registry', 'AutocompleterBase', 'AutocompleterModelProvider',
-    'AutocompleterDictProvider', 'Autocompleter',
+    "registry",
+    "signal_registry",
+    "AutocompleterBase",
+    "AutocompleterModelProvider",
+    "AutocompleterDictProvider",
+    "Autocompleter",
 ]
 
 
@@ -17,7 +26,7 @@ def autodiscover():
     not present.
     NOTE: autodiscover was copied from django.contrib.admin autodiscover
     """
-    autodiscover_modules('autocompleters')
+    autodiscover_modules("autocompleters")
 
 
-default_app_config = 'autocompleter.apps.AutocompleterConfig'
+default_app_config = "autocompleter.apps.AutocompleterConfig"

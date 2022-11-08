@@ -16,14 +16,14 @@ class SuggestView(View):
                 facets = request.GET[settings.FACET_PARAMETER_NAME]
                 facets = json.loads(facets)
                 if not self.validate_facets(facets):
-                    return HttpResponseBadRequest('Malformed facet parameter.')
+                    return HttpResponseBadRequest("Malformed facet parameter.")
                 results = ac.suggest(term, facets=facets)
             else:
                 results = ac.suggest(term)
 
             json_response = json.dumps(results)
-            return HttpResponse(json_response, content_type='application/json')
-        return HttpResponseServerError('Search parameter not found.')
+            return HttpResponse(json_response, content_type="application/json")
+        return HttpResponseServerError("Search parameter not found.")
 
     @staticmethod
     def validate_facets(facets):
@@ -33,15 +33,15 @@ class SuggestView(View):
         """
         for facet in facets:
             try:
-                facet_type = facet['type']
-                if facet_type not in ['and', 'or']:
+                facet_type = facet["type"]
+                if facet_type not in ["and", "or"]:
                     return False
-                sub_facets = facet['facets']
+                sub_facets = facet["facets"]
                 if len(sub_facets) == 0:
                     return False
                 for sub_facet in sub_facets:
-                    sub_facet['key']
-                    sub_facet['value']
+                    sub_facet["key"]
+                    sub_facet["value"]
             except (KeyError, TypeError):
                 return False
         return True
@@ -55,5 +55,5 @@ class ExactSuggestView(View):
             results = ac.exact_suggest(term)
 
             json_response = json.dumps(results)
-            return HttpResponse(json_response, content_type='application/json')
-        return HttpResponseServerError('Search parameter not found.')
+            return HttpResponse(json_response, content_type="application/json")
+        return HttpResponseServerError("Search parameter not found.")

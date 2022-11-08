@@ -23,7 +23,7 @@ class AutocompleterRegistry(object):
         if ac_name not in self._providers_by_ac:
             self._providers_by_ac[ac_name] = []
             self._ac_settings[ac_name] = {}
-        if getattr(provider, 'model', None) is not None:
+        if getattr(provider, "model", None) is not None:
             if provider.model not in self._providers_by_model:
                 self._providers_by_model[provider.model] = []
             if provider not in self._providers_by_model[provider.model]:
@@ -32,7 +32,10 @@ class AutocompleterRegistry(object):
         if provider not in self._providers_by_ac[ac_name]:
             self._providers_by_ac[ac_name].append(provider)
 
-        combined_name = "%s%s" % (ac_name, provider,)
+        combined_name = "%s%s" % (
+            ac_name,
+            provider,
+        )
         # Note: the reason we default ac_provider_settings to None, then set to a dict is when we had
         # ac_provider_settings default to {} it was a reference to the same dict so when a setting
         # for one AC/provider was set, it was set for all AC/provider pairs.
@@ -46,15 +49,22 @@ class AutocompleterRegistry(object):
         """
         if provider is None:
             return
-        if ac_name in self._providers_by_ac and \
-                provider in self._providers_by_ac[ac_name]:
+        if (
+            ac_name in self._providers_by_ac
+            and provider in self._providers_by_ac[ac_name]
+        ):
             self._providers_by_ac[ac_name].remove(provider)
-        if getattr(provider, 'model', None) != None:
-            if provider.model in self._providers_by_model and \
-                    provider in self._providers_by_model[provider.model]:
+        if getattr(provider, "model", None) != None:
+            if (
+                provider.model in self._providers_by_model
+                and provider in self._providers_by_model[provider.model]
+            ):
                 self._providers_by_model[provider.model].remove(provider)
 
-        combined_name = "%s%s" % (ac_name, provider,)
+        combined_name = "%s%s" % (
+            ac_name,
+            provider,
+        )
         del self._ac_provider_settings[combined_name]
 
     def get_all_by_autocompleter(self, ac_name):
@@ -99,7 +109,7 @@ class AutocompleterRegistry(object):
         """
         # Provider specific version
         try:
-            provider_settings = getattr(provider, 'settings')
+            provider_settings = getattr(provider, "settings")
             return provider_settings[setting_name]
         except (AttributeError, KeyError):
             return getattr(settings, setting_name)
@@ -111,9 +121,9 @@ class AutocompleterRegistry(object):
         post registration so we can assure setting overriding works
         """
         try:
-            provider_settings = getattr(provider, 'settings')
+            provider_settings = getattr(provider, "settings")
         except AttributeError:
-            setattr(provider, 'settings', {})
+            setattr(provider, "settings", {})
             provider.settings[setting_name] = setting_value
 
     def del_provider_setting(self, provider, setting_name):
@@ -123,8 +133,8 @@ class AutocompleterRegistry(object):
         post registration so we can assure setting overriding works
         """
         try:
-            provider_settings = getattr(provider, 'settings')
-            del(provider_settings[setting_name])
+            provider_settings = getattr(provider, "settings")
+            del provider_settings[setting_name]
         except (AttributeError, KeyError):
             return
 
@@ -135,13 +145,16 @@ class AutocompleterRegistry(object):
         If that doesn't eixst, fall back to the global version of the setting.
         """
         # AC/Provider specific version
-        combined_name = "%s%s" % (ac_name, provider,)
+        combined_name = "%s%s" % (
+            ac_name,
+            provider,
+        )
         if setting_name in self._ac_provider_settings[combined_name]:
             return self._ac_provider_settings[combined_name][setting_name]
         # Provider specific version
         try:
-            provider_settings = getattr(provider, 'settings')
-            setting_value = provider_settings['setting_name']
+            provider_settings = getattr(provider, "settings")
+            setting_value = provider_settings["setting_name"]
             return setting_value
         except (KeyError, AttributeError):
             # Global version
@@ -153,7 +166,10 @@ class AutocompleterRegistry(object):
         Note: This is probably only be used by the test suite to test override settings
         post registration so we can assure setting overriding works
         """
-        combined_name = "%s%s" % (ac_name, provider,)
+        combined_name = "%s%s" % (
+            ac_name,
+            provider,
+        )
         self._ac_provider_settings[combined_name][setting_name] = setting_value
 
     def del_ac_provider_setting(self, ac_name, provider, setting_name):
@@ -162,7 +178,10 @@ class AutocompleterRegistry(object):
         Note: This is probably only be used by the test suite to test override settings
         post registration so we can assure setting overriding works
         """
-        combined_name = "%s%s" % (ac_name, provider,)
+        combined_name = "%s%s" % (
+            ac_name,
+            provider,
+        )
         if setting_name in self._ac_provider_settings[combined_name]:
             del self._ac_provider_settings[combined_name][setting_name]
 
@@ -197,15 +216,28 @@ def remove_obj_from_autocompleter(sender, instance, **kwargs):
 
 class AutocompleterSignalRegistry(object):
     def register(self, model):
-        post_save.connect(add_obj_to_autocompleter, sender=model,
-            dispatch_uid='autocompleter.%s.add' % (model))
-        post_delete.connect(remove_obj_from_autocompleter,
-            sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
+        post_save.connect(
+            add_obj_to_autocompleter,
+            sender=model,
+            dispatch_uid="autocompleter.%s.add" % (model),
+        )
+        post_delete.connect(
+            remove_obj_from_autocompleter,
+            sender=model,
+            dispatch_uid="autocompleter.%s.remove" % (model),
+        )
 
     def unregister(self, model):
-        post_save.disconnect(add_obj_to_autocompleter,
-            sender=model, dispatch_uid='autocompleter.%s.add' % (model))
-        post_delete.disconnect(remove_obj_from_autocompleter,
-            sender=model, dispatch_uid='autocompleter.%s.remove' % (model))
+        post_save.disconnect(
+            add_obj_to_autocompleter,
+            sender=model,
+            dispatch_uid="autocompleter.%s.add" % (model),
+        )
+        post_delete.disconnect(
+            remove_obj_from_autocompleter,
+            sender=model,
+            dispatch_uid="autocompleter.%s.remove" % (model),
+        )
+
 
 signal_registry = AutocompleterSignalRegistry()

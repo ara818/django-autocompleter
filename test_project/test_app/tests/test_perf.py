@@ -7,7 +7,7 @@ from autocompleter import settings as auto_settings
 
 
 class MultiMatchingPerfTestCase(AutocompleterTestCase):
-    fixtures = ['stock_test_data.json', 'indicator_test_data.json']
+    fixtures = ["stock_test_data.json", "indicator_test_data.json"]
     num_iterations = 1000
 
     def setUp(self):
@@ -22,21 +22,21 @@ class MultiMatchingPerfTestCase(AutocompleterTestCase):
         """
         Matching is fast
         """
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', True)
-        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        setattr(auto_settings, "MATCH_OUT_OF_ORDER_WORDS", True)
+        setattr(auto_settings, "MOVE_EXACT_MATCHES_TO_TOP", True)
 
         for i in range(1, self.num_iterations):
-            self.autocomp.suggest('ma')
+            self.autocomp.suggest("ma")
 
         for i in range(1, self.num_iterations):
-            self.autocomp.suggest('price consumer')
+            self.autocomp.suggest("price consumer")
 
         for i in range(1, self.num_iterations):
-            self.autocomp.suggest('a')
+            self.autocomp.suggest("a")
 
         for i in range(1, self.num_iterations):
-            self.autocomp.suggest('non revolving')
+            self.autocomp.suggest("non revolving")
 
         # Must set the setting back to where it was as it will persist
-        setattr(auto_settings, 'MATCH_OUT_OF_ORDER_WORDS', False)
-        setattr(auto_settings, 'MOVE_EXACT_MATCHES_TO_TOP', True)
+        setattr(auto_settings, "MATCH_OUT_OF_ORDER_WORDS", False)
+        setattr(auto_settings, "MOVE_EXACT_MATCHES_TO_TOP", True)

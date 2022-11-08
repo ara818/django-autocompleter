@@ -7,34 +7,36 @@ import uuid
 
 from autocompleter import registry, settings, utils
 
-REDIS = redis.Redis(host=settings.REDIS_CONNECTION['host'],
-    port=settings.REDIS_CONNECTION['port'],
-    db=settings.REDIS_CONNECTION['db'])
+REDIS = redis.Redis(
+    host=settings.REDIS_CONNECTION["host"],
+    port=settings.REDIS_CONNECTION["port"],
+    db=settings.REDIS_CONNECTION["db"],
+)
 
 if settings.TEST_DATA:
-    AUTO_BASE_NAME = 'djac.test.%s'
-    RESULT_SET_BASE_NAME = 'djac.test.results.%s'
+    AUTO_BASE_NAME = "djac.test.%s"
+    RESULT_SET_BASE_NAME = "djac.test.results.%s"
 
 else:
-    AUTO_BASE_NAME = 'djac.%s'
-    RESULT_SET_BASE_NAME = 'djac.results.%s'
+    AUTO_BASE_NAME = "djac.%s"
+    RESULT_SET_BASE_NAME = "djac.results.%s"
 
-CACHE_BASE_NAME = AUTO_BASE_NAME + '.c.%s.%s'
-EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + '.ce.%s'
+CACHE_BASE_NAME = AUTO_BASE_NAME + ".c.%s.%s"
+EXACT_CACHE_BASE_NAME = AUTO_BASE_NAME + ".ce.%s"
 
-PREFIX_BASE_NAME = AUTO_BASE_NAME + '.p.%s'
-PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + '.ps'
+PREFIX_BASE_NAME = AUTO_BASE_NAME + ".p.%s"
+PREFIX_SET_BASE_NAME = AUTO_BASE_NAME + ".ps"
 
-EXACT_BASE_NAME = AUTO_BASE_NAME + '.e.%s'
-EXACT_SET_BASE_NAME = AUTO_BASE_NAME + '.es'
+EXACT_BASE_NAME = AUTO_BASE_NAME + ".e.%s"
+EXACT_SET_BASE_NAME = AUTO_BASE_NAME + ".es"
 
-TERM_MAP_BASE_NAME = AUTO_BASE_NAME + '.tm'
+TERM_MAP_BASE_NAME = AUTO_BASE_NAME + ".tm"
 
-FACET_BASE_NAME = AUTO_BASE_NAME + '.f'
-FACET_SET_BASE_NAME = FACET_BASE_NAME + '.%s.%s'
-FACET_MAP_BASE_NAME = AUTO_BASE_NAME + '.fm'
+FACET_BASE_NAME = AUTO_BASE_NAME + ".f"
+FACET_SET_BASE_NAME = FACET_BASE_NAME + ".%s.%s"
+FACET_MAP_BASE_NAME = AUTO_BASE_NAME + ".fm"
 
-RESULT_SET_BASE_NAME = 'djac.results.%s'
+RESULT_SET_BASE_NAME = "djac.results.%s"
 
 
 class AutocompleterBase(object):
@@ -44,7 +46,7 @@ class AutocompleterBase(object):
 
     @classmethod
     def _deserialize_data(cls, raw):
-        return json.loads(raw.decode('utf-8'))
+        return json.loads(raw.decode("utf-8"))
 
 
 class AutocompleterProviderBase(AutocompleterBase):
@@ -76,7 +78,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         try:
             score = 1 / float(score)
         except ZeroDivisionError:
-            score = float('inf')
+            score = float("inf")
         return score
 
     def get_terms(self):
@@ -101,8 +103,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         phrase_aliases = cls.get_norm_phrase_aliases()
         if phrase_aliases is not None:
             for norm_term in norm_terms:
-                norm_terms_with_variations = norm_terms_with_variations + \
-                    utils.get_aliased_variations(norm_term, phrase_aliases)
+                norm_terms_with_variations = (
+                    norm_terms_with_variations
+                    + utils.get_aliased_variations(norm_term, phrase_aliases)
+                )
 
         return norm_terms_with_variations
 
@@ -139,9 +143,13 @@ class AutocompleterProviderBase(AutocompleterBase):
         if cls._phrase_aliases is not None:
             return cls._phrase_aliases
 
-        norm_phrase_aliases = utils.build_norm_phrase_alias_dict(cls.get_phrase_aliases())
+        norm_phrase_aliases = utils.build_norm_phrase_alias_dict(
+            cls.get_phrase_aliases()
+        )
         one_way_phrase_aliases = cls.get_one_way_phrase_aliases()
-        one_way_norm_phrase_aliases = utils.build_norm_phrase_alias_dict(one_way_phrase_aliases, two_way=False)
+        one_way_norm_phrase_aliases = utils.build_norm_phrase_alias_dict(
+            one_way_phrase_aliases, two_way=False
+        )
 
         norm_phrase_aliases.update(one_way_norm_phrase_aliases)
         cls._phrase_aliases = norm_phrase_aliases
@@ -181,9 +189,13 @@ class AutocompleterProviderBase(AutocompleterBase):
         # Remove old facets from the corresponding facet sorted set containing scores
         for facet in old_facets:
             try:
-                facet_name = facet['key']
-                facet_value = facet['value']
-                facet_set_name = FACET_SET_BASE_NAME % (provider_name, facet_name, facet_value,)
+                facet_name = facet["key"]
+                facet_value = facet["value"]
+                facet_set_name = FACET_SET_BASE_NAME % (
+                    provider_name,
+                    facet_name,
+                    facet_value,
+                )
                 pipe.zrem(facet_set_name, obj_id)
             except KeyError:
                 continue
@@ -204,12 +216,15 @@ class AutocompleterProviderBase(AutocompleterBase):
         pipe = REDIS.pipeline()
         # Processes prefixes of object, removing object ID from sorted sets
         for norm_term in old_norm_terms:
-            norm_words = norm_term.split(' ')
+            norm_words = norm_term.split(" ")
             for norm_word in norm_words:
-                word_prefix = ''
+                word_prefix = ""
                 for char in norm_word:
                     word_prefix += char
-                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
+                    key = PREFIX_BASE_NAME % (
+                        provider_name,
+                        word_prefix,
+                    )
                     pipe.zrem(key, obj_id)
 
                     key = PREFIX_SET_BASE_NAME % (provider_name,)
@@ -218,7 +233,10 @@ class AutocompleterProviderBase(AutocompleterBase):
         # Process normalized terms of object, removing object ID from a sorted set
         # representing exact matches
         for norm_term in old_norm_terms:
-            key = EXACT_BASE_NAME % (provider_name, norm_term,)
+            key = EXACT_BASE_NAME % (
+                provider_name,
+                norm_term,
+            )
             pipe.zrem(key, obj_id)
 
             key = EXACT_SET_BASE_NAME % (provider_name,)
@@ -275,7 +293,7 @@ class AutocompleterProviderBase(AutocompleterBase):
         facet_dicts = []
         for facet in facets:
             try:
-                facet_dicts.append({'key': facet, 'value': data[facet]})
+                facet_dicts.append({"key": facet, "value": data[facet]})
             except KeyError:
                 continue
 
@@ -307,13 +325,16 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         # Processes prefixes of object, placing object ID in sorted sets
         for norm_term in norm_terms:
-            norm_words = norm_term.split(' ')
+            norm_words = norm_term.split(" ")
             for norm_word in norm_words:
-                word_prefix = ''
+                word_prefix = ""
                 for char in norm_word:
                     word_prefix += char
                     # Store prefix to obj ID mapping, with score
-                    key = PREFIX_BASE_NAME % (provider_name, word_prefix,)
+                    key = PREFIX_BASE_NAME % (
+                        provider_name,
+                        word_prefix,
+                    )
                     pipe.zadd(key, {obj_id: score})
                     # Store autocompleter to prefix mapping so we know all prefixes
                     # of an autocompleter
@@ -322,13 +343,18 @@ class AutocompleterProviderBase(AutocompleterBase):
 
         # Process normalized term of object, placing object ID in a sorted set
         # representing exact matches
-        max_exact_match_words = registry.get_provider_setting(self, 'MAX_EXACT_MATCH_WORDS')
+        max_exact_match_words = registry.get_provider_setting(
+            self, "MAX_EXACT_MATCH_WORDS"
+        )
         if max_exact_match_words > 0:
             for norm_term in norm_terms:
-                if len(norm_term.split(' ')) > max_exact_match_words:
+                if len(norm_term.split(" ")) > max_exact_match_words:
                     continue
                 # Store exact term to obj ID mapping, with score
-                key = EXACT_BASE_NAME % (provider_name, norm_term,)
+                key = EXACT_BASE_NAME % (
+                    provider_name,
+                    norm_term,
+                )
                 pipe.zadd(key, {obj_id: score})
 
                 # Store autocompleter to exact term mapping so we know all exact terms
@@ -337,7 +363,11 @@ class AutocompleterProviderBase(AutocompleterBase):
                 pipe.sadd(key, norm_term)
 
         for facet in facet_dicts:
-            key = FACET_SET_BASE_NAME % (provider_name, facet['key'], facet['value'],)
+            key = FACET_SET_BASE_NAME % (
+                provider_name,
+                facet["key"],
+                facet["value"],
+            )
             pipe.zadd(key, {obj_id: score})
 
         # Map provider's obj_id -> data payload
@@ -432,6 +462,7 @@ class Autocompleter(AutocompleterBase):
     """
     Autocompleter class
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -449,7 +480,6 @@ class Autocompleter(AutocompleterBase):
                 if provider.include_item():
                     provider.store(delete_old=delete_old)
 
-
     def remove_all(self):
         """
         Remove all objects for a given autocompleter.
@@ -465,18 +495,32 @@ class Autocompleter(AutocompleterBase):
             # Get list of all prefixes for autocompleter
             prefix_set_name = PREFIX_SET_BASE_NAME % (provider_name,)
             prefixes = REDIS.smembers(prefix_set_name)
-            keys = [PREFIX_BASE_NAME % (provider_name, prefix.decode(),) for prefix in prefixes]
+            keys = [
+                PREFIX_BASE_NAME
+                % (
+                    provider_name,
+                    prefix.decode(),
+                )
+                for prefix in prefixes
+            ]
             chunked_prefix_keys = self.chunk_list(keys, 100)
 
             # Get list of all exact match terms for autocompleter
             exact_set_name = EXACT_SET_BASE_NAME % (provider_name,)
             norm_terms = REDIS.smembers(exact_set_name)
-            keys = [EXACT_BASE_NAME % (provider_name, norm_term.decode(),) for norm_term in norm_terms]
+            keys = [
+                EXACT_BASE_NAME
+                % (
+                    provider_name,
+                    norm_term.decode(),
+                )
+                for norm_term in norm_terms
+            ]
             chunked_norm_term_keys = self.chunk_list(keys, 100)
 
             # Get list of facets
             facet_base = FACET_BASE_NAME % (provider_name,)
-            keys = [facet.decode() for facet in REDIS.keys(facet_base + '.*')]
+            keys = [facet.decode() for facet in REDIS.keys(facet_base + ".*")]
             facet_keys = self.chunk_list(keys, 100)
 
             # Start pipeline
@@ -520,7 +564,7 @@ class Autocompleter(AutocompleterBase):
             # this clean up should not be necessary, and if it is it means something real is wrong.
             if not settings.TEST_DATA:
                 key = AUTO_BASE_NAME % (provider_name,)
-                key += '*'
+                key += "*"
                 leftovers = REDIS.keys(key)
 
                 # Start pipeline
@@ -540,8 +584,11 @@ class Autocompleter(AutocompleterBase):
         """
         Clear cache
         """
-        cache_key = CACHE_BASE_NAME % (self.name, '*', '*')
-        exact_cache_key = EXACT_CACHE_BASE_NAME % (self.name, '*',)
+        cache_key = CACHE_BASE_NAME % (self.name, "*", "*")
+        exact_cache_key = EXACT_CACHE_BASE_NAME % (
+            self.name,
+            "*",
+        )
 
         keys = REDIS.keys(cache_key) + REDIS.keys(exact_cache_key)
         if len(keys) > 0:
@@ -557,8 +604,11 @@ class Autocompleter(AutocompleterBase):
 
         # If we have a cached version of the search results available, return it!
         hashed_facets = self.hash_facets(facets)
-        cache_key = CACHE_BASE_NAME % \
-            (self.name, utils.get_normalized_term(term, settings.JOIN_CHARS), hashed_facets)
+        cache_key = CACHE_BASE_NAME % (
+            self.name,
+            utils.get_normalized_term(term, settings.JOIN_CHARS),
+            hashed_facets,
+        )
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
 
@@ -580,17 +630,26 @@ class Autocompleter(AutocompleterBase):
         # As we search, we may store a number of intermediate data items. We keep track of
         # what we store and delete so there is nothing left over
         # We initialize with the base keys all of which could end up being used.
-        keys_to_delete = {base_result_key, base_exact_match_key, facet_final_result_key, facet_final_exact_match_key}
+        keys_to_delete = {
+            base_result_key,
+            base_exact_match_key,
+            facet_final_result_key,
+            facet_final_exact_match_key,
+        }
 
         facet_keys_set = set()
         if len(facets) > 0:
             # we use from_iterable to flatten the list comprehension into a single list
-            sub_facets = itertools.chain.from_iterable([facet['facets'] for facet in facets])
-            facet_keys_set = set([sub_facet['key'] for sub_facet in sub_facets])
+            sub_facets = itertools.chain.from_iterable(
+                [facet["facets"] for facet in facets]
+            )
+            facet_keys_set = set([sub_facet["key"] for sub_facet in sub_facets])
 
-        MOVE_EXACT_MATCHES_TO_TOP = registry.get_autocompleter_setting(self.name, 'MOVE_EXACT_MATCHES_TO_TOP')
+        MOVE_EXACT_MATCHES_TO_TOP = registry.get_autocompleter_setting(
+            self.name, "MOVE_EXACT_MATCHES_TO_TOP"
+        )
         # Get the max results autocompleter setting
-        MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
+        MAX_RESULTS = registry.get_autocompleter_setting(self.name, "MAX_RESULTS")
 
         pipe = REDIS.pipeline()
         for provider in providers:
@@ -598,27 +657,36 @@ class Autocompleter(AutocompleterBase):
 
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
-            MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
+            MIN_LETTERS = registry.get_ac_provider_setting(
+                self.name, provider, "MIN_LETTERS"
+            )
             if len(term) < MIN_LETTERS:
                 continue
 
             term_result_keys = []
             for norm_term in norm_terms:
                 norm_words = norm_term.split()
-                keys = [PREFIX_BASE_NAME % (provider_name, norm_word,) for norm_word in norm_words]
+                keys = [
+                    PREFIX_BASE_NAME
+                    % (
+                        provider_name,
+                        norm_word,
+                    )
+                    for norm_word in norm_words
+                ]
                 if len(keys) == 1:
                     term_result_keys.append(keys[0])
                 else:
-                    term_result_key = base_result_key + '.' + norm_term
+                    term_result_key = base_result_key + "." + norm_term
                     term_result_keys.append(term_result_key)
                     keys_to_delete.add(term_result_key)
-                    pipe.zinterstore(term_result_key, keys, aggregate='MIN')
+                    pipe.zinterstore(term_result_key, keys, aggregate="MIN")
 
             if len(term_result_keys) == 1:
                 final_result_key = term_result_keys[0]
             else:
                 final_result_key = base_result_key
-                pipe.zunionstore(final_result_key, term_result_keys, aggregate='MIN')
+                pipe.zunionstore(final_result_key, term_result_keys, aggregate="MIN")
 
             use_facets = False
             if len(facet_keys_set) > 0:
@@ -630,14 +698,17 @@ class Autocompleter(AutocompleterBase):
                 facet_result_keys = []
                 for facet in facets:
                     try:
-                        facet_type = facet['type']
-                        if facet_type not in ['and', 'or']:
+                        facet_type = facet["type"]
+                        if facet_type not in ["and", "or"]:
                             continue
-                        facet_list = facet['facets']
+                        facet_list = facet["facets"]
                         facet_set_keys = []
                         for facet_dict in facet_list:
-                            facet_set_key = \
-                                FACET_SET_BASE_NAME % (provider_name, facet_dict['key'], facet_dict['value'],)
+                            facet_set_key = FACET_SET_BASE_NAME % (
+                                provider_name,
+                                facet_dict["key"],
+                                facet_dict["value"],
+                            )
                             facet_set_keys.append(facet_set_key)
 
                         if len(facet_set_keys) == 1:
@@ -646,17 +717,25 @@ class Autocompleter(AutocompleterBase):
                             facet_result_key = RESULT_SET_BASE_NAME % str(uuid.uuid4())
                             facet_result_keys.append(facet_result_key)
                             keys_to_delete.add(facet_result_key)
-                            if facet_type == 'and':
-                                pipe.zinterstore(facet_result_key, facet_set_keys, aggregate='MIN')
+                            if facet_type == "and":
+                                pipe.zinterstore(
+                                    facet_result_key, facet_set_keys, aggregate="MIN"
+                                )
                             else:
-                                pipe.zunionstore(facet_result_key, facet_set_keys, aggregate='MIN')
+                                pipe.zunionstore(
+                                    facet_result_key, facet_set_keys, aggregate="MIN"
+                                )
                     except KeyError:
                         continue
 
                 # We want to calculate the intersection of all the intermediate facet sets created so far
                 # along with the final result set. So we append the final_result_key to the list of
                 # facet_result_keys and store the intersection in the faceted final result set.
-                pipe.zinterstore(facet_final_result_key, facet_result_keys + [final_result_key], aggregate='MIN')
+                pipe.zinterstore(
+                    facet_final_result_key,
+                    facet_result_keys + [final_result_key],
+                    aggregate="MIN",
+                )
 
             if use_facets:
                 pipe.zrange(facet_final_result_key, 0, MAX_RESULTS - 1)
@@ -667,7 +746,13 @@ class Autocompleter(AutocompleterBase):
             if MOVE_EXACT_MATCHES_TO_TOP:
                 keys = []
                 for norm_term in norm_terms:
-                    keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+                    keys.append(
+                        EXACT_BASE_NAME
+                        % (
+                            provider_name,
+                            norm_term,
+                        )
+                    )
                 # Do not attempt zunionstore on empty list because redis errors out.
                 if len(keys) == 0:
                     continue
@@ -676,15 +761,18 @@ class Autocompleter(AutocompleterBase):
                     final_exact_match_key = keys[0]
                 else:
                     final_exact_match_key = base_exact_match_key
-                    pipe.zunionstore(final_exact_match_key, keys, aggregate='MIN')
+                    pipe.zunionstore(final_exact_match_key, keys, aggregate="MIN")
 
                 # If facets are being used for this suggest call, we need to make sure that
                 # exact term matches don't bypass the requirement of having matching facet values.
                 # To achieve this, we intersect all faceted matches (exact-and-non-exact) with
                 # all exact matches.
                 if use_facets:
-                    pipe.zinterstore(facet_final_exact_match_key, facet_result_keys + [final_exact_match_key],
-                                     aggregate='MIN')
+                    pipe.zinterstore(
+                        facet_final_exact_match_key,
+                        facet_result_keys + [final_exact_match_key],
+                        aggregate="MIN",
+                    )
                     pipe.zrange(facet_final_exact_match_key, 0, MAX_RESULTS - 1)
                 else:
                     pipe.zrange(final_exact_match_key, 0, MAX_RESULTS - 1)
@@ -735,7 +823,9 @@ class Autocompleter(AutocompleterBase):
 
             # If the total length of the term is less than MIN_LETTERS allowed, then don't search
             # the provider for this term
-            MIN_LETTERS = registry.get_ac_provider_setting(self.name, provider, 'MIN_LETTERS')
+            MIN_LETTERS = registry.get_ac_provider_setting(
+                self.name, provider, "MIN_LETTERS"
+            )
             if len(term) < MIN_LETTERS:
                 # if provider will not be used due to min_letters, put all result slots
                 # in surplus pool then continue
@@ -765,7 +855,9 @@ class Autocompleter(AutocompleterBase):
                 total_surplus += surplus
             else:
                 # create base usage
-                provider_num_results[provider_name] = provider_max_results[provider_name]
+                provider_num_results[provider_name] = provider_max_results[
+                    provider_name
+                ]
                 # create dict of how many extra each provider actually needs
                 provider_deficits[provider_name] = -surplus
 
@@ -797,7 +889,9 @@ class Autocompleter(AutocompleterBase):
             provider_name = provider.provider_name
             try:
                 num_results = provider_num_results[provider_name]
-                provider_results[provider_name] = provider_result_ids[provider][:num_results]
+                provider_results[provider_name] = provider_result_ids[provider][
+                    :num_results
+                ]
             except KeyError:
                 continue
 
@@ -805,7 +899,11 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT secnds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
+            REDIS.setex(
+                cache_key,
+                settings.CACHE_TIMEOUT,
+                self.__class__._serialize_data(results),
+            )
         return results
 
     def exact_suggest(self, term):
@@ -817,7 +915,10 @@ class Autocompleter(AutocompleterBase):
             return []
 
         # If we have a cached version of the search results available, return it!
-        cache_key = EXACT_CACHE_BASE_NAME % (self.name, term,)
+        cache_key = EXACT_CACHE_BASE_NAME % (
+            self.name,
+            term,
+        )
         if settings.CACHE_TIMEOUT and REDIS.exists(cache_key):
             return self.__class__._deserialize_data(REDIS.get(cache_key))
         provider_results = OrderedDict()
@@ -833,7 +934,7 @@ class Autocompleter(AutocompleterBase):
         uuid_str = str(uuid.uuid4())
         intermediate_result_key = RESULT_SET_BASE_NAME % (uuid_str,)
 
-        MAX_RESULTS = registry.get_autocompleter_setting(self.name, 'MAX_RESULTS')
+        MAX_RESULTS = registry.get_autocompleter_setting(self.name, "MAX_RESULTS")
 
         # Get the matched result IDs
         pipe = REDIS.pipeline()
@@ -841,11 +942,17 @@ class Autocompleter(AutocompleterBase):
             provider_name = provider.provider_name
             keys = []
             for norm_term in norm_terms:
-                keys.append(EXACT_BASE_NAME % (provider_name, norm_term,))
+                keys.append(
+                    EXACT_BASE_NAME
+                    % (
+                        provider_name,
+                        norm_term,
+                    )
+                )
             # Do not attempt zunionstore on empty list because redis errors out.
             if len(keys) == 0:
                 continue
-            pipe.zunionstore(intermediate_result_key, keys, aggregate='MIN')
+            pipe.zunionstore(intermediate_result_key, keys, aggregate="MIN")
             pipe.zrange(intermediate_result_key, 0, MAX_RESULTS - 1)
             pipe.delete(intermediate_result_key)
         results = [i for i in pipe.execute() if type(i) == list]
@@ -860,7 +967,11 @@ class Autocompleter(AutocompleterBase):
 
         # If told to, cache the final results for CACHE_TIMEOUT seconds
         if settings.CACHE_TIMEOUT:
-            REDIS.setex(cache_key, settings.CACHE_TIMEOUT, self.__class__._serialize_data(results))
+            REDIS.setex(
+                cache_key,
+                settings.CACHE_TIMEOUT,
+                self.__class__._serialize_data(results),
+            )
         return results
 
     def get_provider_result_from_id(self, provider_name, object_id):
@@ -893,8 +1004,11 @@ class Autocompleter(AutocompleterBase):
         # Put them in the  provider results dict
         for provider_name, ids in provider_results.items():
             if len(ids) > 0:
-                provider_results[provider_name] = \
-                    [self.__class__._deserialize_data(i) for i in results.pop(0) if i is not None]
+                provider_results[provider_name] = [
+                    self.__class__._deserialize_data(i)
+                    for i in results.pop(0)
+                    if i is not None
+                ]
 
         if settings.FLATTEN_SINGLE_TYPE_RESULTS and len(provider_results) == 1:
             provider_results = list(provider_results.values())[0]
@@ -914,7 +1028,7 @@ class Autocompleter(AutocompleterBase):
         :type chunk_size: int
         """
         for i in range(0, len(lst), chunk_size):
-            yield lst[i:i + chunk_size]
+            yield lst[i : i + chunk_size]
 
     @staticmethod
     def hash_facets(facets):
@@ -922,19 +1036,22 @@ class Autocompleter(AutocompleterBase):
         Given an array of facet data, return a deterministic hash such that
         the ordering of keys inside the facet dicts does not matter.
         """
+
         def sha1_digest(my_str):
-            return sha1(my_str.encode(encoding='UTF-8')).hexdigest()
+            return sha1(my_str.encode(encoding="UTF-8")).hexdigest()
 
         facet_hashes = []
         for facet in facets:
             sub_facet_hashes = []
-            facet_type = facet['type']
-            sub_facets = facet['facets']
+            facet_type = facet["type"]
+            sub_facets = facet["facets"]
             for sub_facet in sub_facets:
-                sub_facet_str = 'key:' + sub_facet['key'] + 'value:' + str(sub_facet['value'])
+                sub_facet_str = (
+                    "key:" + sub_facet["key"] + "value:" + str(sub_facet["value"])
+                )
                 sub_facet_hashes.append(sha1_digest(sub_facet_str))
             sub_facet_hashes.sort()
-            facet_str = 'type:' + facet_type + 'facets:' + str(sub_facet_hashes)
+            facet_str = "type:" + facet_type + "facets:" + str(sub_facet_hashes)
             facet_hashes.append(sha1_digest(facet_str))
         facet_hashes.sort()
         final_facet_hash = sha1_digest(str(facet_hashes))
@@ -947,8 +1064,10 @@ class Autocompleter(AutocompleterBase):
         Stick to Python 2 version of rounding to be consistent.
         """
         if not isinstance(value, (int, float)):
-            raise ValueError("Value to round must be an int or float, not %s." % type(value).__name__)
-        if round(0.5) != 1 and value % 1 == .5 and not int(value) % 2:
+            raise ValueError(
+                "Value to round must be an int or float, not %s." % type(value).__name__
+            )
+        if round(0.5) != 1 and value % 1 == 0.5 and not int(value) % 2:
             return int((round(value) + (abs(value) / value) * 1))
         else:
             return int(round(value))
