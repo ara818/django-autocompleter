@@ -46,6 +46,12 @@ class FacetedStockAutocompleteProvider(AutocompleterModelProvider):
         """
         return self.obj.market_cap
 
+    def include_item(self):
+        if self.obj.hidden:
+            return False
+        return True
+
+
     @classmethod
     def get_facets(cls):
         return ['sector', 'industry']

@@ -174,18 +174,25 @@ def add_obj_to_autocompleter(sender, instance, created, **kwargs):
     if instance is None:
         return
 
-    providers = registry.get_all_by_model(sender)
-    for provider in providers:
-        provider(instance).store()
+    provider_classes = registry.get_all_by_model(sender)
+    for provider_class in provider_classes:
+        provider = provider_class(instance)
+        # TODO: Consider that this will now be called twice...
+        if provider.include_item():
+            provider.store()
+        else:
+            # If the item no longer passes the .include_item()
+            # check then we need to remove it.
+            provider.remove()
 
 
 def remove_obj_from_autocompleter(sender, instance, **kwargs):
     if instance is None:
         return
 
-    providers = registry.get_all_by_model(sender)
-    for provider in providers:
-        provider(instance).remove()
+    provider_classes = registry.get_all_by_model(sender)
+    for provider_class in provider_classes:
+        provider_class(instance).remove()
 
 
 class AutocompleterSignalRegistry(object):

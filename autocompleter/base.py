@@ -263,8 +263,6 @@ class AutocompleterProviderBase(AutocompleterBase):
         DO NOT override this.
         """
         # Init data
-        if not self.include_item():
-            return
         provider_name = self.get_provider_name()
         obj_id = self.get_item_id()
         terms = self.get_terms()
@@ -447,7 +445,10 @@ class Autocompleter(AutocompleterBase):
 
         for provider_class in provider_classes:
             for obj in provider_class.get_iterator():
-                provider_class(obj).store(delete_old=delete_old)
+                provider = provider_class(obj)
+                if provider.include_item():
+                    provider.store(delete_old=delete_old)
+
 
     def remove_all(self):
         """
