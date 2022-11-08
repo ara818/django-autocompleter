@@ -8,12 +8,7 @@ class TestFacetHash(TestCase):
         """
         Hashing a facet should equal the hash of an earlier call
         """
-        facets = [
-            {
-                'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
-            }
-        ]
+        facets = [{"type": "or", "facets": [{"key": "sector", "value": "Technology"}]}]
         first_hash = Autocompleter.hash_facets(facets)
         second_hash = Autocompleter.hash_facets(facets)
         self.assertEqual(first_hash, second_hash)
@@ -23,17 +18,11 @@ class TestFacetHash(TestCase):
         Facet list with same sub facets but different type should not have equal hashes
         """
         and_facet = [
-            {
-                'type': 'and',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
-            }
+            {"type": "and", "facets": [{"key": "sector", "value": "Technology"}]}
         ]
 
         or_facet = [
-            {
-                'type': 'or',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
-            }
+            {"type": "or", "facets": [{"key": "sector", "value": "Technology"}]}
         ]
         and_hash = Autocompleter.hash_facets(and_facet)
         or_hash = Autocompleter.hash_facets(or_facet)
@@ -45,21 +34,21 @@ class TestFacetHash(TestCase):
         """
         facet_1 = [
             {
-                'type': 'or',
-                'facets': [
-                    {'key': 'sector', 'value': 'Technology'},
-                    {'value': 'Software', 'key': 'industry'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"key": "sector", "value": "Technology"},
+                    {"value": "Software", "key": "industry"},
+                ],
             }
         ]
 
         facet_2 = [
             {
-                'type': 'or',
-                'facets': [
-                    {'key': 'industry', 'value': 'Software'},
-                    {'key': 'sector', 'value': 'Technology'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"key": "industry", "value": "Software"},
+                    {"key": "sector", "value": "Technology"},
+                ],
             }
         ]
 
@@ -73,21 +62,21 @@ class TestFacetHash(TestCase):
         """
         facet_1 = [
             {
-                'type': 'and',
-                'facets': [
-                    {'key': 'sector', 'value': 'Technology'},
-                    {'key': 'industry', 'value': 'Software'}
-                ]
+                "type": "and",
+                "facets": [
+                    {"key": "sector", "value": "Technology"},
+                    {"key": "industry", "value": "Software"},
+                ],
             }
         ]
 
         facet_2 = [
             {
-                'type': 'or',
-                'facets': [
-                    {'key': 'industry', 'value': 'Software'},
-                    {'key': 'sector', 'value': 'Technology'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"key": "industry", "value": "Software"},
+                    {"key": "sector", "value": "Technology"},
+                ],
             }
         ]
 
@@ -101,35 +90,35 @@ class TestFacetHash(TestCase):
         """
         facet_1 = [
             {
-                'type': 'or',
-                'facets': [
-                    {'value': 'Technology', 'key': 'sector'},
-                    {'value': 'Software', 'key': 'industry'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"value": "Technology", "key": "sector"},
+                    {"value": "Software", "key": "industry"},
+                ],
             },
             {
-                'type': 'and',
-                'facets': [
-                    {'key': 'sector', 'value': 'Energy'},
-                    {'key': 'industry', 'value': 'Oil & Gas Integrated'}
-                ]
-            }
+                "type": "and",
+                "facets": [
+                    {"key": "sector", "value": "Energy"},
+                    {"key": "industry", "value": "Oil & Gas Integrated"},
+                ],
+            },
         ]
 
         facet_2 = [
             {
-                'type': 'and',
-                'facets': [
-                    {'key': 'industry', 'value': 'Oil & Gas Integrated'},
-                    {'key': 'sector', 'value': 'Energy'}
-                ]
+                "type": "and",
+                "facets": [
+                    {"key": "industry", "value": "Oil & Gas Integrated"},
+                    {"key": "sector", "value": "Energy"},
+                ],
             },
             {
-                'type': 'or',
-                'facets': [
-                    {'value': 'Technology', 'key': 'sector'},
-                    {'key': 'industry', 'value': 'Software'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"value": "Technology", "key": "sector"},
+                    {"key": "industry", "value": "Software"},
+                ],
             },
         ]
 
@@ -145,19 +134,19 @@ class TestFacetValidation(TestCase):
         """
         facets = [
             {
-                'type': 'or',
-                'facets': [
-                    {'key': 'sector', 'value': 'Financial Services'},
-                    {'key': 'industry', 'value': 'Investment'}
-                ]
+                "type": "or",
+                "facets": [
+                    {"key": "sector", "value": "Financial Services"},
+                    {"key": "industry", "value": "Investment"},
+                ],
             },
             {
-                'type': 'or',
-                'facets': [
-                    {'key': 'sector', 'value': 'Technology'},
-                    {'key': 'industry', 'value': 'Software'}
-                ]
-            }
+                "type": "or",
+                "facets": [
+                    {"key": "sector", "value": "Technology"},
+                    {"key": "industry", "value": "Software"},
+                ],
+            },
         ]
 
         self.assertTrue(SuggestView.validate_facets(facets))
@@ -166,11 +155,7 @@ class TestFacetValidation(TestCase):
         """
         Facet without a type should fail validation
         """
-        no_type_facets = [
-            {
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
-            }
-        ]
+        no_type_facets = [{"facets": [{"key": "sector", "value": "Technology"}]}]
 
         self.assertFalse(SuggestView.validate_facets(no_type_facets))
 
@@ -179,10 +164,7 @@ class TestFacetValidation(TestCase):
         Facet without an invalid type should fail validation
         """
         wrong_type_facets = [
-            {
-                'type': 'blah',
-                'facets': [{'key': 'sector', 'value': 'Technology'}]
-            }
+            {"type": "blah", "facets": [{"key": "sector", "value": "Technology"}]}
         ]
 
         self.assertFalse(SuggestView.validate_facets(wrong_type_facets))
@@ -193,18 +175,13 @@ class TestFacetValidation(TestCase):
         """
         no_sub_facets = [
             {
-                'type': 'or',
+                "type": "or",
             }
         ]
 
         self.assertFalse(SuggestView.validate_facets(no_sub_facets))
 
-        empty_sub_facets = [
-            {
-                'type': 'or',
-                'facets': []
-            }
-        ]
+        empty_sub_facets = [{"type": "or", "facets": []}]
 
         self.assertFalse(SuggestView.validate_facets(empty_sub_facets))
 
@@ -212,12 +189,7 @@ class TestFacetValidation(TestCase):
         """
         Facet with no key in the sub facet should fail validation
         """
-        no_key_in_sub_facet = [
-            {
-                'type': 'or',
-                'facets': [{'value': 'Technology'}]
-            }
-        ]
+        no_key_in_sub_facet = [{"type": "or", "facets": [{"value": "Technology"}]}]
 
         self.assertFalse(SuggestView.validate_facets(no_key_in_sub_facet))
 
@@ -225,12 +197,7 @@ class TestFacetValidation(TestCase):
         """
         Facet with no value in the sub facet should fail validation
         """
-        no_value_in_sub_facet = [
-            {
-                'type': 'or',
-                'facets': [{'key': 'Sector'}]
-            }
-        ]
+        no_value_in_sub_facet = [{"type": "or", "facets": [{"key": "Sector"}]}]
 
         self.assertFalse(SuggestView.validate_facets(no_value_in_sub_facet))
 
@@ -240,16 +207,16 @@ class TestNormalizeRounding(TestCase):
         """
         Rounding a number that ends in .5 should produce a number with a greater absolute value
         """
-        self.assertEqual(1, Autocompleter.normalize_rounding(.5))
+        self.assertEqual(1, Autocompleter.normalize_rounding(0.5))
         self.assertEqual(2, Autocompleter.normalize_rounding(1.5))
-        self.assertEqual(-1, Autocompleter.normalize_rounding(-.5))
+        self.assertEqual(-1, Autocompleter.normalize_rounding(-0.5))
         self.assertEqual(-2, Autocompleter.normalize_rounding(-1.5))
 
     def test_rounding_works_correctly(self):
         """
         Rounding works correctly
         """
-        self.assertEqual(1, Autocompleter.normalize_rounding(.51))
-        self.assertEqual(0, Autocompleter.normalize_rounding(.49))
-        self.assertEqual(-1, Autocompleter.normalize_rounding(-.51))
-        self.assertEqual(0, Autocompleter.normalize_rounding(-.49))
+        self.assertEqual(1, Autocompleter.normalize_rounding(0.51))
+        self.assertEqual(0, Autocompleter.normalize_rounding(0.49))
+        self.assertEqual(-1, Autocompleter.normalize_rounding(-0.51))
+        self.assertEqual(0, Autocompleter.normalize_rounding(-0.49))

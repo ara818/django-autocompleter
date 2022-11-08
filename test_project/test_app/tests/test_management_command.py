@@ -3,7 +3,6 @@ from django.test import TestCase
 
 
 class ManagementCommandTestCase(TestCase):
-
     def test_autocompleter_init_calleable(self):
         """
         Can call autocompleter_init without any error

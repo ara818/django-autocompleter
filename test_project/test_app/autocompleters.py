@@ -1,4 +1,8 @@
-from autocompleter import AutocompleterModelProvider, AutocompleterDictProvider, registry
+from autocompleter import (
+    AutocompleterModelProvider,
+    AutocompleterDictProvider,
+    registry,
+)
 
 from .models import Stock, Indicator
 from . import calc_info
@@ -22,11 +26,11 @@ class StockAutocompleteProvider(AutocompleterModelProvider):
 
     def get_data(self):
         return {
-            'type': 'stock',
-            'id': self.obj.id,
-            'score': self.get_score(),
-            'display_name': u'%s (%s)' % (self.obj.name, self.obj.symbol),
-            'search_name': self.obj.symbol,
+            "type": "stock",
+            "id": self.obj.id,
+            "score": self.get_score(),
+            "display_name": "%s (%s)" % (self.obj.name, self.obj.symbol),
+            "search_name": self.obj.symbol,
         }
 
 
@@ -51,20 +55,19 @@ class FacetedStockAutocompleteProvider(AutocompleterModelProvider):
             return False
         return True
 
-
     @classmethod
     def get_facets(cls):
-        return ['sector', 'industry']
+        return ["sector", "industry"]
 
     def get_data(self):
         return {
-            'type': 'stock',
-            'id': self.obj.id,
-            'score': self.get_score(),
-            'display_name': u'%s (%s)' % (self.obj.name, self.obj.symbol),
-            'search_name': self.obj.symbol,
-            'sector': self.obj.sector,
-            'industry': self.obj.industry
+            "type": "stock",
+            "id": self.obj.id,
+            "score": self.get_score(),
+            "display_name": "%s (%s)" % (self.obj.name, self.obj.symbol),
+            "search_name": self.obj.symbol,
+            "sector": self.obj.sector,
+            "industry": self.obj.industry,
         }
 
 
@@ -84,11 +87,11 @@ class IndicatorAutocompleteProvider(AutocompleterModelProvider):
 
     def get_data(self):
         return {
-            'type': 'indicator',
-            'id': self.obj.id,
-            'score': self.get_score(),
-            'display_name': u'%s' % (self.obj.name,),
-            'search_name': u'%s' % (self.obj.internal_name,),
+            "type": "indicator",
+            "id": self.obj.id,
+            "score": self.get_score(),
+            "display_name": "%s" % (self.obj.name,),
+            "search_name": "%s" % (self.obj.internal_name,),
         }
 
 
@@ -105,21 +108,21 @@ class IndicatorAliasedAutocompleteProvider(AutocompleterModelProvider):
 
     def get_data(self):
         return {
-            'type': 'indicator',
-            'id': self.obj.id,
-            'score': self.get_score(),
-            'display_name': u'%s' % (self.obj.name,),
-            'search_name': u'%s' % (self.obj.internal_name,),
+            "type": "indicator",
+            "id": self.obj.id,
+            "score": self.get_score(),
+            "display_name": "%s" % (self.obj.name,),
+            "search_name": "%s" % (self.obj.internal_name,),
         }
 
     @classmethod
     def get_phrase_aliases(self):
         return {
-            'United States': ['US', 'USA', 'America', 'U-S-A', 'U/S-A'],
-            'Consumer Price Index': 'CPI',
-            'Gross Domestic Product': 'GDP',
-            'California': 'CA',
-            'Canada': 'CA',
+            "United States": ["US", "USA", "America", "U-S-A", "U/S-A"],
+            "Consumer Price Index": "CPI",
+            "Gross Domestic Product": "GDP",
+            "California": "CA",
+            "Canada": "CA",
         }
 
 
@@ -137,15 +140,15 @@ class IndicatorSelectiveAutocompleteProvider(AutocompleterModelProvider):
 
     def get_data(self):
         return {
-            'type': 'indicator',
-            'id': self.obj.id,
-            'score': self.get_score(),
-            'display_name': u'%s' % (self.obj.name,),
-            'search_name': u'%s' % (self.obj.internal_name,),
+            "type": "indicator",
+            "id": self.obj.id,
+            "score": self.get_score(),
+            "display_name": "%s" % (self.obj.name,),
+            "search_name": "%s" % (self.obj.internal_name,),
         }
 
     def include_item(self):
-        if self.obj.name == 'US Unemployment Rate':
+        if self.obj.name == "US Unemployment Rate":
             return False
         return True
 
@@ -156,21 +159,21 @@ class CalcAutocompleteProvider(AutocompleterDictProvider):
     settings = {}
 
     def get_item_id(self):
-        return self.obj['short_label']
+        return self.obj["short_label"]
 
     def get_term(self):
-        return self.obj['label']
+        return self.obj["label"]
 
     def get_score(self):
-        return self.obj.get('score', 1)
+        return self.obj.get("score", 1)
 
     def get_data(self):
         return {
-            'type': 'metric',
-            'id': self.get_item_id(),
-            'score': self.obj.get('score', 1),
-            'display_name': u'%s' % (self.obj['label'],),
-            'search_name': u'%s' % (self.obj['label'],),
+            "type": "metric",
+            "id": self.get_item_id(),
+            "score": self.obj.get("score", 1),
+            "display_name": "%s" % (self.obj["label"],),
+            "search_name": "%s" % (self.obj["label"],),
         }
 
 
@@ -180,33 +183,33 @@ class CalcAliasedAutocompleteProvider(AutocompleterDictProvider):
     settings = {}
 
     def get_item_id(self):
-        return self.obj['label']
+        return self.obj["label"]
 
     def get_term(self):
-        return self.obj['label']
+        return self.obj["label"]
 
     def get_score(self):
-        return self.obj.get('score', 1)
+        return self.obj.get("score", 1)
 
     def get_data(self):
         return {
-            'type': 'metric',
-            'id': self.obj['label'],
-            'score': self.obj.get('score', 1),
-            'display_name': u'%s' % (self.obj['label'],),
-            'search_name': u'%s' % (self.obj['label'],),
+            "type": "metric",
+            "id": self.obj["label"],
+            "score": self.obj.get("score", 1),
+            "display_name": "%s" % (self.obj["label"],),
+            "search_name": "%s" % (self.obj["label"],),
         }
 
     @classmethod
     def get_phrase_aliases(cls):
         return {
-            'EV': 'Enterprise Value',
+            "EV": "Enterprise Value",
         }
 
     @classmethod
     def get_one_way_phrase_aliases(cls):
         return {
-            'Revenue': 'Turnover',
+            "Revenue": "Turnover",
         }
 
     @classmethod

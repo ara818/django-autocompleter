@@ -1,21 +1,23 @@
 from setuptools import setup
 
 setup(
-    name='django-autocompleter',
-    version='0.10.0',
-    description='A redis-backed autocompletor for Django projects',
-    author='Ara Anjargolian',
-    author_email='ara818@gmail.com',
-    url='http://github.com/ycharts/django-autocompleter',
-    packages=['autocompleter', 'autocompleter.management', 'autocompleter.management.commands'],
-    install_requires=['setuptools', 'redis'],
+    name="django-autocompleter",
+    version="1.0.0",
+    description="A redis-backed autocompleter for Django projects. Originally created by Ara Anjargolian",
+    author="YCharts",
+    author_email="developers@ycharts.com",
+    url="https://github.com/ycharts/django-autocompleter",
+    packages=[
+        "autocompleter",
+        "autocompleter.management",
+        "autocompleter.management.commands",
+    ],
+    install_requires=["setuptools", "redis", "hiredis"],
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Framework :: Django',
-    ]
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Framework :: Django",
+    ],
 )

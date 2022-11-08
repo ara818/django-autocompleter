@@ -1,4 +1,4 @@
+-c requirements.txt
 # Packages needed if you'd like to test / develop on django-autocompleter
 coverage
-django-nose
-nose
+pre-commit
