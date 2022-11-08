@@ -37,7 +37,7 @@ class Command(BaseCommand):
     help = "Store and/or remove autocompleter data"
 
     def handle(self, *args, **options):
-        # Configure loggingin
+        # Configure logging
         level = {
             0: logging.WARN,
             1: logging.INFO,

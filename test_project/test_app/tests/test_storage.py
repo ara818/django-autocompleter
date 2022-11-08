@@ -94,6 +94,32 @@ class StoringAndRemovingTestCase(AutocompleterTestCase):
         autocomp.remove_all()
         signal_registry.unregister(Indicator)
 
+    def test_removal_when_no_longer_passing_inclusion_test(self):
+        """
+        test that an item is removed once it no longer passes the .include_item() check.
+        """
+        signal_registry.register(Indicator)
+
+        autocomp = Autocompleter('indicator_selective')
+        autocomp.store_all()
+
+        unemployment = Indicator.objects.get(internal_name='unemployment_rate')
+
+        unemployment.name = 'Free Parking'
+        unemployment.save()
+
+        self.assertTrue(autocomp.suggest('free parking')[0]['id'] == 1)
+        self.assertTrue(len(autocomp.suggest('US Unemployment Rate')) == 0)
+
+        unemployment.name = 'US Unemployment Rate'
+        unemployment.save()
+
+        self.assertTrue(len(autocomp.suggest('free parking')) == 0)
+        self.assertTrue(len(autocomp.suggest('US Unemployment Rate')) == 0)
+
+        autocomp.remove_all()
+        signal_registry.unregister(Indicator)
+
     def test_dict_store_and_remove_all_basic(self):
         """
         Storing and removing items all at once works for a single-model autocompleter.
@@ -292,6 +318,34 @@ class FacetedStoringAndRemovingTestCase(AutocompleterTestCase):
         facet_map_name = base.FACET_MAP_BASE_NAME % (provider_name,)
         keys = self.redis.hkeys(facet_map_name)
         self.assertEqual(len(keys), 0)
+
+    def test_remove_facet_data_on_failed_inclusion(self):
+        """
+        Remove takes care of deleting facet data when an item fails inclusion test.
+        """
+        signal_registry.register(Stock)
+        Autocompleter('faceted_stock')
+        aapl = Stock.objects.get(symbol='AAPL')
+        aapl.save()
+
+        facet_set_name = base.FACET_SET_BASE_NAME % ('faceted_stock', 'sector', 'Technology',)
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 1)
+
+        facet_map_name = base.FACET_MAP_BASE_NAME % ('faceted_stock',)
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 1)
+
+        aapl.hidden = True
+        aapl.save()
+
+        set_length = self.redis.zcard(facet_set_name)
+        self.assertEqual(set_length, 0)
+
+        keys = self.redis.hkeys(facet_map_name)
+        self.assertEqual(len(keys), 0)
+
+        signal_registry.unregister(Stock)
 
     def test_store_all_facet_data(self):
         """

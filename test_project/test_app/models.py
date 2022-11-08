@@ -7,6 +7,7 @@ class Stock(models.Model):
     market_cap = models.FloatField(null=True, blank=True)
     sector = models.CharField(max_length=200, default='')
     industry = models.CharField(max_length=200, default='')
+    hidden = models.BooleanField(default=False)
 
 
 class Indicator(models.Model):
