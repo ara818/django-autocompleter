@@ -1,4 +1,4 @@
-VERSION = (0, 10, 0)
+VERSION = (1, 0, 0)
 
 from autocompleter.registry import registry, signal_registry
 from autocompleter.base import AutocompleterBase, AutocompleterModelProvider, AutocompleterDictProvider, Autocompleter
@@ -18,5 +18,6 @@ def autodiscover():
     NOTE: autodiscover was copied from django.contrib.admin autodiscover
     """
     autodiscover_modules('autocompleters')
+
 
 default_app_config = 'autocompleter.apps.AutocompleterConfig'

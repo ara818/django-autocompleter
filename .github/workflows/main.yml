@@ -1,20 +1,22 @@
-name: Test Suite # IMPORTANT: If this name changes you need to update the canceller.yml
+name: Test Suite
 
 # Controls when the action will run.
 on:
   # Triggers the workflow on push for the master branch.
   push:
     branches: [ master ]
-
   # Triggers the workflow on pull request for any branch.
   pull_request:
-
   # Allows you to run this workflow manually from the Actions tab.
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     services:
       redis:
         image: redis
@@ -28,31 +30,17 @@ jobs:
           --health-retries 5
     strategy:
       matrix:
-        python-version: [ 2.7, 3.4, 3.5, 3.6, 3.7 ]
-        django-version: [ 1.8.*, 1.9.*, 1.10.*, 1.11.*, 2.0.*, 2.1.*, 2.2.*, 3.0.* ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+        django-version: [ "3.2.*", "4.0.*" ]
         exclude:
-          - python-version: 2.7
-            django-version: 2.0.*
-          - python-version: 2.7
-            django-version: 2.1.*
-          - python-version: 2.7
-            django-version: 2.2.*
-          - python-version: 2.7
-            django-version: 3.0.*
-          - python-version: 3.4
-            django-version: 2.1.*
-          - python-version: 3.4
-            django-version: 2.2.*
-          - python-version: 3.4
-            django-version: 3.0.*
-          - python-version: 3.5
-            django-version: 3.0.*
+          - python-version: "3.7"
+            django-version: "4.0.*"
     steps:
       # Checks-out the  repository.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
