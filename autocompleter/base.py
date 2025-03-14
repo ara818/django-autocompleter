@@ -1294,12 +1294,15 @@ class Autocompleter(AutocompleterBase):
                 if len(term.split(" ")) <= max_word_count:
                     exact_sorted_set_key = EXACT_BASE_NAME % (provider_name, term)
                     pipe.zadd(exact_sorted_set_key, {obj_id: scores_live_map[obj_id]})
-                    self.log.info(f"Added 1 entry to {exact_sorted_set_key}")
-            # Terms in the DB but not in the live set are terms that got removed
-            for term in db_obj_terms - live_obj_terms:
+            self.log.info(f"Added {len(terms_to_add)} entries to {EXACT_BASE_NAME}")
+            # Terms in tterms_to_removehe DB but not in the live set are terms that got removed
+            terms_to_remove = db_obj_terms - live_obj_terms
+            for term in terms_to_remove:
                 exact_sorted_set_key = EXACT_BASE_NAME % (provider_name, term)
                 pipe.zrem(exact_sorted_set_key, obj_id)
-                self.log.info(f"Removed 1 entry from {exact_sorted_set_key}")
+            self.log.info(
+                f"Removed {len(terms_to_remove)} entries from {EXACT_BASE_NAME}"
+            )
 
             # Repeat the same logic for prefixes
             live_obj_prefixes = frozenset(
@@ -1318,13 +1321,18 @@ class Autocompleter(AutocompleterBase):
             for prefix in prefixes_to_add:
                 prefix_sorted_set_key = PREFIX_BASE_NAME % (provider_name, prefix)
                 pipe.zadd(prefix_sorted_set_key, {obj_id: scores_live_map[obj_id]})
-                self.log.info(f"Added 1 entry to {prefix_sorted_set_key}")
+            self.log.info(
+                f"Added {len(prefixes_to_add)} entries to {prefix_sorted_set_key}"
+            )
 
             # Prefixes in the DB but not in the live set are prefixes that got removed
-            for prefix in db_obj_prefixes - live_obj_prefixes:
+            prefixes_to_remove = db_obj_prefixes - live_obj_prefixes
+            for prefix in prefixes_to_remove:
                 prefix_sorted_set_key = PREFIX_BASE_NAME % (provider_name, prefix)
                 pipe.zrem(prefix_sorted_set_key, obj_id)
-                self.log.info(f"Removed 1 entry to {prefix_sorted_set_key}")
+            self.log.info(
+                f"Removed {len(prefixes_to_remove)} entries to {PREFIX_BASE_NAME}"
+            )
 
         # Update exact terms sets
         # Build a single set of all terms in each data set
@@ -1391,11 +1399,14 @@ class Autocompleter(AutocompleterBase):
             for key, value in facets_to_add:
                 facet_sorted_set_key = FACET_SET_BASE_NAME % (provider_name, key, value)
                 pipe.zadd(facet_sorted_set_key, {obj_id: scores_live_map[obj_id]})
-                self.log.info(f"Added 1 entry to {facet_sorted_set_key}")
-            for key, value in db_obj_facets - live_obj_facets:
+            self.log.info(f"Added {len(facets_to_add)} entries to {FACET_BASE_NAME}")
+            facets_to_remove = db_obj_facets - live_obj_facets
+            for key, value in facets_to_remove:
                 facet_sorted_set_key = FACET_SET_BASE_NAME % (provider_name, key, value)
                 pipe.zrem(facet_sorted_set_key, obj_id)
-                self.log.info(f"Removed 1 entry to {facet_sorted_set_key}")
+            self.log.info(
+                f"Removed {len(facets_to_remove)} entries to {FACET_SET_BASE_NAME}"
+            )
 
         # Bulk update the facets hash map with all needed facets in a single operation
         if facets_with_updates := facets_live_set - facets_db_set:
@@ -1439,10 +1450,10 @@ class Autocompleter(AutocompleterBase):
             obj_id: scores_live_map[obj_id] for obj_id in objs_with_updated_scores
         }:
             pipe.hset(scores_map_key, mapping=updated_scores)
-            self.log.info(f"Added {len(updated_scores)} entries to {updated_scores}")
+            self.log.info(f"Added {len(updated_scores)} entries to {scores_map_key}")
         if objs_removed := set(scores_db_map.keys()) - set(scores_live_map.keys()):
             pipe.hdel(scores_map_key, *objs_removed)
-            self.log.info(f"Removed {len(objs_removed)} entries from {objs_removed}")
+            self.log.info(f"Removed {len(objs_removed)} entries from {scores_map_key}")
         # Execute all the additions and deletions in a single connection
         pipe.execute()
         self.log.info(f"End update of provider {provider_name}")
